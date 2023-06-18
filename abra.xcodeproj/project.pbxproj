@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2F0F5DB52A3EB0E6005F1962 /* ShazamButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0F5DB42A3EB0E6005F1962 /* ShazamButton.swift */; };
+		2F0F5DB72A3EB566005F1962 /* Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0F5DB62A3EB566005F1962 /* Stream.swift */; };
 		2F6093702A2EDFB30092A6DD /* abraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F60936F2A2EDFB30092A6DD /* abraApp.swift */; };
-		2F6093722A2EDFB30092A6DD /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093712A2EDFB30092A6DD /* HistoryView.swift */; };
 		2F6093742A2EDFB50092A6DD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F6093732A2EDFB50092A6DD /* Assets.xcassets */; };
 		2F6093772A2EDFB50092A6DD /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F6093762A2EDFB50092A6DD /* Preview Assets.xcassets */; };
 		2F6093792A2EDFB50092A6DD /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093782A2EDFB50092A6DD /* Persistence.swift */; };
@@ -16,13 +17,14 @@
 		2F6093872A2EDFB60092A6DD /* abraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093862A2EDFB60092A6DD /* abraTests.swift */; };
 		2F6093912A2EDFB60092A6DD /* abraUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093902A2EDFB60092A6DD /* abraUITests.swift */; };
 		2F6093932A2EDFB60092A6DD /* abraUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093922A2EDFB60092A6DD /* abraUITestsLaunchTests.swift */; };
-		2F6093A02A2EE71F0092A6DD /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F60939F2A2EE71F0092A6DD /* MainView.swift */; };
 		2F6093A22A2EEC960092A6DD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093A12A2EEC960092A6DD /* ContentView.swift */; };
 		2F6093A42A2EEDFE0092A6DD /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093A32A2EEDFE0092A6DD /* MapView.swift */; };
 		2F6093A62A2EF1F70092A6DD /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093A52A2EF1F70092A6DD /* Location.swift */; };
 		2FB9AEFF2A30A383003C7A21 /* Music.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB9AEFE2A30A383003C7A21 /* Music.swift */; };
+		2FB9AF012A3193F5003C7A21 /* SongSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB9AF002A3193F5003C7A21 /* SongSheet.swift */; };
+		2FBD406E2A3ED0590083C4B6 /* UISheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBD406D2A3ED0590083C4B6 /* UISheet.swift */; };
+		2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */; };
 		2FD8448A2A2F076200B67301 /* Shazam.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD844892A2F076200B67301 /* Shazam.swift */; };
-		2FE766CF2A30475000952513 /* Playground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE766CE2A30475000952513 /* Playground.swift */; };
 		2FE766D22A30515E00952513 /* SongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE766D12A30515E00952513 /* SongRow.swift */; };
 /* End PBXBuildFile section */
 
@@ -44,9 +46,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2F0F5DB42A3EB0E6005F1962 /* ShazamButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamButton.swift; sourceTree = "<group>"; };
+		2F0F5DB62A3EB566005F1962 /* Stream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stream.swift; sourceTree = "<group>"; };
 		2F60936C2A2EDFB30092A6DD /* abra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = abra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F60936F2A2EDFB30092A6DD /* abraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = abraApp.swift; sourceTree = "<group>"; };
-		2F6093712A2EDFB30092A6DD /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		2F6093732A2EDFB50092A6DD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2F6093762A2EDFB50092A6DD /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		2F6093782A2EDFB50092A6DD /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
@@ -57,14 +60,15 @@
 		2F60938C2A2EDFB60092A6DD /* abraUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = abraUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F6093902A2EDFB60092A6DD /* abraUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = abraUITests.swift; sourceTree = "<group>"; };
 		2F6093922A2EDFB60092A6DD /* abraUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = abraUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		2F60939F2A2EE71F0092A6DD /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		2F6093A12A2EEC960092A6DD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		2F6093A32A2EEDFE0092A6DD /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		2F6093A52A2EF1F70092A6DD /* Location.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 		2FB9AEFE2A30A383003C7A21 /* Music.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Music.swift; sourceTree = "<group>"; };
+		2FB9AF002A3193F5003C7A21 /* SongSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongSheet.swift; sourceTree = "<group>"; };
+		2FBD406D2A3ED0590083C4B6 /* UISheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UISheet.swift; sourceTree = "<group>"; };
+		2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetView.swift; sourceTree = "<group>"; };
 		2FD844892A2F076200B67301 /* Shazam.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shazam.swift; sourceTree = "<group>"; };
 		2FD8448B2A2F089000B67301 /* abra.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = abra.entitlements; sourceTree = "<group>"; };
-		2FE766CE2A30475000952513 /* Playground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Playground.swift; sourceTree = "<group>"; };
 		2FE766D12A30515E00952513 /* SongRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongRow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -119,9 +123,8 @@
 				2FD8448B2A2F089000B67301 /* abra.entitlements */,
 				2F60936F2A2EDFB30092A6DD /* abraApp.swift */,
 				2F6093A12A2EEC960092A6DD /* ContentView.swift */,
+				2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */,
 				2F6093A32A2EEDFE0092A6DD /* MapView.swift */,
-				2F6093712A2EDFB30092A6DD /* HistoryView.swift */,
-				2F60939F2A2EE71F0092A6DD /* MainView.swift */,
 				2F6093A72A2EF2290092A6DD /* Models */,
 				2FE766D02A30512400952513 /* Components */,
 				2F6093732A2EDFB50092A6DD /* Assets.xcassets */,
@@ -129,7 +132,6 @@
 				2F60937D2A2EDFB50092A6DD /* Info.plist */,
 				2F60937A2A2EDFB50092A6DD /* abra.xcdatamodeld */,
 				2F6093752A2EDFB50092A6DD /* Preview Content */,
-				2FE766CE2A30475000952513 /* Playground.swift */,
 			);
 			path = abra;
 			sourceTree = "<group>";
@@ -173,6 +175,10 @@
 			isa = PBXGroup;
 			children = (
 				2FE766D12A30515E00952513 /* SongRow.swift */,
+				2FB9AF002A3193F5003C7A21 /* SongSheet.swift */,
+				2F0F5DB42A3EB0E6005F1962 /* ShazamButton.swift */,
+				2F0F5DB62A3EB566005F1962 /* Stream.swift */,
+				2FBD406D2A3ED0590083C4B6 /* UISheet.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -307,17 +313,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2FBD406E2A3ED0590083C4B6 /* UISheet.swift in Sources */,
 				2F6093A42A2EEDFE0092A6DD /* MapView.swift in Sources */,
 				2F6093792A2EDFB50092A6DD /* Persistence.swift in Sources */,
-				2F6093722A2EDFB30092A6DD /* HistoryView.swift in Sources */,
+				2F0F5DB72A3EB566005F1962 /* Stream.swift in Sources */,
 				2F6093A22A2EEC960092A6DD /* ContentView.swift in Sources */,
 				2F6093702A2EDFB30092A6DD /* abraApp.swift in Sources */,
 				2FD8448A2A2F076200B67301 /* Shazam.swift in Sources */,
-				2FE766CF2A30475000952513 /* Playground.swift in Sources */,
-				2F6093A02A2EE71F0092A6DD /* MainView.swift in Sources */,
 				2F60937C2A2EDFB50092A6DD /* abra.xcdatamodeld in Sources */,
+				2FB9AF012A3193F5003C7A21 /* SongSheet.swift in Sources */,
 				2FE766D22A30515E00952513 /* SongRow.swift in Sources */,
+				2F0F5DB52A3EB0E6005F1962 /* ShazamButton.swift in Sources */,
 				2F6093A62A2EF1F70092A6DD /* Location.swift in Sources */,
+				2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */,
 				2FB9AEFF2A30A383003C7A21 /* Music.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

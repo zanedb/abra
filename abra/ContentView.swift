@@ -7,42 +7,46 @@
 
 import SwiftUI
 import CoreLocation
-
-// for blurred bg effects
-struct VisualEffectView: UIViewRepresentable {
-    var effect: UIVisualEffect?
-    func makeUIView(context: UIViewRepresentableContext<Self>) -> UIVisualEffectView { UIVisualEffectView() }
-    func updateUIView(_ uiView: UIVisualEffectView, context: UIViewRepresentableContext<Self>) { uiView.effect = effect }
-}
+import MapKit
+import MusicKit
 
 struct ContentView: View {
+    @Environment(\.managedObjectContext) private var viewContext
     var locationManager: CLLocationManager?
 
-    @State private var selection: Tab = .home
+    @ObservedObject private var shazam = Shazam()
+    @State private var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 37.3316876, longitude: -122.0327261), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
     
-    enum Tab {
-        case home
-        case map
-//        case playground
-    }
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \SStream.timestamp, ascending: false)],
+        animation: .default)
+    private var streams: FetchedResults<SStream>
     
     var body: some View {
-        TabView(selection: $selection) {
-            MainView()
-                .tabItem {
-                    Label("Home", systemImage: "shazam.logo")
+        ZStack(alignment: .top) {
+            UIKitMapView(region: region, streams: Array(streams))
+                .edgesIgnoringSafeArea(.all)
+                .sheet(isPresented: .constant(true)) {
+                    UISheet {
+                        NavigationStack {
+                            SheetView(streams: Array(streams))
+                        }
+                    }
+                        .interactiveDismissDisabled()
+                        .ignoresSafeArea()
                 }
-                .tag(Tab.home)
-            MapView()
-                .tabItem {
-                    Label("Map", systemImage: "map")
-                }
-                .tag(Tab.map)
-//            Playground(listening: .constant(true), listShown: .constant(false))
-//                .tabItem {
-//                    Label("Playground", systemImage: "testtube.2")
-//                }
-//                .tag(Tab.playground)
+
+            HStack(alignment: .top) {
+                Spacer()
+                ShazamButton(searching: shazam.searching, start: shazam.startRecognition, stop: shazam.stopRecognition, size: 36, fill: true, color: true)
+                    .frame(width: 48, height: 48)
+                    .background(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 5)
+                            .stroke(Color.primary.opacity(0.20))
+                    )
+                    .cornerRadius(5)
+            }.padding(.trailing)
         }
     }
 }

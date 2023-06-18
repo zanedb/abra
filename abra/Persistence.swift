@@ -14,8 +14,10 @@ struct PersistenceController {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
         for _ in 0..<10 {
-            let newItem = Item(context: viewContext)
+            let newItem = SStream(context: viewContext)
             newItem.timestamp = Date()
+            newItem.trackTitle = "LLC"
+            newItem.artist = "PC Music"
         }
         do {
             try viewContext.save()

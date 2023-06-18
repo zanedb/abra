@@ -92,7 +92,7 @@ class Shazam: NSObject, ObservableObject, SHSessionDelegate {
         newItem.country = locationController.loc.currentPlacemark?.country ?? ""
         
         newItem.artist = mediaItem.artist
-        newItem.title = mediaItem.title
+        newItem.trackTitle = mediaItem.title
         newItem.explicitContent = mediaItem.explicitContent
         newItem.artworkURL = mediaItem.artworkURL
         newItem.isrc = mediaItem.isrc

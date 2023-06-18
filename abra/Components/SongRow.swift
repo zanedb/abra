@@ -39,7 +39,7 @@ struct SongRow: View {
                 }
             )
             VStack(alignment: .leading, spacing: 0) {
-                Text(stream.title ?? "Unknown Song")
+                Text(stream.trackTitle ?? "Unknown Song")
                     .fontWeight(.bold)
                     .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.80) : Color.black.opacity(0.80))
                     .font(.system(size: 17))
