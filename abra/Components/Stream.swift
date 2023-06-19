@@ -7,6 +7,7 @@
 
 import Foundation
 import MapKit
+import CoreData
 
 extension SStream: MKAnnotation {
     public var coordinate: CLLocationCoordinate2D {
@@ -16,8 +17,8 @@ extension SStream: MKAnnotation {
 
 extension SStream {
     static var example: SStream {
-        //var viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext
-        let newItem = SStream()
+        let viewContext: NSManagedObjectContext = PersistenceController.preview.container.viewContext
+        let newItem = SStream(context: viewContext)
         
         newItem.latitude = 37.3316876
         newItem.longitude = -122.0327261
@@ -27,6 +28,7 @@ extension SStream {
         newItem.city = "Cupertino"
         newItem.country = "United States"
         newItem.countryCode = "US"
+        newItem.timestamp = Date()
         
         newItem.artist = "JTMC"
         newItem.trackTitle = "Woohwaaahwooh"
