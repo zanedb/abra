@@ -19,6 +19,8 @@ struct ContentView: View {
     @State private var userTrackingMode: MKUserTrackingMode = .none
     @State private var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 37.3316876, longitude: -122.0327261), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
     
+    @State private var sheetPresented: Bool = true
+    
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \SStream.timestamp, ascending: false)],
         animation: .default)
@@ -26,13 +28,12 @@ struct ContentView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            UIKitMapView(region: region, streams: Array(streams))
+            UIKitMapView(region: region, streams: Array(streams), userTrackingMode: $userTrackingMode)
                 .edgesIgnoringSafeArea(.all)
-                .sheet(isPresented: .constant(true)) {
+                .sheet(isPresented: $sheetPresented) {
                     UISheet {
-                        NavigationStack {
-                            SheetView(streams: Array(streams))
-                        }
+                        SheetView(streams: Array(streams), shazam: shazam)
+                            .padding(.top, 18)
                     }
                         .interactiveDismissDisabled()
                         .ignoresSafeArea()
@@ -40,14 +41,6 @@ struct ContentView: View {
 
             HStack(alignment: .top) {
                 Spacer()
-                ShazamButton(searching: shazam.searching, start: shazam.startRecognition, stop: shazam.stopRecognition, size: 36, fill: true, color: true)
-                    .frame(width: 48, height: 48)
-                    .background(.ultraThinMaterial)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 5)
-                            .stroke(Color.primary.opacity(0.20))
-                    )
-                    .cornerRadius(5)
                 VStack {
                     Button(action: { userTrackingMode = userTrackingMode == .follow ? .none : .follow }) {
                         Image(systemName: userTrackingMode == .follow ? "location.fill" : "location")

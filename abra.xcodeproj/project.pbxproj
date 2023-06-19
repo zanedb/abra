@@ -24,6 +24,7 @@
 		2FB9AF012A3193F5003C7A21 /* SongSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB9AF002A3193F5003C7A21 /* SongSheet.swift */; };
 		2FBD406E2A3ED0590083C4B6 /* UISheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBD406D2A3ED0590083C4B6 /* UISheet.swift */; };
 		2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */; };
+		2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC675622A3FACD200FD7638 /* SearchBar.swift */; };
 		2FD8448A2A2F076200B67301 /* Shazam.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD844892A2F076200B67301 /* Shazam.swift */; };
 		2FE766D22A30515E00952513 /* SongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE766D12A30515E00952513 /* SongRow.swift */; };
 /* End PBXBuildFile section */
@@ -67,6 +68,7 @@
 		2FB9AF002A3193F5003C7A21 /* SongSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongSheet.swift; sourceTree = "<group>"; };
 		2FBD406D2A3ED0590083C4B6 /* UISheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UISheet.swift; sourceTree = "<group>"; };
 		2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetView.swift; sourceTree = "<group>"; };
+		2FC675622A3FACD200FD7638 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		2FD844892A2F076200B67301 /* Shazam.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shazam.swift; sourceTree = "<group>"; };
 		2FD8448B2A2F089000B67301 /* abra.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = abra.entitlements; sourceTree = "<group>"; };
 		2FE766D12A30515E00952513 /* SongRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongRow.swift; sourceTree = "<group>"; };
@@ -179,6 +181,7 @@
 				2F0F5DB42A3EB0E6005F1962 /* ShazamButton.swift */,
 				2F0F5DB62A3EB566005F1962 /* Stream.swift */,
 				2FBD406D2A3ED0590083C4B6 /* UISheet.swift */,
+				2FC675622A3FACD200FD7638 /* SearchBar.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -315,6 +318,7 @@
 			files = (
 				2FBD406E2A3ED0590083C4B6 /* UISheet.swift in Sources */,
 				2F6093A42A2EEDFE0092A6DD /* MapView.swift in Sources */,
+				2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */,
 				2F6093792A2EDFB50092A6DD /* Persistence.swift in Sources */,
 				2F0F5DB72A3EB566005F1962 /* Stream.swift in Sources */,
 				2F6093A22A2EEC960092A6DD /* ContentView.swift in Sources */,

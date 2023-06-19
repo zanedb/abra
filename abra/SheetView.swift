@@ -10,30 +10,54 @@ import SwiftUI
 struct SheetView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
-    var streams: [SStream]
+    @State var search: String = ""
+    @State var streams: [SStream]
+    @ObservedObject var shazam: Shazam
     
-    @State private var search: String = ""
+    var searchResults: [SStream] {
+        if (search.isEmpty) {
+            return streams
+        } else {
+            return streams.filter {
+                $0.trackTitle!.localizedCaseInsensitiveContains(search)
+            }
+        }
+    }
     
     var body: some View {
-        List {
-            ForEach(streams, id: \.self) { stream in
-                SongRow(stream: stream)
-                    .contextMenu {
-                        Link(destination: stream.appleMusicURL!) {
-                            Label("Open in Apple Music", systemImage: "arrow.up.forward.app.fill")
-                        }
-                        ShareLink(item: stream.appleMusicURL!) {
-                            Label("Share", systemImage: "square.and.arrow.up")
-                        }
-                        Divider()
-                        Button(role: .destructive, action: { deleteStream(stream) }, label: {
-                            Label("Remove", systemImage: "trash")
-                        })
-                    }
+        NavigationStack {
+            SearchBar(prompt: "Search Shazams…", search: $search, shazam: shazam)
+                .padding(.horizontal)
+            
+            HStack {
+                Text("Recent Shazams")
+                    .foregroundColor(.gray)
+                    .bold()
+                    .font(.system(size: 14))
+                Spacer()
             }
-            .onDelete(perform: deleteStreams)
+            .padding(.horizontal)
+            .padding(.top)
+            
+            List {
+                ForEach(searchResults, id: \.self) { stream in
+                    SongRow(stream: stream)
+                        .contextMenu {
+                            Link(destination: stream.appleMusicURL!) {
+                                Label("Open in Apple Music", systemImage: "arrow.up.forward.app.fill")
+                            }
+                            ShareLink(item: stream.appleMusicURL!) {
+                                Label("Share", systemImage: "square.and.arrow.up")
+                            }
+                            Divider()
+                            Button(role: .destructive, action: { deleteStream(stream) }, label: {
+                                Label("Remove", systemImage: "trash")
+                            })
+                        }
+                }
+                .onDelete(perform: deleteStreams)
+            }
         }
-        .searchable(text: $search, placement: .toolbar, prompt: "Search Shazams…")
         .listStyle(.inset)
     }
     
