@@ -15,6 +15,7 @@ struct ContentView: View {
     var locationManager: CLLocationManager?
 
     @ObservedObject private var shazam = Shazam()
+    @StateObject var music = MusicController.shared.music
     @State private var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 37.3316876, longitude: -122.0327261), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
     
     @FetchRequest(

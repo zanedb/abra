@@ -16,6 +16,11 @@ class Music: NSObject, ObservableObject {
         musicPlayer.setQueue(with: [id])
         musicPlayer.play()
     }
+    
+    func authorize() async -> MusicAuthorization.Status {
+        let res = await MusicAuthorization.request()
+        return res
+    }
 }
 
 struct MusicController {
