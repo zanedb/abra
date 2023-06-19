@@ -90,6 +90,7 @@ class Shazam: NSObject, ObservableObject, SHSessionDelegate {
         newItem.state = locationController.loc.currentPlacemark?.administrativeArea ?? ""
         newItem.city = locationController.loc.currentPlacemark?.locality ?? ""
         newItem.country = locationController.loc.currentPlacemark?.country ?? ""
+        newItem.countryCode = locationController.loc.currentPlacemark?.isoCountryCode ?? ""
         
         newItem.artist = mediaItem.artist
         newItem.trackTitle = mediaItem.title

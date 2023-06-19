@@ -26,6 +26,7 @@ extension SStream {
         newItem.state = "California"
         newItem.city = "Cupertino"
         newItem.country = "United States"
+        newItem.countryCode = "US"
         
         newItem.artist = "JTMC"
         newItem.trackTitle = "Woohwaaahwooh"

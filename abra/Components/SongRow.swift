@@ -52,7 +52,7 @@ struct SongRow: View {
                     .foregroundColor(Color.gray)
                     .font(.system(size: 13))
                 Spacer()
-                Text((stream.city ?? "Invalid location") + ", " + (stream.country ?? "oops!"))
+                Text((stream.city ?? "Invalid location") + ", " + (stream.countryCode ?? "oops!"))
                     .foregroundColor(Color.gray)
                     .font(.system(size: 12))
             }
