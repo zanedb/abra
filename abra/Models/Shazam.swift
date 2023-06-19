@@ -63,7 +63,9 @@ class Shazam: NSObject, ObservableObject, SHSessionDelegate {
     }
     
     public func stopRecognition() {
-        searching = false
+        DispatchQueue.main.async {
+            self.searching = false
+        }
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: .zero)
     }
@@ -71,7 +73,12 @@ class Shazam: NSObject, ObservableObject, SHSessionDelegate {
     public func session(_ session: SHSession, didFind match: SHMatch) {
         guard let mediaItem = match.mediaItems.first else { return }
         
-        self.currentItem = mediaItem
+        // TODO: fix these two issues. should not be updating from a background thread.
+        // MARK: this shit is important.
+        
+        DispatchQueue.main.async {
+            self.currentItem = mediaItem
+        }
         
         // create a new CoreData entry with all the metadata!
         let newItem = SStream(context: viewContext)
