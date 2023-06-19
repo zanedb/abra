@@ -8,13 +8,6 @@
 import SwiftUI
 import CoreData
 
-struct SSStream {
-    var artworkURL: URL?
-    var title: String?
-    var artist: String?
-    var timestamp: Date?
-}
-
 struct SongRow: View {
     @Environment(\.colorScheme) private var colorScheme
     
@@ -63,20 +56,8 @@ struct SongRow: View {
 }
 
 struct SongRow_Previews: PreviewProvider {
-    struct Container: View {
-        @State var stream = SSStream(
-            artworkURL: URL(string: "https://hws.dev/paul.jpg"),
-            title: "Beans Beans Beans",
-            artist: "Llamma",
-            timestamp: Date()
-        )
-        
-        var body: some View {
-            SongRow(stream: SStream())//$stream)
-        }
-    }
-    
     static var previews: some View {
-        Container()
+        SongRow(stream: SStream.example)
+            .padding()
     }
 }

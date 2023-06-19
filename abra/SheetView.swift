@@ -68,6 +68,7 @@ struct SheetView: View {
 
 struct SheetView_Previews: PreviewProvider {
     static var previews: some View {
-        SheetView(streams: [SStream.example])
+        SheetView(streams: [SStream.example, SStream.example], shazam: Shazam())
+            .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
 }
