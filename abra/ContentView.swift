@@ -12,10 +12,11 @@ import MusicKit
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    var locationManager: CLLocationManager?
 
     @ObservedObject private var shazam = Shazam()
     @StateObject var music = MusicController.shared.music
+    
+    @State private var userTrackingMode: MKUserTrackingMode = .none
     @State private var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 37.3316876, longitude: -122.0327261), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
     
     @FetchRequest(
@@ -47,6 +48,20 @@ struct ContentView: View {
                             .stroke(Color.primary.opacity(0.20))
                     )
                     .cornerRadius(5)
+                VStack {
+                    Button(action: { userTrackingMode = userTrackingMode == .follow ? .none : .follow }) {
+                        Image(systemName: userTrackingMode == .follow ? "location.fill" : "location")
+                            .font(.system(size: 20))
+                    }
+                        .frame(width: 44, height: 44)
+                        .background(.ultraThickMaterial)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.primary.opacity(0.10))
+                        )
+                        .cornerRadius(8)
+                }
+                    .shadow(color: Color.primary.opacity(0.10), radius: 5, x: 0, y: 2)
             }.padding(.trailing)
         }
     }

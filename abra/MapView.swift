@@ -12,6 +12,7 @@ import CoreData
 struct UIKitMapView: UIViewRepresentable {
     let region: MKCoordinateRegion
     let streams: [SStream]
+    let userTrackingMode: Binding<MKUserTrackingMode>
     
     class Coordinator: NSObject, MKMapViewDelegate {
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -36,6 +37,7 @@ struct UIKitMapView: UIViewRepresentable {
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
         mapView.setRegion(region, animated: true)
+        mapView.showsUserLocation = true // TODO: check for permissions first
         mapView.isRotateEnabled = false
         mapView.delegate = context.coordinator
         mapView.addAnnotations(streams)
@@ -43,10 +45,13 @@ struct UIKitMapView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: MKMapView, context: Context) {
-        
+        if uiView.userTrackingMode != userTrackingMode.wrappedValue {
+            uiView.setUserTrackingMode(userTrackingMode.wrappedValue, animated: true)
+        }
     }
     
     typealias UIViewType = MKMapView
+    
 }
 
 /**
