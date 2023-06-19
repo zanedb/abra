@@ -16,7 +16,7 @@ class UISheetController<Content>: UIHostingController<Content> where Content : V
         if let presentation = sheetPresentationController {
             let smallDetentId = UISheetPresentationController.Detent.Identifier("small")
             let smallDetent = UISheetPresentationController.Detent.custom(identifier: smallDetentId) { context in
-                return 100
+                return 75
             }
             
             let mediumDetentId = UISheetPresentationController.Detent.Identifier("medium")

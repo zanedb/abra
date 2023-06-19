@@ -26,7 +26,6 @@ struct ShazamButton: View {
                 .tint(color ? Color.blue : nil)
                 .fontWeight(.medium)
                 .font(.system(size: size ?? 156))
-                .padding(.vertical)
                 .cornerRadius(100)
                 .scaleEffect(pulseAmount)
                 .onChange(of: searching) { done in
