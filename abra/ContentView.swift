@@ -20,6 +20,7 @@ struct ContentView: View {
     @State private var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 37.3316876, longitude: -122.0327261), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
     
     @State private var sheetPresented: Bool = true
+    @State private var sheetContentHeight = CGFloat(0)
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \SStream.timestamp, ascending: false)],
@@ -37,6 +38,10 @@ struct ContentView: View {
                     }
                         .interactiveDismissDisabled()
                         .ignoresSafeArea()
+                        .readSize { newSize in
+                            sheetContentHeight = newSize.height
+                            print(sheetContentHeight) // TODO: hide elements on small content height
+                        }
                 }
 
             HStack(alignment: .top) {
