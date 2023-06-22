@@ -7,6 +7,7 @@
 
 import SwiftUI
 import MusicKit
+import SDWebImageSwiftUI
 
 struct SongSheet: View {
     @Environment(\.colorScheme) var colorScheme
@@ -19,23 +20,18 @@ struct SongSheet: View {
         VStack(spacing: 0) {
             HStack {
                 VStack(spacing: 0) {
-                    AsyncImage(
-                        url: stream.artworkURL,
-                        content: { image in
-                            image.resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 148, height: 148)
-                                .cornerRadius(/*@START_MENU_TOKEN@*/3.0/*@END_MENU_TOKEN@*/)
-                                .padding(.trailing, 5)
-                        },
-                        placeholder: {
+                    WebImage(url: stream.artworkURL)
+                        .resizable()
+                        .placeholder {
                             ProgressView()
                                 .scaledToFit()
-                                .frame(width: 148, height: 148)
+                                .frame(width: 96, height: 96)
                                 .padding(.trailing, 5)
                         }
-                    )
-                    Spacer()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 96, height: 96)
+                        .cornerRadius(3.0)
+                        .padding(.trailing, 5)
                 }
                 VStack(alignment: .leading, spacing: 0) {
                     Text(stream.trackTitle ?? "Loading…")

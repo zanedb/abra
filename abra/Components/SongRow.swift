@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import SDWebImageSwiftUI
 
 struct SongRow: View {
     @Environment(\.colorScheme) private var colorScheme
@@ -15,22 +16,19 @@ struct SongRow: View {
     
     var body: some View {
         HStack {
-            AsyncImage(
-                url: stream.artworkURL,
-                content: { image in
-                    image.resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 96, height: 96)
-                    .cornerRadius(/*@START_MENU_TOKEN@*/3.0/*@END_MENU_TOKEN@*/)
-                    .padding(.trailing, 5)
-                },
-                placeholder: {
+            WebImage(url: stream.artworkURL)
+                .resizable()
+                .placeholder {
                     ProgressView()
                         .scaledToFit()
                         .frame(width: 96, height: 96)
                         .padding(.trailing, 5)
                 }
-            )
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 96, height: 96)
+                .cornerRadius(3.0)
+                .padding(.trailing, 5)
+            
             VStack(alignment: .leading, spacing: 0) {
                 Text(stream.trackTitle ?? "Unknown Song")
                     .fontWeight(.bold)

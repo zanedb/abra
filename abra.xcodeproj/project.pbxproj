@@ -27,6 +27,7 @@
 		2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC675622A3FACD200FD7638 /* SearchBar.swift */; };
 		2FD8448A2A2F076200B67301 /* Shazam.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD844892A2F076200B67301 /* Shazam.swift */; };
 		2FE766D22A30515E00952513 /* SongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE766D12A30515E00952513 /* SongRow.swift */; };
+		2FED7C172A4402AD00FF3943 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2FED7C162A4402AD00FF3943 /* SDWebImageSwiftUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -86,6 +87,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2FED7C172A4402AD00FF3943 /* SDWebImageSwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -202,6 +204,9 @@
 			dependencies = (
 			);
 			name = abra;
+			packageProductDependencies = (
+				2FED7C162A4402AD00FF3943 /* SDWebImageSwiftUI */,
+			);
 			productName = abra;
 			productReference = 2F60936C2A2EDFB30092A6DD /* abra.app */;
 			productType = "com.apple.product-type.application";
@@ -274,6 +279,9 @@
 				Base,
 			);
 			mainGroup = 2F6093632A2EDFB30092A6DD;
+			packageReferences = (
+				2FED7C152A4402AC00FF3943 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
+			);
 			productRefGroup = 2F60936D2A2EDFB30092A6DD /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -671,6 +679,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2FED7C152A4402AC00FF3943 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2FED7C162A4402AD00FF3943 /* SDWebImageSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2FED7C152A4402AC00FF3943 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;
+			productName = SDWebImageSwiftUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
 		2F60937A2A2EDFB50092A6DD /* abra.xcdatamodeld */ = {
