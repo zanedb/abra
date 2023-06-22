@@ -15,7 +15,12 @@ extension SStream: MKAnnotation {
     }
 }
 
+
+// TODO: create .artwork property that returns artwork view
+
 extension SStream {
+    
+    
     static var example: SStream {
         let viewContext: NSManagedObjectContext = PersistenceController.preview.container.viewContext
         let newItem = SStream(context: viewContext)
@@ -36,7 +41,7 @@ extension SStream {
         newItem.artworkURL = URL(string: "https://hws.dev/paul.jpg")
         newItem.isrc = ""
         newItem.shazamID = ""
-        newItem.appleMusicID = ""
+        newItem.appleMusicID = "1524651367"
         newItem.appleMusicURL = URL(string: "https://music.apple.com/us/album/kiss-of-life/1524651367?i=1524651852&itscg=30201&itsct=bglsk")
         
         return newItem
