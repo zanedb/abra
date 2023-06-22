@@ -3,6 +3,7 @@
 //  abra
 //
 //  Created by Zane on 6/5/23.
+//  original credit: https://www.andyibanez.com/posts/using-corelocation-with-swiftui/
 //
 
 import Foundation
@@ -10,9 +11,10 @@ import CoreLocation
 import MapKit
 
 class Location: NSObject, ObservableObject, CLLocationManagerDelegate {
+    static let shared = Location() // not sure this is the best way to handle this
+    
     @Published var authorizationStatus: CLAuthorizationStatus
-    @Published var region = MKCoordinateRegion()
-    @Published var lastSeen: CLLocation?
+    @Published var lastSeenLocation: CLLocation?
     @Published var currentPlacemark: CLPlacemark?
     
     private let locationManager: CLLocationManager
@@ -24,8 +26,7 @@ class Location: NSObject, ObservableObject, CLLocationManagerDelegate {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
+        //locationManager.startUpdatingLocation()
     }
     
     func requestPermission() {
@@ -36,20 +37,16 @@ class Location: NSObject, ObservableObject, CLLocationManagerDelegate {
         authorizationStatus = manager.authorizationStatus
     }
     
-    
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        lastSeen = locations.first
-        fetchPlacemark(for: lastSeen)
-        
-        locations.last.map {
-            region = MKCoordinateRegion(
-                center: CLLocationCoordinate2D(latitude: $0.coordinate.latitude, longitude: $0.coordinate.longitude),
-                span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
-            )
-        }
+    func requestLocation() {
+        locationManager.requestLocation()
     }
     
-    func fetchPlacemark(for location: CLLocation?) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        lastSeenLocation = locations.first
+        fetchCountryAndCity(for: lastSeenLocation)
+    }
+    
+    func fetchCountryAndCity(for location: CLLocation?) {
         guard let location = location else { return }
         let geocoder = CLGeocoder()
         geocoder.reverseGeocodeLocation(location) { (placemarks, error) in
@@ -59,12 +56,7 @@ class Location: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         // todo handle this
+        print("locationManager ERROR! bongo! bongO!")
         print(error.localizedDescription)
     }
-}
-
-struct LocationController {
-    static let shared = LocationController()
-    
-    let loc = Location()
 }
