@@ -20,7 +20,7 @@ struct ContentView: View {
     @State private var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 37.3316876, longitude: -122.0327261), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
     
     @State private var sheetPresented: Bool = true
-    @State private var sheetContentHeight = CGFloat(0)
+    @State private var selectedDetent: PresentationDetent = .fraction(0.50)
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \SStream.timestamp, ascending: false)],
@@ -32,16 +32,12 @@ struct ContentView: View {
             UIKitMapView(region: region, streams: Array(streams), userTrackingMode: $userTrackingMode)
                 .edgesIgnoringSafeArea(.all)
                 .sheet(isPresented: $sheetPresented) {
-                    UISheet {
-                        SheetView(streams: Array(streams), shazam: shazam)
-                            .padding(.top, 18)
-                    }
+                    SheetView(streams: streams, shazam: shazam, detent: $selectedDetent, onSongTapped: updateCenter)
+                        .environmentObject(locationViewModel)
+                        .padding(.top, 4)
+                        .presentationDetents([.height(65), .fraction(0.50), .large], largestUndimmed: .large, selection: $selectedDetent)
                         .interactiveDismissDisabled()
                         .ignoresSafeArea()
-                        .readSize { newSize in
-                            sheetContentHeight = newSize.height
-                            print(sheetContentHeight) // TODO: hide elements on small content height
-                        }
                 }
 
             HStack(alignment: .top) {
