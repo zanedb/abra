@@ -13,11 +13,11 @@ struct SearchBar: View {
     
     var prompt: String = "Search…"
     @Binding var search: String
+    @FocusState var focused: Bool
     @ObservedObject var shazam: Shazam
-    @FocusState private var focused: Bool
     
     var body: some View {
-        HStack {
+        HStack(alignment: .center) {
             TextField(prompt, text: $search, prompt:
                 Text(prompt)
                     .foregroundColor(.gray)
@@ -51,10 +51,13 @@ struct SearchBar: View {
                     self.search = ""
                 }) {
                     Text("Cancel")
+                        .font(.system(size:18))
                 }
                     .padding(.leading, 3)
-                    //.transition(.move(edge: .trailing))
-                    //.animation(.default)
+                    .transition(.asymmetric(
+                        insertion: .opacity.animation(.easeInOut(duration: 0.2)),
+                        removal: .opacity.animation(.easeInOut(duration: 0.1))
+                    ))
             } else {
                 ShazamButton(
                     searching: shazam.searching,
@@ -63,9 +66,13 @@ struct SearchBar: View {
                     size: 36
                 )
                     .padding(.leading, -3)
+                    .transition(.asymmetric(
+                        insertion: .opacity.animation(.easeInOut(duration: 0.15)),
+                        removal: .opacity.animation(.easeInOut(duration: 0.001))
+                    ))
             }
         }
-        .padding(.bottom, 1)
+            .padding(.top, focused ? 3.2 : 0)
     }
 }
 
@@ -74,7 +81,7 @@ struct SearchBar_Previews: PreviewProvider {
     
     static var previews: some View {
         NavigationStack {
-            SearchBar(search: .constant(""), shazam: Shazam())
+            SearchBar(search: .constant(""), focused: FocusState(), shazam: Shazam())
                 .padding()
             List {
                 

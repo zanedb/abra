@@ -36,26 +36,23 @@ struct SongSheet: View {
                     Text(stream.trackTitle ?? "Loading…")
                         .fontWeight(.bold)
                         .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.80) : Color.black.opacity(0.80))
-                        .font(.system(size: 20))
-                        .padding(.bottom, 3)
+                        .font(.system(size: 18))
+                        .padding(.bottom, 2)
                     Text(stream.artist ?? "…")
                         .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.60) : Color.black.opacity(0.60))
-                        .font(.system(size: 17))
-                        .padding(.bottom, 3)
-                    //                        Text(selectedPlace!.timestamp.formatted(.dateTime.day().month().hour().minute())) // fix
-                    //                            .foregroundColor(Color.gray)
-                    //                            .font(.system(size: 13))
-                    Text((stream.city ?? "…") + ", " + (stream.country ?? "…"))
-                        .foregroundColor(Color.gray)
                         .font(.system(size: 15))
-                    Spacer()
+                        .padding(.bottom, 3)
+                    Text(stream.timestamp!.formatted(.dateTime.hour().minute()) + ", " + (stream.city ?? "a strange land"))
+                        .foregroundColor(Color.gray)
+                        .font(.system(size: 13))
                     
                     Spacer()
                     
                     PlayButton(appleMusicID: stream.appleMusicID!)
                 }
             }
-            .frame(height: 148)
+            .frame(height: 96)
+            .frame(minWidth: 100, maxWidth: 300)
         }
     }
 }
