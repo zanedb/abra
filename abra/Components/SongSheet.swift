@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import MusicKit
 import SDWebImageSwiftUI
 
 struct SongSheet: View {
@@ -51,10 +50,9 @@ struct SongSheet: View {
                         .font(.system(size: 15))
                     Spacer()
                     
-                    Button(action: { music.play(id: stream.appleMusicID!)}) {
-                        Label("Listen", systemImage: "play.fill")
-                    }
                     Spacer()
+                    
+                    PlayButton(appleMusicID: stream.appleMusicID!)
                 }
             }
             .frame(height: 148)
