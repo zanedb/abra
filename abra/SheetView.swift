@@ -11,7 +11,8 @@ struct SheetView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @State var search: String = ""
-    @State var streams: [SStream]
+    var streams: FetchedResults<SStream>
+    
     @ObservedObject var shazam: Shazam
     
     var searchResults: [SStream] {
