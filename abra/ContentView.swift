@@ -12,12 +12,11 @@ import MusicKit
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @StateObject var locationViewModel = Location()
 
     @ObservedObject private var shazam = Shazam()
+    @ObservedObject var mapViewModel = MapViewModel()
     @StateObject var music = MusicController.shared.music
-    
-    @State private var userTrackingMode: MKUserTrackingMode = .none
-    @State private var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 37.3316876, longitude: -122.0327261), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
     
     @State private var sheetPresented: Bool = true
     @State private var selectedDetent: PresentationDetent = .fraction(0.50)
@@ -29,8 +28,9 @@ struct ContentView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            UIKitMapView(region: region, streams: Array(streams), userTrackingMode: $userTrackingMode)
+            UIKitMapView(streams: streams)
                 .edgesIgnoringSafeArea(.all)
+                .environmentObject(mapViewModel)
                 .sheet(isPresented: $sheetPresented) {
                     SheetView(streams: streams, shazam: shazam, detent: $selectedDetent, onSongTapped: updateCenter)
                         .environmentObject(locationViewModel)
@@ -39,12 +39,18 @@ struct ContentView: View {
                         .interactiveDismissDisabled()
                         .ignoresSafeArea()
                 }
+                // TODO: after launch, jump to user's loc
+                .onAppear {
+                     mapViewModel.locateUserButtonPressed.toggle() // MARK: this doesn't work.
+                }
 
             HStack(alignment: .top) {
                 Spacer()
                 VStack {
-                    Button(action: { userTrackingMode = userTrackingMode == .follow ? .none : .follow }) {
-                        Image(systemName: userTrackingMode == .follow ? "location.fill" : "location")
+                    Button(action: {
+                        mapViewModel.locateUserButtonPressed.toggle()
+                    }) {
+                        Image(systemName: "location")
                             .font(.system(size: 20))
                     }
                         .frame(width: 44, height: 44)
@@ -58,6 +64,17 @@ struct ContentView: View {
                     .shadow(color: Color.primary.opacity(0.10), radius: 5, x: 0, y: 2)
             }.padding(.trailing)
         }
+        .onAppear {
+            // TODO: prompt first time users.. maybe?
+            // TODO: handle no location perms
+            locationViewModel.requestPermission()
+        }
+    }
+    
+    // MARK: this is called when a song is tapped in SongList, moves the map to it
+    private func updateCenter(_ stream: SStream) {
+        let coord = CLLocationCoordinate2D(latitude: stream.latitude, longitude: stream.longitude)
+        mapViewModel.center = coord
     }
 }
 

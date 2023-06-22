@@ -8,21 +8,43 @@
 import SwiftUI
 import MapKit
 import CoreData
+import CoreLocation
+import Combine
+
+enum MapDefaults {
+    static let coordinate = CLLocationCoordinate2D(latitude: 37.3316876, longitude: -122.0327261)
+    static let span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+}
+
+class MapViewModel: ObservableObject {
+    @Published var center: CLLocationCoordinate2D = MapDefaults.coordinate
+    @Published var region: MKCoordinateRegion = MKCoordinateRegion(center: MapDefaults.coordinate, span: MapDefaults.span)
+    @Published var locateUserButtonPressed = false
+    
+    var centerCancellable: AnyCancellable?
+    var locateUserButtonCancellable: AnyCancellable?
+}
 
 struct UIKitMapView: UIViewRepresentable {
-    let region: MKCoordinateRegion
-    let streams: [SStream]
-    let userTrackingMode: Binding<MKUserTrackingMode>
+    var streams: FetchedResults<SStream>
+    @EnvironmentObject private var vm: MapViewModel
     
     class Coordinator: NSObject, MKMapViewDelegate {
+        var parent: UIKitMapView
+                
+        init(_ parent: UIKitMapView) {
+            self.parent = parent
+        }
+        
+        func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {}
+        
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             guard let stream = annotation as? SStream else { return nil }
             
             let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "stream") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "stream")
             
             annotationView.canShowCallout = true
-            annotationView.glyphText = "🎵"
-            annotationView.markerTintColor = .systemBlue
+            annotationView.glyphImage = UIImage(systemName: "music.note")?.withTintColor(.systemRed)
             annotationView.titleVisibility = .visible
             annotationView.detailCalloutAccessoryView = MapCalloutView(rootView: AnyView(SongSheet(stream: stream)))
             
@@ -31,27 +53,56 @@ struct UIKitMapView: UIViewRepresentable {
     }
     
     func makeCoordinator() -> Coordinator {
-        return Coordinator()
+        return Coordinator(self)
     }
     
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
-        mapView.setRegion(region, animated: true)
-        mapView.showsUserLocation = true // TODO: check for permissions first
+        
+        mapView.setRegion(vm.region, animated: true)
+        mapView.showsUserLocation = true
         mapView.isRotateEnabled = false
         mapView.delegate = context.coordinator
-        mapView.addAnnotations(streams)
+        mapView.addAnnotations(Array(streams)) // TODO: fix MapView not updating pins bc i'm passing in an Array
+        
+        // MARK: subscribe to updates on locateUserButton
+        vm.locateUserButtonCancellable = vm.$locateUserButtonPressed.sink(receiveValue: { _ in
+            if let userLocation = mapView.annotations.first(where: { $0 is MKUserLocation }) {
+                // TODO: only adjust for bottomBar if detent is NOT PresentationDetent.height(65)
+                mapView.setCenter(adjustForBottomBar(userLocation.coordinate, mapView), animated: true)
+            }
+        })
+        
+        // MARK: subscribe to updates on center
+        vm.centerCancellable = vm.$center.sink(receiveValue: { newCenter in
+            print(newCenter.latitude, newCenter.longitude)
+            mapView.setCenter(adjustForBottomBar(newCenter, mapView), animated: true)
+        })
+        
         return mapView
     }
     
-    func updateUIView(_ uiView: MKMapView, context: Context) {
-        if uiView.userTrackingMode != userTrackingMode.wrappedValue {
-            uiView.setUserTrackingMode(userTrackingMode.wrappedValue, animated: true)
-        }
+    func updateUIView(_ mapView: MKMapView, context: Context) {}
+    
+    // MARK: why does this kind of work???? (https://stackoverflow.com/a/48350698)
+    private func adjustForBottomBar(_ coord: CLLocationCoordinate2D, _ mapView: MKMapView) -> CLLocationCoordinate2D {
+        guard (coord != MapDefaults.coordinate) else { return coord }
+        
+        var newCoord = coord
+        newCoord.latitude -= (mapView.region.span.latitudeDelta * 0.25)
+        return newCoord
     }
     
     typealias UIViewType = MKMapView
     
+}
+
+// safe comparison between two CLLocationCoordinate2D structs
+// https://stackoverflow.com/a/10199213
+extension CLLocationCoordinate2D: Equatable {
+    static public func ==(lhs: Self, rhs: Self) -> Bool {
+        fabs(lhs.latitude - rhs.latitude) <= 0.005 && fabs(lhs.longitude - rhs.longitude) <= 0.005
+    }
 }
 
 /**
