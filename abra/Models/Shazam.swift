@@ -17,7 +17,7 @@ class Shazam: NSObject, ObservableObject, SHSessionDelegate {
     @Published var searching = false
     
     private var viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext
-    private var locationController = LocationController.shared
+    private var location: Location = Location.shared
     
     private let session = SHSession()
     private let audioEngine = AVAudioEngine()
@@ -48,6 +48,9 @@ class Shazam: NSObject, ObservableObject, SHSessionDelegate {
     }
     
     public func startRecognition() {
+        // we'll need this soon
+        location.requestLocation()
+        
         do {
             if audioEngine.isRunning {
                 stopRecognition()
@@ -85,19 +88,19 @@ class Shazam: NSObject, ObservableObject, SHSessionDelegate {
         
         newItem.timestamp = Date()
         
-        if (locationController.loc.authorizationStatus != .authorizedWhenInUse) {
+        if (location.authorizationStatus != .authorizedWhenInUse) {
             // todo handle
             print("LOCATION NOT AUTHORIZED")
         }
         
-        newItem.latitude = locationController.loc.lastSeen?.coordinate.latitude ?? 0
-        newItem.longitude = locationController.loc.lastSeen?.coordinate.longitude ?? 0
-        newItem.altitude = locationController.loc.lastSeen?.altitude ?? 0
-        newItem.speed = locationController.loc.lastSeen?.speed ?? 0
-        newItem.state = locationController.loc.currentPlacemark?.administrativeArea ?? ""
-        newItem.city = locationController.loc.currentPlacemark?.locality ?? ""
-        newItem.country = locationController.loc.currentPlacemark?.country ?? ""
-        newItem.countryCode = locationController.loc.currentPlacemark?.isoCountryCode ?? ""
+        newItem.latitude = location.lastSeenLocation?.coordinate.latitude ?? 0
+        newItem.longitude = location.lastSeenLocation?.coordinate.longitude ?? 0
+        newItem.altitude = location.lastSeenLocation?.altitude ?? 0
+        newItem.speed = location.lastSeenLocation?.speed ?? 0
+        newItem.state = location.currentPlacemark?.administrativeArea ?? ""
+        newItem.city = location.currentPlacemark?.locality ?? ""
+        newItem.country = location.currentPlacemark?.country ?? ""
+        newItem.countryCode = location.currentPlacemark?.isoCountryCode ?? ""
         
         newItem.artist = mediaItem.artist
         newItem.trackTitle = mediaItem.title
