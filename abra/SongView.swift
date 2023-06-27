@@ -54,6 +54,49 @@ struct SongView: View {
                 }
                 .fixedSize(horizontal: false, vertical: true)
                 
+                
+                Text("Details")
+                    .font(.headline)
+                    .padding(.top)
+                GroupBox {
+                    HStack(spacing: 0) {
+                        VStack(alignment: .leading) {
+                            Text("City")
+                                .font(.subheadline)
+                            Text(stream.city ?? "?")
+                                .font(.title2)
+                        }
+                        Spacer()
+                        VStack(alignment: .leading) {
+                            Text("Country")
+                                .font(.subheadline)
+                            Text(stream.country ?? "?")
+                                .font(.title2)
+                        }
+                        Spacer()
+                    }
+                    .padding(.bottom)
+                    HStack(spacing: 0) {
+                        VStack(alignment: .leading) {
+                            Text("Speed")
+                                .font(.subheadline)
+                            Text(String(stream.speed))
+                                .font(.title2)
+                        }
+                        Spacer()
+                        VStack(alignment: .leading) {
+                            Text("Altitude")
+                                .font(.subheadline)
+                            Text(String(stream.altitude))
+                                .font(.title2)
+                        }
+                        Spacer()
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, 5)
+                
+                /*
                 Map(
                     coordinateRegion: .constant(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: stream.latitude, longitude: stream.longitude), span: MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001))),
                     annotationItems: [stream]
@@ -63,6 +106,7 @@ struct SongView: View {
                 .frame(maxHeight: 200)
                 .cornerRadius(5)
                 .padding(.vertical)
+                 */
                 
                 Spacer()
             }
