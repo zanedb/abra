@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct SheetView: View {
+    @Environment(\.selectedDetent) private var selectedDetent
+    
     @State var search: String = ""
     var streams: FetchedResults<SStream>
     
     @ObservedObject var shazam: Shazam
-    @Binding var detent: PresentationDetent
     @FocusState var focused: Bool
     
     var onSongTapped: (SStream) -> ()
@@ -22,9 +23,9 @@ struct SheetView: View {
             VStack {
                 SearchBar(prompt: "Search Shazams…", search: $search, focused: _focused, shazam: shazam)
                     .padding(.horizontal)
-                    .padding(.top, (detent != PresentationDetent.height(65) || focused) ? 14 : 0)
+                    .padding(.top, (selectedDetent != PresentationDetent.height(65) || focused) ? 14 : 0)
                 
-                if (detent != PresentationDetent.height(65) || focused) {
+                if (selectedDetent != PresentationDetent.height(65) || focused) {
                     VStack(spacing: 0) {
                         if (!search.isEmpty && streams.isEmpty) {
                             NoResults()
@@ -40,9 +41,9 @@ struct SheetView: View {
                             }
                             .padding(.horizontal)
                             .padding(.top, 15)
+                            
+                            SongList(streams: streams, onSongTapped: onSongTapped)
                         }
-                        
-                        SongList(streams: streams, detent: $detent, onSongTapped: onSongTapped)
                     }
                     .transition(.asymmetric(
                         insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
@@ -164,6 +165,6 @@ struct SongList: View {
 struct SheetView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
-            .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+            //.environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
 }

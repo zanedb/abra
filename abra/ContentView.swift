@@ -10,6 +10,17 @@ import CoreLocation
 import MapKit
 import MusicKit
 
+private struct DetentKey: EnvironmentKey {
+    static let defaultValue: PresentationDetent = .fraction(0.50)
+}
+
+extension EnvironmentValues {
+    var selectedDetent: PresentationDetent {
+        get { self[DetentKey.self] }
+        set { self[DetentKey.self] = newValue }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject var locationViewModel = Location()
@@ -17,8 +28,6 @@ struct ContentView: View {
     @ObservedObject private var shazam = Shazam()
     @ObservedObject var mapViewModel = MapViewModel()
     @StateObject var music = MusicController.shared.music
-    
-    @State private var sheetPresented: Bool = true
     @State private var selectedDetent: PresentationDetent = .fraction(0.50)
     
     @FetchRequest(
@@ -31,9 +40,10 @@ struct ContentView: View {
             UIKitMapView(streams: streams)
                 .edgesIgnoringSafeArea(.all)
                 .environmentObject(mapViewModel)
-                .sheet(isPresented: $sheetPresented) {
-                    SheetView(streams: streams, shazam: shazam, detent: $selectedDetent, onSongTapped: updateCenter)
                         .environmentObject(locationViewModel)
+                .sheet(isPresented: .constant(true)) {
+                    SheetView(places: places, streams: streams, onSongTapped: updateCenter)
+                        .environment(\.selectedDetent, selectedDetent)
                         .padding(.top, 4)
                         .presentationDetents([.height(65), .fraction(0.50), .large], largestUndimmed: .large, selection: $selectedDetent)
                         .interactiveDismissDisabled()
