@@ -11,12 +11,12 @@ import SDWebImageSwiftUI
 
 struct SongView: View {
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.selectedDetent) private var selectedDetent
     
     var stream: SStream
-    @Binding var detent: PresentationDetent
     
     var body: some View {
-        if (detent != PresentationDetent.height(65)) {
+        if (selectedDetent != PresentationDetent.height(65)) {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .top) {
                     WebImage(url: stream.artworkURL)
@@ -79,6 +79,6 @@ struct SongView: View {
 
 struct SongView_Previews: PreviewProvider {
     static var previews: some View {
-        SongView(stream: SStream.example, detent: .constant(PresentationDetent.fraction(0.50)))
+        SongView(stream: SStream.example)
     }
 }
