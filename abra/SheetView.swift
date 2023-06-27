@@ -11,6 +11,7 @@ struct SheetView: View {
     @Environment(\.selectedDetent) private var selectedDetent
     
     @State var search: String = ""
+    var places: FetchedResults<Place>
     var streams: FetchedResults<SStream>
     
     @EnvironmentObject var shazam: Shazam
@@ -30,6 +31,14 @@ struct SheetView: View {
                         if (!search.isEmpty && streams.isEmpty) {
                             NoResults()
                         } else {
+                            if (search.isEmpty) { // MARK: temp remove places in search results bc they're useless!
+                                PlacesList(/*places: places*/)
+                                    .transition(.asymmetric(
+                                        insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
+                                        removal: .opacity.animation(.easeInOut(duration: 0.15)))
+                                    )
+                            }
+                            
                             HStack(spacing: 0) {
                                 Text(search.isEmpty ? "Recent Shazams" : "Search Results")
                                     .foregroundColor(.gray)

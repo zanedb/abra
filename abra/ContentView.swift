@@ -35,6 +35,11 @@ struct ContentView: View {
         animation: .default)
     private var streams: FetchedResults<SStream>
     
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Place.updatedAt, ascending: false)],
+        animation: .default)
+    private var places: FetchedResults<Place>
+    
     var body: some View {
         ZStack(alignment: .top) {
             UIKitMapView(streams: streams)
