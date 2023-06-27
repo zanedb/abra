@@ -51,7 +51,7 @@ struct SearchBar: View {
                     self.search = ""
                 }) {
                     Text("Cancel")
-                        .font(.system(size:18))
+                        .font(.system(size: 17))
                 }
                     .padding(.leading, 3)
                     .transition(.asymmetric(

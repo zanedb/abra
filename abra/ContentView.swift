@@ -79,9 +79,10 @@ struct ContentView: View {
                         mapViewModel.locateUserButtonPressed.toggle()
                     }) {
                         Image(systemName: "location")
-                            .font(.system(size: 20))
+                            .font(.system(size: 18))
+                            .foregroundColor(.primary.opacity(0.60))
                     }
-                        .frame(width: 44, height: 44)
+                        .frame(width: 42, height: 42)
                         .background(.ultraThickMaterial)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
@@ -89,8 +90,8 @@ struct ContentView: View {
                         )
                         .cornerRadius(8)
                 }
-                    .shadow(color: Color.primary.opacity(0.10), radius: 5, x: 0, y: 2)
-            }.padding(.trailing)
+                    .shadow(color: Color.black.opacity(0.10), radius: 5, x: 0, y: 2)
+            }.padding(.trailing, 10)
         }
         .onAppear {
             // TODO: prompt first time users.. maybe?
