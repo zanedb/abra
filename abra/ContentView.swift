@@ -48,6 +48,24 @@ struct ContentView: View {
                         .presentationDetents([.height(65), .fraction(0.50), .large], largestUndimmed: .large, selection: $selectedDetent)
                         .interactiveDismissDisabled()
                         .ignoresSafeArea()
+                        .sheet(isPresented: $shazam.searching) {
+                            Searching()
+                                .presentationDetents([.fraction(0.50)]/*, largestUndimmed: .large*/)
+                                .interactiveDismissDisabled()
+                                .presentationDragIndicator(.hidden)
+                                .overlay(
+                                    Button { shazam.stopRecognition() } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.gray)
+                                            .font(.system(size: 36))
+                                            .symbolRenderingMode(.hierarchical)
+                                            .padding(.vertical)
+                                            .padding(.trailing, -5)
+                                    },
+                                    alignment: .topTrailing
+                                )
+                            
+                        }
                 }
                 // TODO: after launch, jump to user's loc
                 .onAppear {
@@ -79,6 +97,22 @@ struct ContentView: View {
             // TODO: handle no location perms
             locationViewModel.requestPermission()
         }
+        // MARK: this is a workaround to track taps outside of Searching() sheet and dismiss
+        // it works, except the rectangle can't dim the primary bottom sheet
+        // perhaps a custom detents modifier is in order..
+        // or apple could just get their shit together! this is a common use case! it's in your damn apps!
+        /*.overlay(
+            shazam.searching ?
+                Rectangle()
+                    .opacity(0.15)
+                    .transition(.opacity.animation(.easeInOut(duration: 0.1)))
+                    .contentShape(Rectangle())
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        shazam.stopRecognition()
+                    }
+                : nil
+        )*/
     }
     
     // MARK: this is called when a song is tapped in SongList, moves the map to it
