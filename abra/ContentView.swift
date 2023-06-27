@@ -40,9 +40,9 @@ struct ContentView: View {
             UIKitMapView(streams: streams)
                 .edgesIgnoringSafeArea(.all)
                 .environmentObject(mapViewModel)
-                        .environmentObject(locationViewModel)
                 .sheet(isPresented: .constant(true)) {
                     SheetView(places: places, streams: streams, onSongTapped: updateCenter)
+                        .environmentObject(shazam)
                         .environment(\.selectedDetent, selectedDetent)
                         .padding(.top, 4)
                         .presentationDetents([.height(65), .fraction(0.50), .large], largestUndimmed: .large, selection: $selectedDetent)

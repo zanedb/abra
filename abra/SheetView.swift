@@ -13,7 +13,7 @@ struct SheetView: View {
     @State var search: String = ""
     var streams: FetchedResults<SStream>
     
-    @ObservedObject var shazam: Shazam
+    @EnvironmentObject var shazam: Shazam
     @FocusState var focused: Bool
     
     var onSongTapped: (SStream) -> ()
@@ -21,7 +21,7 @@ struct SheetView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                SearchBar(prompt: "Search Shazams…", search: $search, focused: _focused, shazam: shazam)
+                SearchBar(prompt: "Search Shazams…", search: $search, focused: _focused)
                     .padding(.horizontal)
                     .padding(.top, (selectedDetent != PresentationDetent.height(65) || focused) ? 14 : 0)
                 

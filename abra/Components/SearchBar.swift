@@ -14,7 +14,7 @@ struct SearchBar: View {
     var prompt: String = "Search…"
     @Binding var search: String
     @FocusState var focused: Bool
-    @ObservedObject var shazam: Shazam
+    @EnvironmentObject var shazam: Shazam
     
     var body: some View {
         HStack(alignment: .center) {
@@ -79,8 +79,9 @@ struct SearchBar_Previews: PreviewProvider {
     
     static var previews: some View {
         NavigationStack {
-            SearchBar(search: .constant(""), focused: FocusState(), shazam: Shazam())
+            SearchBar(search: .constant(""), focused: FocusState())
                 .padding()
+                .environmentObject(Shazam())
             List {
                 
             }
