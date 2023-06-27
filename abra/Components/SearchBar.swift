@@ -59,17 +59,15 @@ struct SearchBar: View {
                         removal: .opacity.animation(.easeInOut(duration: 0.1))
                     ))
             } else {
-                ShazamButton(
-                    searching: shazam.searching,
-                    start: { shazam.startRecognition() },
-                    stop: { shazam.stopRecognition() },
-                    size: 36
-                )
+                Button(action: { shazam.startRecognition() }) {
+                    Image(systemName: "shazam.logo.fill")
+                        .symbolRenderingMode(.multicolor)
+                        .tint(.blue)
+                        .fontWeight(.medium)
+                        .font(.system(size: 36))
+                        .cornerRadius(100)
+                }
                     .padding(.leading, -3)
-                    .transition(.asymmetric(
-                        insertion: .opacity.animation(.easeInOut(duration: 0.15)),
-                        removal: .opacity.animation(.easeInOut(duration: 0.001))
-                    ))
             }
         }
             .padding(.top, focused ? 3.2 : 0)
