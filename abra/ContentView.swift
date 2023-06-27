@@ -69,13 +69,15 @@ struct ContentView: View {
                 }
                 // TODO: after launch, jump to user's loc
                 .onAppear {
-                     mapViewModel.locateUserButtonPressed.toggle() // MARK: this doesn't work.
+                    mapViewModel.selectedDetent = selectedDetent
+                    mapViewModel.locateUserButtonPressed.toggle() // MARK: this doesn't work.
                 }
 
             HStack(alignment: .top) {
                 Spacer()
                 VStack {
                     Button(action: {
+                        mapViewModel.selectedDetent = selectedDetent // MARK: should this maybe update somewhere else ????
                         mapViewModel.locateUserButtonPressed.toggle()
                     }) {
                         Image(systemName: "location")
@@ -119,6 +121,8 @@ struct ContentView: View {
     // MARK: this is called when a song is tapped in SongList, moves the map to it
     private func updateCenter(_ stream: SStream) {
         let coord = CLLocationCoordinate2D(latitude: stream.latitude, longitude: stream.longitude)
+        
+        mapViewModel.selectedDetent = selectedDetent
         mapViewModel.center = coord
     }
 }

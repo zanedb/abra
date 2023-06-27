@@ -20,6 +20,7 @@ class MapViewModel: ObservableObject {
     @Published var center: CLLocationCoordinate2D = MapDefaults.coordinate
     @Published var region: MKCoordinateRegion = MKCoordinateRegion(center: MapDefaults.coordinate, span: MapDefaults.span)
     @Published var locateUserButtonPressed = false
+    @Published var selectedDetent: PresentationDetent = PresentationDetent.fraction(0.5)
     
     var centerCancellable: AnyCancellable?
     var locateUserButtonCancellable: AnyCancellable?
@@ -87,6 +88,7 @@ struct UIKitMapView: UIViewRepresentable {
     // MARK: why does this kind of work???? (https://stackoverflow.com/a/48350698)
     private func adjustForBottomBar(_ coord: CLLocationCoordinate2D, _ mapView: MKMapView) -> CLLocationCoordinate2D {
         guard (coord != MapDefaults.coordinate) else { return coord }
+        guard (vm.selectedDetent != PresentationDetent.height(65.0)) else { return coord } // if sheet is at bottom, don't adjust for bar
         
         var newCoord = coord
         newCoord.latitude -= (mapView.region.span.latitudeDelta * 0.25)
