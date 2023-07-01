@@ -67,27 +67,14 @@ struct ContentView: View {
                     mapViewModel.locateUserButtonPressed.toggle() // MARK: this doesn't work.
                 }
 
+            
             HStack(alignment: .top) {
                 Spacer()
-                VStack {
-                    Button(action: {
-                        mapViewModel.selectedDetent = selectedDetent // MARK: should this maybe update somewhere else ????
-                        mapViewModel.locateUserButtonPressed.toggle()
-                    }) {
-                        Image(systemName: "location")
-                            .font(.system(size: 18))
-                            .foregroundColor(.primary.opacity(0.60))
-                    }
-                        .frame(width: 42, height: 42)
-                        .background(.ultraThickMaterial)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.primary.opacity(0.10))
-                        )
-                        .cornerRadius(8)
-                }
-                    .shadow(color: Color.black.opacity(0.10), radius: 5, x: 0, y: 2)
-            }.padding(.trailing, 10)
+                LocateButton()
+                    .environmentObject(mapViewModel)
+            }
+                .padding(.trailing, 10)
+        }
         }
         .onAppear {
             // TODO: prompt first time users.. maybe?
