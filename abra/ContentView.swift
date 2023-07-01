@@ -10,17 +10,6 @@ import CoreLocation
 import MapKit
 import MusicKit
 
-private struct DetentKey: EnvironmentKey {
-    static let defaultValue: PresentationDetent = .fraction(0.50)
-}
-
-extension EnvironmentValues {
-    var selectedDetent: PresentationDetent {
-        get { self[DetentKey.self] }
-        set { self[DetentKey.self] = newValue }
-    }
-}
-
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject var locationViewModel = Location()
