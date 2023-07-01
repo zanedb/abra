@@ -76,6 +76,17 @@ struct UIKitMapView: UIViewRepresentable {
         mapView.delegate = context.coordinator
         mapView.addAnnotations(Array(streams)) // TODO: fix MapView not updating pins bc i'm passing in an Array
         
+        // replace default compass so it doesn't overlap with locatebutton
+        mapView.showsCompass = false
+        let compass = MKCompassButton(mapView: mapView)
+        compass.frame.origin = CGPoint(x: 10, y: 56)//CGPoint(x: screen.size.width - 53, y: 106)
+        compass.compassVisibility = .adaptive
+        compass.layer.shadowColor = UIColor.black.cgColor
+        compass.layer.shadowOffset = CGSize(width: 0, height: 2)
+        compass.layer.shadowOpacity = 0.10
+        compass.layer.shadowRadius = 3.0
+        mapView.addSubview(compass)
+        
         // set user tracking mode on update
         vm.locateUserButtonCancellable = vm.$userTrackingMode.sink(receiveValue: { mode in
             mapView.setUserTrackingMode(mode, animated: true)
