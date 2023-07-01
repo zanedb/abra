@@ -19,7 +19,6 @@ struct ContentView: View {
     @ObservedObject private var shazam = Shazam()
     @ObservedObject var mapViewModel = MapViewModel()
     @StateObject var music = MusicController.shared.music
-    @State private var selectedDetent: PresentationDetent = .fraction(0.50)
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \SStream.timestamp, ascending: false)],
@@ -39,9 +38,15 @@ struct ContentView: View {
                 .sheet(isPresented: .constant(true)) {
                     SheetView(places: places, streams: streams, onSongTapped: updateCenter)
                         .environmentObject(shazam)
-                        .environment(\.selectedDetent, selectedDetent)
+                        .environment(\.selectedDetent, mapViewModel.selectedDetent)
                         .padding(.top, 4)
-                        .presentationDetents([.height(65), .fraction(0.50), .large], largestUndimmed: .large, selection: $selectedDetent)
+                        .readHeight() // track view height for map
+                        .onPreferenceChange(HeightPreferenceKey.self) { height in
+                            if let height {
+                                mapViewModel.detentHeight = height
+                            }
+                        }
+                        .presentationDetents([.height(65), .fraction(0.50), .large], largestUndimmed: .large, selection: $mapViewModel.selectedDetent)
                         .interactiveDismissDisabled()
                         .ignoresSafeArea()
                         .sheet(isPresented: $shazam.searching) {
@@ -60,13 +65,7 @@ struct ContentView: View {
                                     },
                                     alignment: .topTrailing
                                 )
-                            
                         }
-                }
-                // TODO: after launch, jump to user's loc
-                .onAppear {
-                    mapViewModel.selectedDetent = selectedDetent
-                    mapViewModel.locateUserButtonPressed.toggle() // MARK: this doesn't work.
                 }
 
             
@@ -110,8 +109,6 @@ struct ContentView: View {
     // MARK: this is called when a song is tapped in SongList, moves the map to it
     private func updateCenter(_ stream: SStream) {
         let coord = CLLocationCoordinate2D(latitude: stream.latitude, longitude: stream.longitude)
-        
-        mapViewModel.selectedDetent = selectedDetent
         mapViewModel.center = coord
     }
 }

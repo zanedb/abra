@@ -21,8 +21,10 @@ class MapViewModel: ObservableObject {
     @Published var region: MKCoordinateRegion = MKCoordinateRegion(center: MapDefaults.coordinate, span: MapDefaults.span)
     @Published var userTrackingMode: MKUserTrackingMode = .none
     @Published var selectedDetent: PresentationDetent = PresentationDetent.fraction(0.5)
+    @Published var detentHeight: CGFloat = 0
     
     var centerCancellable: AnyCancellable?
+    var detentCancellable: AnyCancellable?
     var locateUserButtonCancellable: AnyCancellable?
 }
 
@@ -66,6 +68,7 @@ struct UIKitMapView: UIViewRepresentable {
     
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
+        let screen = UIScreen.main.bounds
         
         mapView.setRegion(vm.region, animated: true)
         mapView.showsUserLocation = true
@@ -78,26 +81,28 @@ struct UIKitMapView: UIViewRepresentable {
             mapView.setUserTrackingMode(mode, animated: true)
         })
         
-        // MARK: subscribe to updates on center
+        // update map inset based on detent height
+        vm.detentCancellable = vm.$detentHeight.sink(receiveValue: { height in
+            if (vm.userTrackingMode == .follow) { vm.userTrackingMode = .none } // don't make ui jump
+            if (vm.userTrackingMode == .followWithHeading && height > ((1/2) * (screen.size.height))) { return } // stop after certain height
+            
+            mapView.layoutMargins = UIEdgeInsets(
+                top: 0,
+                left: 0,
+                bottom: height - 99,
+                right: 0
+            )
+        })
+        
+        // subscribe to updates on center
         vm.centerCancellable = vm.$center.sink(receiveValue: { newCenter in
-            print(newCenter.latitude, newCenter.longitude)
-            mapView.setCenter(adjustForBottomBar(newCenter, mapView), animated: true)
+            mapView.setCenter(newCenter, animated: true)
         })
         
         return mapView
     }
     
     func updateUIView(_ mapView: MKMapView, context: Context) {}
-    
-    // MARK: why does this kind of work???? (https://stackoverflow.com/a/48350698)
-    private func adjustForBottomBar(_ coord: CLLocationCoordinate2D, _ mapView: MKMapView) -> CLLocationCoordinate2D {
-        guard (coord != MapDefaults.coordinate) else { return coord }
-        guard (vm.selectedDetent != PresentationDetent.height(65.0)) else { return coord } // if sheet is at bottom, don't adjust for bar
-        
-        var newCoord = coord
-        newCoord.latitude -= (mapView.region.span.latitudeDelta * 0.25)
-        return newCoord
-    }
     
     typealias UIViewType = MKMapView
     
