@@ -72,7 +72,7 @@ struct UIKitMapView: UIViewRepresentable {
         
         mapView.setRegion(vm.region, animated: true)
         mapView.showsUserLocation = true
-        mapView.isRotateEnabled = false
+        mapView.isRotateEnabled = true
         mapView.delegate = context.coordinator
         mapView.addAnnotations(Array(streams)) // TODO: fix MapView not updating pins bc i'm passing in an Array
         
