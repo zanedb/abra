@@ -11,6 +11,8 @@ import MapKit
 import MusicKit
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
+    
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject var locationViewModel = Location()
 
@@ -75,6 +77,12 @@ struct ContentView: View {
             }
                 .padding(.trailing, 10)
         }
+        .onChange(of: scenePhase) { phase in
+            // MARK: on app close, save last active region to defaults, next launch opens there
+            if phase == .inactive {
+                UserDefaults.standard.set(mapViewModel.center.latitude, forKey: "LatCoord")
+                UserDefaults.standard.set(mapViewModel.center.longitude, forKey: "LongCoord")
+            }
         }
         .onAppear {
             // TODO: prompt first time users.. maybe?
