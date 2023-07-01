@@ -19,7 +19,7 @@ enum MapDefaults {
 class MapViewModel: ObservableObject {
     @Published var center: CLLocationCoordinate2D = MapDefaults.coordinate
     @Published var region: MKCoordinateRegion = MKCoordinateRegion(center: MapDefaults.coordinate, span: MapDefaults.span)
-    @Published var locateUserButtonPressed = false
+    @Published var userTrackingMode: MKUserTrackingMode = .none
     @Published var selectedDetent: PresentationDetent = PresentationDetent.fraction(0.5)
     
     var centerCancellable: AnyCancellable?
@@ -37,7 +37,14 @@ struct UIKitMapView: UIViewRepresentable {
             self.parent = parent
         }
         
-        func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {}
+        // TODO: locate user after map open
+        func mapViewDidStopLocatingUser(_ mapView: MKMapView) {}
+        
+        func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
+            if (mapView.userTrackingMode != parent.vm.userTrackingMode) {
+                parent.vm.userTrackingMode = mapView.userTrackingMode // keep view model variable up to date (there's gotta be a better way)
+            }
+        }
         
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             guard let stream = annotation as? SStream else { return nil }
@@ -66,12 +73,9 @@ struct UIKitMapView: UIViewRepresentable {
         mapView.delegate = context.coordinator
         mapView.addAnnotations(Array(streams)) // TODO: fix MapView not updating pins bc i'm passing in an Array
         
-        // MARK: subscribe to updates on locateUserButton
-        vm.locateUserButtonCancellable = vm.$locateUserButtonPressed.sink(receiveValue: { _ in
-            if let userLocation = mapView.annotations.first(where: { $0 is MKUserLocation }) {
-                // TODO: only adjust for bottomBar if detent is NOT PresentationDetent.height(65)
-                mapView.setCenter(adjustForBottomBar(userLocation.coordinate, mapView), animated: true)
-            }
+        // set user tracking mode on update
+        vm.locateUserButtonCancellable = vm.$userTrackingMode.sink(receiveValue: { mode in
+            mapView.setUserTrackingMode(mode, animated: true)
         })
         
         // MARK: subscribe to updates on center
