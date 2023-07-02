@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2F0547302A5165E3002177D4 /* MapAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F05472F2A5165E3002177D4 /* MapAnnotationView.swift */; };
+		2F0547322A51662D002177D4 /* MapClusterAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547312A51662D002177D4 /* MapClusterAnnotationView.swift */; };
+		2F0547342A5166E1002177D4 /* MapCalloutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547332A5166E1002177D4 /* MapCalloutView.swift */; };
+		2F0547372A5172A7002177D4 /* MapPin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547362A5172A7002177D4 /* MapPin.swift */; };
 		2F0F5DB72A3EB566005F1962 /* Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0F5DB62A3EB566005F1962 /* Stream.swift */; };
 		2F6093702A2EDFB30092A6DD /* abraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F60936F2A2EDFB30092A6DD /* abraApp.swift */; };
 		2F6093742A2EDFB50092A6DD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F6093732A2EDFB50092A6DD /* Assets.xcassets */; };
@@ -57,6 +61,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2F05472F2A5165E3002177D4 /* MapAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapAnnotationView.swift; sourceTree = "<group>"; };
+		2F0547312A51662D002177D4 /* MapClusterAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapClusterAnnotationView.swift; sourceTree = "<group>"; };
+		2F0547332A5166E1002177D4 /* MapCalloutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCalloutView.swift; sourceTree = "<group>"; };
+		2F0547362A5172A7002177D4 /* MapPin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapPin.swift; sourceTree = "<group>"; };
 		2F0F5DB62A3EB566005F1962 /* Stream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stream.swift; sourceTree = "<group>"; };
 		2F60936C2A2EDFB30092A6DD /* abra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = abra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F60936F2A2EDFB30092A6DD /* abraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = abraApp.swift; sourceTree = "<group>"; };
@@ -119,6 +127,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2F0547352A5166E6002177D4 /* Map */ = {
+			isa = PBXGroup;
+			children = (
+				2F05472F2A5165E3002177D4 /* MapAnnotationView.swift */,
+				2F0547312A51662D002177D4 /* MapClusterAnnotationView.swift */,
+				2F0547332A5166E1002177D4 /* MapCalloutView.swift */,
+				2F0547362A5172A7002177D4 /* MapPin.swift */,
+			);
+			path = Map;
+			sourceTree = "<group>";
+		};
 		2F6093632A2EDFB30092A6DD = {
 			isa = PBXGroup;
 			children = (
@@ -199,6 +218,7 @@
 		2FE766D02A30512400952513 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				2F0547352A5166E6002177D4 /* Map */,
 				2FED7C122A4063DF00FF3943 /* Detents */,
 				2FE766D12A30515E00952513 /* SongRow.swift */,
 				2FB9AF002A3193F5003C7A21 /* SongSheet.swift */,
@@ -375,10 +395,14 @@
 				2FB9AF012A3193F5003C7A21 /* SongSheet.swift in Sources */,
 				2FE766D22A30515E00952513 /* SongRow.swift in Sources */,
 				2F8919F02A4442BA0012DFF6 /* PlacesList.swift in Sources */,
+				2F0547372A5172A7002177D4 /* MapPin.swift in Sources */,
 				2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */,
 				2FED7C142A4063F100FF3943 /* PresentationDetentReference.swift in Sources */,
 				2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */,
+				2F0547322A51662D002177D4 /* MapClusterAnnotationView.swift in Sources */,
 				2F8E3F6B2A4FBF6B0020C261 /* LocateButton.swift in Sources */,
+				2F0547302A5165E3002177D4 /* MapAnnotationView.swift in Sources */,
+				2F0547342A5166E1002177D4 /* MapCalloutView.swift in Sources */,
 				2F6093A62A2EF1F70092A6DD /* Location.swift in Sources */,
 				2FED7C112A40639400FF3943 /* PresentationDetentsViewModifier.swift in Sources */,
 				2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */,
