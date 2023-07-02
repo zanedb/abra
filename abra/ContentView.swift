@@ -12,13 +12,13 @@ import MusicKit
 
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
-    
     @Environment(\.managedObjectContext) private var viewContext
-    @StateObject var locationViewModel = Location()
+    
+    @StateObject var location = Location()
+    @StateObject var music = MusicController.shared.music
 
     @ObservedObject private var shazam = Shazam()
     @ObservedObject var mapViewModel = MapViewModel()
-    @StateObject var music = MusicController.shared.music
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \SStream.timestamp, ascending: false)],
@@ -36,38 +36,8 @@ struct ContentView: View {
                 .edgesIgnoringSafeArea(.all)
                 .environmentObject(mapViewModel)
                 .sheet(isPresented: .constant(true)) {
-                    SheetView(places: places, streams: streams, onSongTapped: updateCenter)
-                        .environmentObject(shazam)
-                        .environment(\.selectedDetent, mapViewModel.selectedDetent)
-                        .padding(.top, 4)
-                        .readHeight() // track view height for map
-                        .onPreferenceChange(HeightPreferenceKey.self) { height in
-                            if let height {
-                                mapViewModel.detentHeight = height
-                            }
-                        }
-                        .presentationDetents([.height(65), .fraction(0.50), .large], largestUndimmed: .large, selection: $mapViewModel.selectedDetent)
-                        .interactiveDismissDisabled()
-                        .ignoresSafeArea()
-                        .sheet(isPresented: $shazam.searching) {
-                            Searching()
-                                .presentationDetents([.fraction(0.50)]/*, largestUndimmed: .large*/)
-                                .interactiveDismissDisabled()
-                                .presentationDragIndicator(.hidden)
-                                .overlay(
-                                    Button { shazam.stopRecognition() } label: {
-                                        Image(systemName: "xmark.circle.fill")
-                                            .foregroundColor(.gray)
-                                            .font(.system(size: 36))
-                                            .symbolRenderingMode(.hierarchical)
-                                            .padding(.vertical)
-                                            .padding(.trailing, -5)
-                                    },
-                                    alignment: .topTrailing
-                                )
-                        }
+                    sheet
                 }
-
             
             HStack(alignment: .top) {
                 Spacer()
@@ -86,7 +56,7 @@ struct ContentView: View {
         .onAppear {
             // TODO: prompt first time users.. maybe?
             // TODO: handle no location perms
-            locationViewModel.requestPermission()
+            location.requestPermission()
         }
         // MARK: this is a workaround to track taps outside of Searching() sheet and dismiss
         // it works, except the rectangle can't dim the primary bottom sheet
@@ -110,6 +80,44 @@ struct ContentView: View {
     private func updateCenter(_ stream: SStream) {
         let coord = CLLocationCoordinate2D(latitude: stream.latitude, longitude: stream.longitude)
         mapViewModel.center = coord
+    }
+    
+    private var sheet: some View {
+        SheetView(places: places, streams: streams, onSongTapped: updateCenter)
+            .environmentObject(shazam)
+            .environmentObject(mapViewModel)
+            .environment(\.selectedDetent, mapViewModel.selectedDetent)
+            .padding(.top, 4)
+            .readHeight() // track view height for map
+            .onPreferenceChange(HeightPreferenceKey.self) { height in
+                if let height {
+                    mapViewModel.detentHeight = height
+                }
+            }
+            .presentationDetents([.height(65), .fraction(0.50), .large], largestUndimmed: .large, selection: $mapViewModel.selectedDetent)
+            .interactiveDismissDisabled()
+            .ignoresSafeArea()
+            .sheet(isPresented: $shazam.searching) {
+                searching
+            }
+    }
+    
+    private var searching: some View {
+        Searching()
+            .presentationDetents([.fraction(0.50)]/*, largestUndimmed: .large*/)
+            .interactiveDismissDisabled()
+            .presentationDragIndicator(.hidden)
+            .overlay(
+                Button { shazam.stopRecognition() } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.gray)
+                        .font(.system(size: 36))
+                        .symbolRenderingMode(.hierarchical)
+                        .padding(.vertical)
+                        .padding(.trailing, -5)
+                },
+                alignment: .topTrailing
+            )
     }
 }
 
