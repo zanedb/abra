@@ -8,7 +8,6 @@
 import SwiftUI
 import MapKit
 import CoreData
-import CoreLocation
 import Combine
 
 enum MapDefaults {
@@ -49,16 +48,15 @@ struct UIKitMapView: UIViewRepresentable {
         }
         
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            guard let stream = annotation as? SStream else { return nil }
+            if let annotation = annotation as? SongAnnotation {
+                return MapAnnotationView(annotation: annotation, reuseIdentifier: MKMapViewDefaultAnnotationViewReuseIdentifier)
+            }
             
-            let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "stream") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "stream")
+            if let annotation = annotation as? MKClusterAnnotation {
+                return MapClusterAnnotationView(annotation: annotation, reuseIdentifier: MKMapViewDefaultClusterAnnotationViewReuseIdentifier)
+            }
             
-            annotationView.canShowCallout = true
-            annotationView.glyphImage = UIImage(systemName: "music.note")?.withTintColor(.systemRed)
-            annotationView.titleVisibility = .visible
-            annotationView.detailCalloutAccessoryView = MapCalloutView(rootView: AnyView(SongSheet(stream: stream)))
-            
-            return annotationView
+            return nil
         }
     }
     
@@ -68,14 +66,25 @@ struct UIKitMapView: UIViewRepresentable {
     
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
-        let screen = UIScreen.main.bounds
         
         mapView.setRegion(vm.region, animated: true)
         mapView.showsUserLocation = true
         mapView.isRotateEnabled = true
         mapView.delegate = context.coordinator
-        mapView.addAnnotations(Array(streams)) // TODO: fix MapView not updating pins bc i'm passing in an Array
         
+        // TODO: write this well
+        streams.forEach { stream in
+            let annotation = SongAnnotation(stream: stream)
+            mapView.addAnnotation(annotation)
+        }
+        
+        replaceCompass(mapView)
+        cancellables(mapView)
+        
+        return mapView
+    }
+    
+    private func replaceCompass(_ mapView: MKMapView) {
         // replace default compass so it doesn't overlap with locatebutton
         mapView.showsCompass = false
         let compass = MKCompassButton(mapView: mapView)
@@ -86,6 +95,10 @@ struct UIKitMapView: UIViewRepresentable {
         compass.layer.shadowOpacity = 0.10
         compass.layer.shadowRadius = 3.0
         mapView.addSubview(compass)
+    }
+    
+    private func cancellables(_ mapView: MKMapView) {
+        let screen = UIScreen.main.bounds
         
         // set user tracking mode on update
         vm.locateUserButtonCancellable = vm.$userTrackingMode.sink(receiveValue: { mode in
@@ -109,74 +122,21 @@ struct UIKitMapView: UIViewRepresentable {
         vm.centerCancellable = vm.$center.sink(receiveValue: { newCenter in
             mapView.setCenter(newCenter, animated: true)
         })
-        
-        return mapView
     }
     
-    func updateUIView(_ mapView: MKMapView, context: Context) {}
+    // TODO: test this!
+    func updateUIView(_ mapView: MKMapView, context: Context) {
+        let existing = mapView.annotations.compactMap { $0 as? SStream }
+        let diff = Array(streams).difference(from: existing) { $0 === $1 }
+
+        for change in diff {
+            switch change {
+            case .insert(_, let element, _): mapView.addAnnotation(element)
+            case .remove(_, let element, _): mapView.removeAnnotation(element)
+            }
+        }
+    }
     
     typealias UIViewType = MKMapView
     
-}
-
-// safe comparison between two CLLocationCoordinate2D structs
-// https://stackoverflow.com/a/10199213
-extension CLLocationCoordinate2D: Equatable {
-    static public func ==(lhs: Self, rhs: Self) -> Bool {
-        fabs(lhs.latitude - rhs.latitude) <= 0.005 && fabs(lhs.longitude - rhs.longitude) <= 0.005
-    }
-}
-
-/**
-A custom callout view to be be passed as an MKMarkerAnnotationView, where you can use a SwiftUI View as it's base.
-https://github.com/khuffie/swiftui-mapkit-callout
-*/
-class MapCalloutView: UIView {
-    
-    //create the UIHostingController we need. For now just adding a generic UI
-    let body:UIHostingController<AnyView> = UIHostingController(rootView: AnyView(Text("Hello")) )
-
-    
-    /**
-    An initializer for the callout. You must pass it in your SwiftUI view as the rootView property, wrapped with AnyView. e.g.
-    MapCalloutView(rootView: AnyView(YourCustomView))
-    
-    Obviously you can pass in any properties to your custom view.
-    */
-    init(rootView: AnyView) {
-        super.init(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
-        body.rootView = AnyView(rootView)
-        setupView()
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        setupView()
-    }
-    
-    /**
-    Ensures the callout bubble resizes according to the size of the SwiftUI view that's passed in.
-    */
-    private func setupView() {
-        
-        translatesAutoresizingMaskIntoConstraints = false
-        
-        //pass in your SwiftUI View as the rootView to the body UIHostingController
-        //body.rootView = Text("Hello World * 2")
-        body.view.translatesAutoresizingMaskIntoConstraints = false
-        body.view.frame = bounds
-        body.view.backgroundColor = nil
-        //add the subview to the map callout
-        addSubview(body.view)
-
-        NSLayoutConstraint.activate([
-            body.view.topAnchor.constraint(equalTo: topAnchor),
-            body.view.bottomAnchor.constraint(equalTo: bottomAnchor),
-            body.view.leftAnchor.constraint(equalTo: leftAnchor),
-            body.view.rightAnchor.constraint(equalTo: rightAnchor)
-        ])
-        
-        sizeToFit()
-        
-    }
 }
