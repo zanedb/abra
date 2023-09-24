@@ -11,6 +11,7 @@
 		2F0547322A51662D002177D4 /* MapClusterAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547312A51662D002177D4 /* MapClusterAnnotationView.swift */; };
 		2F0547342A5166E1002177D4 /* MapCalloutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547332A5166E1002177D4 /* MapCalloutView.swift */; };
 		2F0547372A5172A7002177D4 /* MapPin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547362A5172A7002177D4 /* MapPin.swift */; };
+		2F0547392A5217B0002177D4 /* NewPlace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547382A5217B0002177D4 /* NewPlace.swift */; };
 		2F0F5DB72A3EB566005F1962 /* Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0F5DB62A3EB566005F1962 /* Stream.swift */; };
 		2F6093702A2EDFB30092A6DD /* abraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F60936F2A2EDFB30092A6DD /* abraApp.swift */; };
 		2F6093742A2EDFB50092A6DD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F6093732A2EDFB50092A6DD /* Assets.xcassets */; };
@@ -29,9 +30,13 @@
 		2F8919F22A4443FD0012DFF6 /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8919F12A4443FD0012DFF6 /* Place.swift */; };
 		2F8E3F6B2A4FBF6B0020C261 /* LocateButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8E3F6A2A4FBF6B0020C261 /* LocateButton.swift */; };
 		2F8E3F6D2A5011780020C261 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8E3F6C2A5011780020C261 /* Environment.swift */; };
+		2F9D49532A79CECE002CB9E5 /* PlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9D49522A79CECE002CB9E5 /* PlaceView.swift */; };
+		2F9F32C72A569F8000F44203 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9F32C62A569F8000F44203 /* ViewModel.swift */; };
 		2FB9AEFF2A30A383003C7A21 /* Music.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB9AEFE2A30A383003C7A21 /* Music.swift */; };
 		2FB9AF012A3193F5003C7A21 /* SongSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB9AF002A3193F5003C7A21 /* SongSheet.swift */; };
 		2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */; };
+		2FC1E0952A622A7B00EF92D4 /* IconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC1E0942A622A7B00EF92D4 /* IconPicker.swift */; };
+		2FC1E0982A622BA800EF92D4 /* sfsymbols.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2FC1E0972A622BA800EF92D4 /* sfsymbols.txt */; };
 		2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC675622A3FACD200FD7638 /* SearchBar.swift */; };
 		2FD8448A2A2F076200B67301 /* Shazam.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD844892A2F076200B67301 /* Shazam.swift */; };
 		2FE766D22A30515E00952513 /* SongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE766D12A30515E00952513 /* SongRow.swift */; };
@@ -65,6 +70,7 @@
 		2F0547312A51662D002177D4 /* MapClusterAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapClusterAnnotationView.swift; sourceTree = "<group>"; };
 		2F0547332A5166E1002177D4 /* MapCalloutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCalloutView.swift; sourceTree = "<group>"; };
 		2F0547362A5172A7002177D4 /* MapPin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapPin.swift; sourceTree = "<group>"; };
+		2F0547382A5217B0002177D4 /* NewPlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPlace.swift; sourceTree = "<group>"; };
 		2F0F5DB62A3EB566005F1962 /* Stream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stream.swift; sourceTree = "<group>"; };
 		2F60936C2A2EDFB30092A6DD /* abra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = abra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F60936F2A2EDFB30092A6DD /* abraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = abraApp.swift; sourceTree = "<group>"; };
@@ -87,9 +93,13 @@
 		2F8919F12A4443FD0012DFF6 /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
 		2F8E3F6A2A4FBF6B0020C261 /* LocateButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocateButton.swift; sourceTree = "<group>"; };
 		2F8E3F6C2A5011780020C261 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
+		2F9D49522A79CECE002CB9E5 /* PlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceView.swift; sourceTree = "<group>"; };
+		2F9F32C62A569F8000F44203 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		2FB9AEFE2A30A383003C7A21 /* Music.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Music.swift; sourceTree = "<group>"; };
 		2FB9AF002A3193F5003C7A21 /* SongSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongSheet.swift; sourceTree = "<group>"; };
 		2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetView.swift; sourceTree = "<group>"; };
+		2FC1E0942A622A7B00EF92D4 /* IconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPicker.swift; sourceTree = "<group>"; };
+		2FC1E0972A622BA800EF92D4 /* sfsymbols.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = sfsymbols.txt; sourceTree = "<group>"; };
 		2FC675622A3FACD200FD7638 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		2FD844892A2F076200B67301 /* Shazam.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shazam.swift; sourceTree = "<group>"; };
 		2FD8448B2A2F089000B67301 /* abra.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = abra.entitlements; sourceTree = "<group>"; };
@@ -161,12 +171,14 @@
 		2F60936E2A2EDFB30092A6DD /* abra */ = {
 			isa = PBXGroup;
 			children = (
+				2FC1E0962A622B9500EF92D4 /* Resources */,
 				2FD8448B2A2F089000B67301 /* abra.entitlements */,
 				2F60936F2A2EDFB30092A6DD /* abraApp.swift */,
 				2F6093A12A2EEC960092A6DD /* ContentView.swift */,
 				2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */,
 				2F659BC12A403A0000EA43F9 /* SongView.swift */,
 				2F6093A32A2EEDFE0092A6DD /* MapView.swift */,
+				2F9D49522A79CECE002CB9E5 /* PlaceView.swift */,
 				2F6093A72A2EF2290092A6DD /* Models */,
 				2FE766D02A30512400952513 /* Components */,
 				2F6093732A2EDFB50092A6DD /* Assets.xcassets */,
@@ -206,6 +218,7 @@
 		2F6093A72A2EF2290092A6DD /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				2F9F32C62A569F8000F44203 /* ViewModel.swift */,
 				2F6093A52A2EF1F70092A6DD /* Location.swift */,
 				2FD844892A2F076200B67301 /* Shazam.swift */,
 				2FB9AEFE2A30A383003C7A21 /* Music.swift */,
@@ -213,6 +226,14 @@
 				2F8919F12A4443FD0012DFF6 /* Place.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		2FC1E0962A622B9500EF92D4 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				2FC1E0972A622BA800EF92D4 /* sfsymbols.txt */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		2FE766D02A30512400952513 /* Components */ = {
@@ -224,12 +245,14 @@
 				2FB9AF002A3193F5003C7A21 /* SongSheet.swift */,
 				2FED7C1A2A4440DF00FF3943 /* SongList.swift */,
 				2F8919EF2A4442BA0012DFF6 /* PlacesList.swift */,
+				2F0547382A5217B0002177D4 /* NewPlace.swift */,
 				2FC675622A3FACD200FD7638 /* SearchBar.swift */,
 				2F659BC32A40426300EA43F9 /* PlayButton.swift */,
 				2FED7C182A4440C800FF3943 /* NoResults.swift */,
 				2FF310C92A4A6DE900DA2A80 /* Searching.swift */,
 				2F8E3F6A2A4FBF6B0020C261 /* LocateButton.swift */,
 				2F8E3F6C2A5011780020C261 /* Environment.swift */,
+				2FC1E0942A622A7B00EF92D4 /* IconPicker.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -310,7 +333,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1430;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					2F60936B2A2EDFB30092A6DD = {
 						CreatedOnToolsVersion = 14.3.1;
@@ -355,6 +378,7 @@
 			files = (
 				2F6093772A2EDFB50092A6DD /* Preview Assets.xcassets in Resources */,
 				2F6093742A2EDFB50092A6DD /* Assets.xcassets in Resources */,
+				2FC1E0982A622BA800EF92D4 /* sfsymbols.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -386,9 +410,12 @@
 				2F6093792A2EDFB50092A6DD /* Persistence.swift in Sources */,
 				2F0F5DB72A3EB566005F1962 /* Stream.swift in Sources */,
 				2F6093A22A2EEC960092A6DD /* ContentView.swift in Sources */,
+				2FC1E0952A622A7B00EF92D4 /* IconPicker.swift in Sources */,
 				2FED7C192A4440C800FF3943 /* NoResults.swift in Sources */,
 				2F659BC42A40426300EA43F9 /* PlayButton.swift in Sources */,
+				2F9D49532A79CECE002CB9E5 /* PlaceView.swift in Sources */,
 				2F6093702A2EDFB30092A6DD /* abraApp.swift in Sources */,
+				2F9F32C72A569F8000F44203 /* ViewModel.swift in Sources */,
 				2F8919F22A4443FD0012DFF6 /* Place.swift in Sources */,
 				2FD8448A2A2F076200B67301 /* Shazam.swift in Sources */,
 				2F60937C2A2EDFB50092A6DD /* abra.xcdatamodeld in Sources */,
@@ -404,6 +431,7 @@
 				2F0547302A5165E3002177D4 /* MapAnnotationView.swift in Sources */,
 				2F0547342A5166E1002177D4 /* MapCalloutView.swift in Sources */,
 				2F6093A62A2EF1F70092A6DD /* Location.swift in Sources */,
+				2F0547392A5217B0002177D4 /* NewPlace.swift in Sources */,
 				2FED7C112A40639400FF3943 /* PresentationDetentsViewModifier.swift in Sources */,
 				2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */,
 				2FB9AEFF2A30A383003C7A21 /* Music.swift in Sources */,
@@ -447,6 +475,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -479,6 +508,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -507,6 +537,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -539,6 +570,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -580,7 +612,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -617,7 +649,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
