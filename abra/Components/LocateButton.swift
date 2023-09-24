@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LocateButton: View {
-    @EnvironmentObject var vm: MapViewModel
+    @EnvironmentObject var vm: ViewModel
     
     var body: some View {
         Button(action: {
@@ -60,6 +60,6 @@ struct ScaleButtonStyle: ButtonStyle {
 struct LocateButton_Previews: PreviewProvider {
     static var previews: some View {
         LocateButton()
-            .environmentObject(MapViewModel())
+            .environmentObject(ViewModel())
     }
 }

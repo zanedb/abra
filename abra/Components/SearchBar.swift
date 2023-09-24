@@ -14,7 +14,7 @@ struct SearchBar: View {
     var prompt: String = "Search…"
     @Binding var search: String
     @FocusState var focused: Bool
-    @EnvironmentObject var shazam: Shazam
+    @EnvironmentObject private var vm: ViewModel
     
     var body: some View {
         HStack(alignment: .center) {
@@ -59,7 +59,7 @@ struct SearchBar: View {
                         removal: .opacity.animation(.easeInOut(duration: 0.1))
                     ))
             } else {
-                Button(action: { shazam.startRecognition() }) {
+                Button(action: { vm.shazam.startRecognition() }) {
                     Image(systemName: "shazam.logo.fill")
                         .symbolRenderingMode(.multicolor)
                         .tint(.blue)
@@ -81,7 +81,7 @@ struct SearchBar_Previews: PreviewProvider {
         NavigationStack {
             SearchBar(search: .constant(""), focused: FocusState())
                 .padding()
-                .environmentObject(Shazam())
+                .environmentObject(ViewModel())
             List {
                 
             }

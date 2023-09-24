@@ -9,13 +9,11 @@ import SwiftUI
 
 struct SongList: View {
     @Environment(\.managedObjectContext) private var viewContext
-    
-    var streams: FetchedResults<SStream>
-    var onSongTapped: (SStream) -> Void
+    @EnvironmentObject private var vm: ViewModel
     
     var body: some View {
         List {
-            ForEach(streams, id: \.self) { stream in
+            ForEach(vm.streams, id: \.self) { stream in
                 NavigationLink {
                     SongView(stream: stream)
                         .navigationTitle(stream.timestamp?.formatted(.dateTime.weekday().day().month()) ?? "Shazam")
@@ -34,7 +32,7 @@ struct SongList: View {
                             }
                         }
                         .onAppear {
-                            onSongTapped(stream)
+                            vm.updateCenter(stream.latitude, stream.longitude)
                         }
                 } label: {
                     SongRow(stream: stream)
@@ -60,7 +58,7 @@ struct SongList: View {
     
     private func deleteStreams(offsets: IndexSet) {
         withAnimation {
-            offsets.map { streams[$0] }.forEach(viewContext.delete)
+            offsets.map { vm.streams[$0] }.forEach(viewContext.delete)
 
             do {
                 try viewContext.save()
