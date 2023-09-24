@@ -16,7 +16,7 @@ struct MapPin: View {
             DropPin()
                 .frame(width: 33, height: 50)
                 .foregroundColor(.red.opacity(0.80))
-                .shadow(color: .black.opacity(0.50), radius: 3, x: 1, y: 2)
+                //.shadow(color: .black.opacity(0.50), radius: 3, x: 1, y: 2)
             WebImage(url: stream.artworkURL)
                 .resizable()
                 .placeholder {
@@ -31,8 +31,27 @@ struct MapPin: View {
     }
 }
 
+struct PlacePin: View {
+    var place: Place
+    
+    var body: some View {
+        ZStack {
+            DropPin()
+                .frame(width: 33, height: 50)
+                .foregroundColor(.indigo) // TODO: allow user color selection
+            Image(systemName: place.iconName ?? "questionmark")
+                .resizable()
+                .frame(width: 15, height: 15)
+                .padding(10)
+                .frame(width: 30, height: 30)
+                .foregroundColor(.white)
+                .clipShape(Circle())
+        }
+    }
+}
+
 struct ClusterPin: View {
-    var count: Int
+    @StateObject var vm: ClusterViewModel
     
     var body: some View {
         ZStack {
@@ -40,8 +59,8 @@ struct ClusterPin: View {
                 .frame(width: 33, height: 50)
                 .foregroundColor(.red.opacity(0.80))
                 .foregroundStyle(.ultraThickMaterial)
-                .shadow(color: .black.opacity(0.40), radius: 3, x: 1, y: 2)
-            Text("\(count)")
+//                .shadow(color: .black.opacity(0.40), radius: 3, x: 1, y: 2)
+            Text("\(vm.count)")
                 .font(.system(size: 16))
                 .foregroundColor(.white)
                 .frame(width: 30, height: 30)
@@ -72,10 +91,11 @@ struct MapPin_Previews: PreviewProvider {
     static var previews: some View {
         HStack {
             MapPin(stream: SStream.example)
-            ClusterPin(count: 5)
-            ClusterPin(count: 15)
-            ClusterPin(count: 150)
-            ClusterPin(count: 150)
+            PlacePin(place: Place.example)
+            ClusterPin(vm: ClusterViewModel())
+            ClusterPin(vm: ClusterViewModel())
+            ClusterPin(vm: ClusterViewModel())
+            ClusterPin(vm: ClusterViewModel())
         }
     }
 }
