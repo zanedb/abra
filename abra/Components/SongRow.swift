@@ -53,9 +53,59 @@ struct SongRow: View {
     }
 }
 
+struct SongRowMini: View {
+    var stream: SStream
+    
+    var body: some View {
+        HStack {
+            WebImage(url: stream.artworkURL)
+                .resizable()
+                .placeholder {
+                    ProgressView()
+                        .scaledToFit()
+                        .frame(width: 48, height: 48)
+                        .padding(.trailing, 5)
+                }
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 48, height: 48)
+                .cornerRadius(3.0)
+                .padding(.trailing, 5)
+            
+            VStack(alignment: .leading) {
+                HStack {
+                    Text(stream.trackTitle ?? "?")
+                        .font(.body)
+                        .lineLimit(1)
+                        .padding(.trailing, stream.explicitContent ? -3.0 : 0)
+                    if stream.explicitContent {
+                        Image(systemName: "e.square.fill")
+                            .padding(.horizontal, 0)
+                            .foregroundColor(Color.gray)
+                            .accessibilityLabel("Explicit")
+                            .imageScale(.small)
+                    }
+                }
+                .padding(.bottom, -5)
+                .padding(.trailing, 16)
+                
+                Text(stream.artist ?? "?")
+                    .font(.subheadline)
+                    .foregroundColor(Color.gray)
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+        }
+    }
+}
+
 struct SongRow_Previews: PreviewProvider {
     static var previews: some View {
-        SongRow(stream: SStream.example)
-            .padding()
+        VStack {
+            SongRow(stream: SStream.example)
+                .padding()
+            SongRowMini(stream: SStream.example)
+                .padding()
+        }
     }
 }
