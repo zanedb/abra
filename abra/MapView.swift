@@ -9,27 +9,15 @@ import SwiftUI
 import MapKit
 import CoreData
 import Combine
+import NotificationCenter
 
 enum MapDefaults {
     static let coordinate = CLLocationCoordinate2D(latitude: UserDefaults.standard.double(forKey: "LatCoord"), longitude: UserDefaults.standard.double(forKey: "LongCoord"))
     static let span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
 }
 
-class MapViewModel: ObservableObject {
-    @Published var center: CLLocationCoordinate2D = MapDefaults.coordinate
-    @Published var region: MKCoordinateRegion = MKCoordinateRegion(center: MapDefaults.coordinate, span: MapDefaults.span)
-    @Published var userTrackingMode: MKUserTrackingMode = .none
-    @Published var selectedDetent: PresentationDetent = PresentationDetent.fraction(0.5)
-    @Published var detentHeight: CGFloat = 0
-    
-    var centerCancellable: AnyCancellable?
-    var detentCancellable: AnyCancellable?
-    var locateUserButtonCancellable: AnyCancellable?
-}
-
 struct UIKitMapView: UIViewRepresentable {
-    var streams: FetchedResults<SStream>
-    @EnvironmentObject private var vm: MapViewModel
+    @EnvironmentObject private var vm: ViewModel
     
     class Coordinator: NSObject, MKMapViewDelegate {
         var parent: UIKitMapView
@@ -41,19 +29,33 @@ struct UIKitMapView: UIViewRepresentable {
         // TODO: locate user after map open
         func mapViewDidStopLocatingUser(_ mapView: MKMapView) {}
         
-        func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
+        @MainActor func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
             if (mapView.userTrackingMode != parent.vm.userTrackingMode) {
                 parent.vm.userTrackingMode = mapView.userTrackingMode // keep view model variable up to date (there's gotta be a better way)
             }
         }
         
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            if let annotation = annotation as? SongAnnotation {
+            // TODO: use dequeueReusableAnimationView
+            if let annotation = annotation as? SStream {
+                var view = mapView.dequeueReusableAnnotationView(withIdentifier: MKMapViewDefaultAnnotationViewReuseIdentifier) as? MapAnnotationView
+                if view == nil {
+                    view = MapAnnotationView(annotation: annotation, reuseIdentifier: MKMapViewDefaultAnnotationViewReuseIdentifier)
+                }
+                return view
+            }
+            
+            if let annotation = annotation as? Place {
+                print("place")
                 return MapAnnotationView(annotation: annotation, reuseIdentifier: MKMapViewDefaultAnnotationViewReuseIdentifier)
             }
             
             if let annotation = annotation as? MKClusterAnnotation {
-                return MapClusterAnnotationView(annotation: annotation, reuseIdentifier: MKMapViewDefaultClusterAnnotationViewReuseIdentifier)
+                var view = mapView.dequeueReusableAnnotationView(withIdentifier: MKMapViewDefaultClusterAnnotationViewReuseIdentifier) as? MapClusterAnnotationView
+                if view == nil {
+                    view = MapClusterAnnotationView(annotation: annotation, reuseIdentifier: MKMapViewDefaultClusterAnnotationViewReuseIdentifier)
+                }
+                return view
             }
             
             return nil
@@ -71,12 +73,8 @@ struct UIKitMapView: UIViewRepresentable {
         mapView.showsUserLocation = true
         mapView.isRotateEnabled = true
         mapView.delegate = context.coordinator
-        
-        // TODO: write this well
-        streams.forEach { stream in
-            let annotation = SongAnnotation(stream: stream)
-            mapView.addAnnotation(annotation)
-        }
+        mapView.addAnnotations(vm.streams)
+        mapView.addAnnotations(vm.places)
         
         replaceCompass(mapView)
         cancellables(mapView)
@@ -97,8 +95,14 @@ struct UIKitMapView: UIViewRepresentable {
         mapView.addSubview(compass)
     }
     
+    func contextObjectsDidChange(_ notification: Notification) {
+        print(notification)
+    }
+    
     private func cancellables(_ mapView: MKMapView) {
         let screen = UIScreen.main.bounds
+        
+        // TODO: use array of cancellables instead
         
         // set user tracking mode on update
         vm.locateUserButtonCancellable = vm.$userTrackingMode.sink(receiveValue: { mode in
@@ -113,7 +117,7 @@ struct UIKitMapView: UIViewRepresentable {
             mapView.layoutMargins = UIEdgeInsets(
                 top: 0,
                 left: 0,
-                bottom: height - 99,
+                bottom: height - 99, // subtract smallest possible sheet
                 right: 0
             )
         })
@@ -122,20 +126,32 @@ struct UIKitMapView: UIViewRepresentable {
         vm.centerCancellable = vm.$center.sink(receiveValue: { newCenter in
             mapView.setCenter(newCenter, animated: true)
         })
-    }
-    
-    // TODO: test this!
-    func updateUIView(_ mapView: MKMapView, context: Context) {
-        let existing = mapView.annotations.compactMap { $0 as? SStream }
-        let diff = Array(streams).difference(from: existing) { $0 === $1 }
+        
 
-        for change in diff {
-            switch change {
-            case .insert(_, let element, _): mapView.addAnnotation(element)
-            case .remove(_, let element, _): mapView.removeAnnotation(element)
+        // define CoreData change methods
+        // a better approach is prob possible, maybe look into NotificationCenter
+        vm.addAnnotation = { annotation in
+            if let stream = annotation as? SStream {
+                mapView.addAnnotation(stream)
+            }
+        }
+        
+        vm.removeAnnotation = { annotation in
+            if let stream = annotation as? SStream {
+                mapView.removeAnnotation(stream)
+            }
+        }
+        
+        // TODO: test this one. i'm not sure if it'll remove the correct annotation if the object changed
+        vm.updateAnnotation = { annotation in
+            if let stream = annotation as? SStream {
+                mapView.removeAnnotation(stream)
+                mapView.addAnnotation(stream)
             }
         }
     }
+    
+    func updateUIView(_ mapView: MKMapView, context: Context) {}
     
     typealias UIViewType = MKMapView
     
