@@ -6,35 +6,14 @@
 //
 
 import SwiftUI
-import CoreLocation
-import MapKit
-import MusicKit
 
 struct ContentView: View {
-    @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.managedObjectContext) private var viewContext
-    
-    @StateObject var location = Location()
-    @StateObject var music = MusicController.shared.music
-
-    @ObservedObject private var shazam = Shazam()
-    @ObservedObject var mapViewModel = MapViewModel()
-    
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \SStream.timestamp, ascending: false)],
-        animation: .default)
-    private var streams: FetchedResults<SStream>
-    
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Place.updatedAt, ascending: false)],
-        animation: .default)
-    private var places: FetchedResults<Place>
+     @EnvironmentObject private var vm: ViewModel
     
     var body: some View {
         ZStack(alignment: .top) {
-            UIKitMapView(streams: streams)
+            UIKitMapView()
                 .edgesIgnoringSafeArea(.all)
-                .environmentObject(mapViewModel)
                 .sheet(isPresented: .constant(true)) {
                     sheet
                 }
@@ -42,63 +21,29 @@ struct ContentView: View {
             HStack(alignment: .top) {
                 Spacer()
                 LocateButton()
-                    .environmentObject(mapViewModel)
             }
                 .padding(.trailing, 10)
         }
-        .onChange(of: scenePhase) { phase in
-            // MARK: on app close, save last active region to defaults, next launch opens there
-            if phase == .inactive {
-                UserDefaults.standard.set(mapViewModel.center.latitude, forKey: "LatCoord")
-                UserDefaults.standard.set(mapViewModel.center.longitude, forKey: "LongCoord")
-            }
-        }
-        .onAppear {
-            // TODO: prompt first time users.. maybe?
-            // TODO: handle no location perms
-            location.requestPermission()
-        }
-        // MARK: this is a workaround to track taps outside of Searching() sheet and dismiss
-        // it works, except the rectangle can't dim the primary bottom sheet
-        // perhaps a custom detents modifier is in order..
-        // or apple could just get their shit together! this is a common use case! it's in your damn apps!
-        /*.overlay(
-            shazam.searching ?
-                Rectangle()
-                    .opacity(0.15)
-                    .transition(.opacity.animation(.easeInOut(duration: 0.1)))
-                    .contentShape(Rectangle())
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        shazam.stopRecognition()
-                    }
-                : nil
-        )*/
-    }
-    
-    // MARK: this is called when a song is tapped in SongList, moves the map to it
-    private func updateCenter(_ stream: SStream) {
-        let coord = CLLocationCoordinate2D(latitude: stream.latitude, longitude: stream.longitude)
-        mapViewModel.center = coord
     }
     
     private var sheet: some View {
-        SheetView(places: places, streams: streams, onSongTapped: updateCenter)
-            .environmentObject(shazam)
-            .environmentObject(mapViewModel)
-            .environment(\.selectedDetent, mapViewModel.selectedDetent)
+        SheetView()
             .padding(.top, 4)
+            .environment(\.selectedDetent, vm.selectedDetent)
             .readHeight() // track view height for map
             .onPreferenceChange(HeightPreferenceKey.self) { height in
                 if let height {
-                    mapViewModel.detentHeight = height
+                    vm.detentHeight = height
                 }
             }
-            .presentationDetents([.height(65), .fraction(0.50), .large], largestUndimmed: .large, selection: $mapViewModel.selectedDetent)
+            .presentationDetents([.height(65), .fraction(0.50), .large], largestUndimmed: .large, selection: $vm.selectedDetent)
             .interactiveDismissDisabled()
             .ignoresSafeArea()
-            .sheet(isPresented: $shazam.searching) {
+            .sheet(isPresented: $vm.shazam.searching) {
                 searching
+            }
+            .sheet(isPresented: $vm.newPlaceSheetShown) {
+                newPlace
             }
     }
     
@@ -108,7 +53,7 @@ struct ContentView: View {
             .interactiveDismissDisabled()
             .presentationDragIndicator(.hidden)
             .overlay(
-                Button { shazam.stopRecognition() } label: {
+                Button { vm.shazam.stopRecognition() } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.gray)
                         .font(.system(size: 36))
@@ -119,10 +64,21 @@ struct ContentView: View {
                 alignment: .topTrailing
             )
     }
+    
+    private var newPlace: some View {
+        NewPlace()
+            .presentationDetents([.large])
+            .interactiveDismissDisabled()
+            .presentationDragIndicator(.hidden)
+    }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+        
+//        ContentView()
+//            .previewDevice(PreviewDevice(rawValue: "iPad Pro (12.9-inch) (6th generation)"))
+//            .previewDisplayName("iPad Pro 12.9")
     }
 }
