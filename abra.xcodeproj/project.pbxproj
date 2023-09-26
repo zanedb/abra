@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2F0547302A5165E3002177D4 /* MapAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F05472F2A5165E3002177D4 /* MapAnnotationView.swift */; };
 		2F0547322A51662D002177D4 /* MapClusterAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547312A51662D002177D4 /* MapClusterAnnotationView.swift */; };
 		2F0547342A5166E1002177D4 /* MapCalloutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547332A5166E1002177D4 /* MapCalloutView.swift */; };
 		2F0547372A5172A7002177D4 /* MapPin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547362A5172A7002177D4 /* MapPin.swift */; };
@@ -32,6 +31,9 @@
 		2F8E3F6D2A5011780020C261 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8E3F6C2A5011780020C261 /* Environment.swift */; };
 		2F9D49532A79CECE002CB9E5 /* PlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9D49522A79CECE002CB9E5 /* PlaceView.swift */; };
 		2F9F32C72A569F8000F44203 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9F32C62A569F8000F44203 /* ViewModel.swift */; };
+		2FA7D81A2AC0E60F0039AD5C /* ShazamStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA7D8192AC0E60F0039AD5C /* ShazamStream.swift */; };
+		2FA7D81C2AC0E9780039AD5C /* ModelContainerPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA7D81B2AC0E9780039AD5C /* ModelContainerPreview.swift */; };
+		2FA7D81E2AC0EA240039AD5C /* PreviewSampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA7D81D2AC0EA240039AD5C /* PreviewSampleData.swift */; };
 		2FB9AEFF2A30A383003C7A21 /* Music.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB9AEFE2A30A383003C7A21 /* Music.swift */; };
 		2FB9AF012A3193F5003C7A21 /* SongSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB9AF002A3193F5003C7A21 /* SongSheet.swift */; };
 		2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */; };
@@ -93,6 +95,9 @@
 		2F8E3F6C2A5011780020C261 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
 		2F9D49522A79CECE002CB9E5 /* PlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceView.swift; sourceTree = "<group>"; };
 		2F9F32C62A569F8000F44203 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
+		2FA7D8192AC0E60F0039AD5C /* ShazamStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamStream.swift; sourceTree = "<group>"; };
+		2FA7D81B2AC0E9780039AD5C /* ModelContainerPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerPreview.swift; sourceTree = "<group>"; };
+		2FA7D81D2AC0EA240039AD5C /* PreviewSampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewSampleData.swift; sourceTree = "<group>"; };
 		2FB9AEFE2A30A383003C7A21 /* Music.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Music.swift; sourceTree = "<group>"; };
 		2FB9AF002A3193F5003C7A21 /* SongSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongSheet.swift; sourceTree = "<group>"; };
 		2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetView.swift; sourceTree = "<group>"; };
@@ -147,6 +152,7 @@
 		2F6093632A2EDFB30092A6DD = {
 			isa = PBXGroup;
 			children = (
+				2FA7D8182AC0E56D0039AD5C /* Shared */,
 				2F60936E2A2EDFB30092A6DD /* abra */,
 				2F6093852A2EDFB60092A6DD /* abraTests */,
 				2F60938F2A2EDFB60092A6DD /* abraUITests */,
@@ -222,6 +228,16 @@
 				2F8919F12A4443FD0012DFF6 /* Place.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		2FA7D8182AC0E56D0039AD5C /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				2FA7D8192AC0E60F0039AD5C /* ShazamStream.swift */,
+				2FA7D81B2AC0E9780039AD5C /* ModelContainerPreview.swift */,
+				2FA7D81D2AC0EA240039AD5C /* PreviewSampleData.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		2FC1E0962A622B9500EF92D4 /* Resources */ = {
@@ -400,6 +416,7 @@
 				2FED7C192A4440C800FF3943 /* NoResults.swift in Sources */,
 				2F659BC42A40426300EA43F9 /* PlayButton.swift in Sources */,
 				2F9D49532A79CECE002CB9E5 /* PlaceView.swift in Sources */,
+				2FA7D81E2AC0EA240039AD5C /* PreviewSampleData.swift in Sources */,
 				2F6093702A2EDFB30092A6DD /* abraApp.swift in Sources */,
 				2F9F32C72A569F8000F44203 /* ViewModel.swift in Sources */,
 				2F8919F22A4443FD0012DFF6 /* Place.swift in Sources */,
@@ -407,6 +424,7 @@
 				2F60937C2A2EDFB50092A6DD /* abra.xcdatamodeld in Sources */,
 				2FB9AF012A3193F5003C7A21 /* SongSheet.swift in Sources */,
 				2FE766D22A30515E00952513 /* SongRow.swift in Sources */,
+				2FA7D81C2AC0E9780039AD5C /* ModelContainerPreview.swift in Sources */,
 				2F8919F02A4442BA0012DFF6 /* PlacesList.swift in Sources */,
 				2F0547372A5172A7002177D4 /* MapPin.swift in Sources */,
 				2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */,
@@ -416,6 +434,7 @@
 				2F0547302A5165E3002177D4 /* MapAnnotationView.swift in Sources */,
 				2F0547342A5166E1002177D4 /* MapCalloutView.swift in Sources */,
 				2F6093A62A2EF1F70092A6DD /* Location.swift in Sources */,
+				2FA7D81A2AC0E60F0039AD5C /* ShazamStream.swift in Sources */,
 				2F0547392A5217B0002177D4 /* NewPlace.swift in Sources */,
 				2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */,
 				2FB9AEFF2A30A383003C7A21 /* Music.swift in Sources */,

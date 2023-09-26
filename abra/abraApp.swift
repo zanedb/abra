@@ -34,5 +34,6 @@ struct abraApp: App {
                     }
                 }
         }
+        .modelContainer(for: ShazamStream.self)
     }
 }
