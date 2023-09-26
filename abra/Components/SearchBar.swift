@@ -13,7 +13,7 @@ struct SearchBar: View {
     var prompt: String = "Search…"
     @Binding var search: String
     @FocusState var focused: Bool
-    @EnvironmentObject private var vm: NewViewModel
+    @EnvironmentObject private var vm: ViewModel
     
     var body: some View {
         HStack(alignment: .center) {

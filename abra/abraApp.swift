@@ -11,7 +11,7 @@ import SwiftUI
 struct abraApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
-    @ObservedObject var vm = NewViewModel()
+    @ObservedObject var vm = ViewModel()
     @StateObject var location = Location()
     
     var body: some Scene {

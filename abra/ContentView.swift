@@ -10,8 +10,8 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var vm: ViewModel
     
-    @EnvironmentObject private var vm: NewViewModel
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -63,8 +63,8 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(ViewModel())
         .modelContainer(PreviewSampleData.container)
-        .environmentObject(NewViewModel())
     // .previewDevice(PreviewDevice(rawValue: "iPad Pro (12.9-inch) (6th generation)"))
     // .previewDisplayName("iPad Pro 12.9")
 }
