@@ -28,8 +28,22 @@ struct NoResults: View {
     }
 }
 
-struct NoResults_Previews: PreviewProvider {
-    static var previews: some View {
-        NoResults()
+struct EmptyLibrary: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            Text("Your library is empty.")
+                .padding(.top, 30)
+                .foregroundColor(.gray)
+                .font(.system(size: 15))
+        }
+        .frame(maxHeight: .infinity)
     }
+}
+
+#Preview {
+    NoResults()
+}
+
+#Preview {
+    EmptyLibrary()
 }
