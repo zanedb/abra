@@ -6,54 +6,42 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
-     @EnvironmentObject private var vm: ViewModel
+    @Environment(\.modelContext) private var modelContext
+    
+    @EnvironmentObject private var vm: NewViewModel
     
     var body: some View {
         ZStack(alignment: .top) {
-            UIKitMapView()
-                .edgesIgnoringSafeArea(.all)
-                .sheet(isPresented: .constant(true)) {
-                    sheet
+            MapView()
+                .inspector(isPresented: .constant(true)) {
+                    NewSheetView()
+                        .presentationDetents([.height(65), .fraction(0.50), .large], selection: $vm.selectedDetent)
+                        .presentationBackgroundInteraction(.enabled)
+                        .interactiveDismissDisabled()
+                        .sheet(isPresented: $vm.isMatching) {
+                            searching
+                        }
+//                        .sheet(isPresented: $vm.newPlaceSheetShown) {
+//                            newPlace
+//                        }
                 }
-            
-            HStack(alignment: .top) {
-                Spacer()
-                LocateButton()
-            }
-                .padding(.trailing, 10)
         }
-    }
-    
-    private var sheet: some View {
-        SheetView()
-            .padding(.top, 4)
-            .environment(\.selectedDetent, vm.selectedDetent)
-            .readHeight() // track view height for map
-            .onPreferenceChange(HeightPreferenceKey.self) { height in
-                if let height {
-                    vm.detentHeight = height
-                }
-            }
-            .presentationDetents([.height(65), .fraction(0.50), .large], largestUndimmed: .large, selection: $vm.selectedDetent)
-            .interactiveDismissDisabled()
-            .ignoresSafeArea()
-            .sheet(isPresented: $vm.shazam.searching) {
-                searching
-            }
-            .sheet(isPresented: $vm.newPlaceSheetShown) {
-                newPlace
-            }
+        .onAppear {
+            // MARK: get modelContext in viewModel. prob not best solution.
+            vm.modelContext = modelContext
+        }
     }
     
     private var searching: some View {
         Searching()
-            .presentationDetents([.fraction(0.50)]/*, largestUndimmed: .large*/)
+            .presentationDetents([.fraction(0.50)])
             .interactiveDismissDisabled()
             .presentationDragIndicator(.hidden)
             .overlay(
-                Button { vm.shazam.stopRecognition() } label: {
+                Button { vm.stopRecording() } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.gray)
                         .font(.system(size: 36))
@@ -73,12 +61,10 @@ struct ContentView: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-        
-//        ContentView()
-//            .previewDevice(PreviewDevice(rawValue: "iPad Pro (12.9-inch) (6th generation)"))
-//            .previewDisplayName("iPad Pro 12.9")
-    }
+#Preview {
+    ContentView()
+        .modelContainer(PreviewSampleData.container)
+        .environmentObject(NewViewModel())
+    // .previewDevice(PreviewDevice(rawValue: "iPad Pro (12.9-inch) (6th generation)"))
+    // .previewDisplayName("iPad Pro 12.9")
 }
