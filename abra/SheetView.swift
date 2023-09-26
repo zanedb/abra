@@ -6,6 +6,74 @@
 //
 
 import SwiftUI
+import SwiftData
+
+struct NewSheetView: View {
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var vm: NewViewModel
+    
+    @FocusState var focused: Bool
+    @State var searchText: String = ""
+    
+    @Query(sort: \ShazamStream.timestamp, order: .reverse)
+    var shazams: [ShazamStream]
+    
+    var filtered: [ShazamStream] {
+        guard searchText.isEmpty == false else { return shazams }
+        
+        return shazams.filter { $0.title.lowercased().contains(searchText.lowercased()) }
+    }
+    
+    var body: some View {
+        NavigationStack {
+            SearchBar(prompt: "Search Shazams…", search: $searchText, focused: _focused)
+                .padding(.horizontal)
+                .padding(.top, (vm.selectedDetent != PresentationDetent.height(65) || focused) ? 14 : 0)
+            
+            if (vm.selectedDetent != PresentationDetent.height(65) || focused) {
+                if (filtered.isEmpty) {
+                    if (searchText.isEmpty) {
+                        EmptyLibrary()  
+                    } else {
+                        NoResults()
+                    }
+                } else {
+                    VStack(spacing: 0){
+                        List {
+                            ForEach(filtered, id: \.id) { shazam in
+                                SongRow(stream: shazam)
+                            }
+                            .onDelete(perform: { indexSet in
+                                for index in indexSet {
+                                    let itemToDelete = filtered[index]
+                                    modelContext.delete(itemToDelete)
+                                }
+                            })
+                        }
+                        .listStyle(.inset)
+                    }
+                    .transition(.asymmetric(
+                        insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
+                        removal: .opacity.animation(.easeInOut(duration: 0.15)))
+                    )
+                }
+            }
+//            .searchable(text: $searchText)
+        }
+    }
+}
+
+#Preview {
+    ContentView()
+        .modelContainer(PreviewSampleData.container)
+        .environmentObject(NewViewModel())
+}
+
+
+
+
+
+
 
 struct SheetView: View {
     @Environment(\.selectedDetent) private var selectedDetent
@@ -58,11 +126,5 @@ struct SheetView: View {
                 .navigationTitle("Library")
                 .navigationBarTitleDisplayMode(.inline)
         }
-    }
-}
-
-struct SheetView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
     }
 }
