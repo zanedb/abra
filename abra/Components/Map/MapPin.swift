@@ -9,7 +9,7 @@ import SwiftUI
 import SDWebImageSwiftUI
 
 struct MapPin: View {
-    var stream: SStream
+    var stream: ShazamStream
     
     var body: some View {
         ZStack {
@@ -90,7 +90,7 @@ struct DropPin: Shape {
 struct MapPin_Previews: PreviewProvider {
     static var previews: some View {
         HStack {
-            MapPin(stream: SStream.example)
+//            MapPin(stream: SStream.example)
             PlacePin(place: Place.example)
             ClusterPin(vm: ClusterViewModel())
             ClusterPin(vm: ClusterViewModel())

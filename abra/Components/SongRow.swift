@@ -6,13 +6,12 @@
 //
 
 import SwiftUI
-import CoreData
 import SDWebImageSwiftUI
 
 struct SongRow: View {
     @Environment(\.colorScheme) private var colorScheme
     
-    var stream: SStream
+    var stream: ShazamStream
     
     var body: some View {
         HStack {
@@ -30,16 +29,16 @@ struct SongRow: View {
                 .padding(.trailing, 5)
             
             VStack(alignment: .leading, spacing: 0) {
-                Text(stream.trackTitle ?? "Unknown Song")
+                Text(stream.title)
                     .fontWeight(.bold)
                     .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.80) : Color.black.opacity(0.80))
                     .font(.system(size: 17))
                     .padding(.bottom, 3)
-                Text(stream.artist ?? "Unknown Artist")
+                Text(stream.artist)
                     .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.6) : Color.black.opacity(0.6))
                     .font(.system(size: 14))
                     .padding(.bottom, 3)
-                Text(stream.timestamp?.formatted(.dateTime.day().month().hour().minute()) ?? "Something went wrong")
+                Text(stream.timestamp.formatted(.dateTime.day().month().hour().minute()))
                     .foregroundColor(Color.gray)
                     .font(.system(size: 13))
                 Spacer()
@@ -54,7 +53,7 @@ struct SongRow: View {
 }
 
 struct SongRowMini: View {
-    var stream: SStream
+    var stream: ShazamStream
     
     var body: some View {
         HStack {
@@ -73,11 +72,11 @@ struct SongRowMini: View {
             
             VStack(alignment: .leading) {
                 HStack {
-                    Text(stream.trackTitle ?? "?")
+                    Text(stream.title)
                         .font(.body)
                         .lineLimit(1)
-                        .padding(.trailing, stream.explicitContent ? -3.0 : 0)
-                    if stream.explicitContent {
+                        .padding(.trailing, stream.isExplicit ? -3.0 : 0)
+                    if stream.isExplicit {
                         Image(systemName: "e.square.fill")
                             .padding(.horizontal, 0)
                             .foregroundColor(Color.gray)
@@ -88,7 +87,7 @@ struct SongRowMini: View {
                 .padding(.bottom, -5)
                 .padding(.trailing, 16)
                 
-                Text(stream.artist ?? "?")
+                Text(stream.artist)
                     .font(.subheadline)
                     .foregroundColor(Color.gray)
                     .lineLimit(1)
@@ -99,12 +98,12 @@ struct SongRowMini: View {
     }
 }
 
-struct SongRow_Previews: PreviewProvider {
-    static var previews: some View {
+#Preview {
+    ModelContainerPreview(PreviewSampleData.inMemoryContainer) {
         VStack {
-            SongRow(stream: SStream.example)
+            SongRow(stream: .preview)
                 .padding()
-            SongRowMini(stream: SStream.example)
+            SongRowMini(stream: .preview)
                 .padding()
         }
     }
