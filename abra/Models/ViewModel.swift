@@ -72,19 +72,27 @@ struct MatchResult: Identifiable, Equatable {
     func createShazamStream(_ result: SHMatchedMediaItem?) async {
         if result == nil { return }
         
+        if (location.lastSeenLocation?.coordinate.latitude == nil || location.lastSeenLocation?.coordinate.longitude == nil) {
+            print("Couldn't get location in time")
+            // TODO: actually handle this
+        }
+        
         let newShazamStream = ShazamStream(
-            title: (result?.title)!, artist: (result?.artist)!, isExplicit: result!.explicitContent, artworkURL: (result?.artworkURL)!, timestamp: .now,
+            title: (result?.title)!, artist: (result?.artist)!, isExplicit: result!.explicitContent, artworkURL: (result?.artworkURL)!,
             latitude: (location.lastSeenLocation?.coordinate.latitude)!, longitude: (location.lastSeenLocation?.coordinate.longitude)!)
         
         newShazamStream.isrc = result?.isrc
         newShazamStream.shazamID = result?.shazamID
+        newShazamStream.shazamLibraryID = result?.id
         newShazamStream.appleMusicID = result?.appleMusicID
         newShazamStream.appleMusicURL = result?.appleMusicURL
         
         newShazamStream.altitude = location.currentPlacemark?.location?.altitude
         newShazamStream.speed = location.currentPlacemark?.location?.speed
-        newShazamStream.state = location.currentPlacemark?.administrativeArea
+        
+        newShazamStream.thoroughfare = location.currentPlacemark?.thoroughfare
         newShazamStream.city = location.currentPlacemark?.locality
+        newShazamStream.state = location.currentPlacemark?.administrativeArea
         newShazamStream.country = location.currentPlacemark?.country
         newShazamStream.countryCode = location.currentPlacemark?.isoCountryCode
         
@@ -96,17 +104,19 @@ struct MatchResult: Identifiable, Equatable {
         try await SHLibrary.default.addItems(mediaItems)
     }
     
+    func deleteFromShazamLibrary(_ stream: ShazamStream) async throws {
+        guard let mediaItem = SHLibrary.default.items.filter({ $0.id == stream.shazamLibraryID }).first else { return } // obtain reference to same object
+        try await SHLibrary.default.removeItems([mediaItem])
+    }
+    
     func stopRecording() {
         session.cancel()
         isMatching = false
-        prepare()
     }
     
     func endSession() {
         // Reset result of any previous match
         isMatching = false
         currentMatchResult = MatchResult(match: nil)
-    }
-    
     }
 }

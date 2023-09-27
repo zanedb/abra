@@ -48,6 +48,10 @@ class Location: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func fetchCountryAndCity(for location: CLLocation?) {
         guard let location = location else { return }
+        
+        // TODO: put some throttling code in here
+        // see: https://developer.apple.com/documentation/corelocation/converting_a_user_s_location_to_a_descriptive_placemark#3172197
+        
         let geocoder = CLGeocoder()
         geocoder.reverseGeocodeLocation(location) { (placemarks, error) in
             self.currentPlacemark = placemarks?.first
@@ -56,7 +60,7 @@ class Location: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         // todo handle this
-        print("locationManager ERROR! bongo! bongO!")
+        print("locationManager ERROR! Perhaps permission not granted? Are you in the Simulator?")
         print(error.localizedDescription)
     }
 }
