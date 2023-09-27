@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// we'll come back to this too
+/*
 struct PlacesList: View {
     @Environment(\.managedObjectContext) private var viewContext
     @EnvironmentObject private var vm: ViewModel
@@ -110,10 +112,11 @@ struct PlacesList: View {
         }
     }
 }
+ */
 
-struct PlacesList_Previews: PreviewProvider {
-    static var previews: some View {
-        PlacesList()
-            .environmentObject(ViewModel())
-    }
+/*
+#Preview {
+    PlacesList()
+        .environmentObject(ViewModel())
 }
+*/

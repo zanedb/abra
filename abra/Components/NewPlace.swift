@@ -8,6 +8,8 @@
 import SwiftUI
 import MapKit
 
+// don't worry we'll get to you too
+/*
 struct NewPlace: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var vm: ViewModel
@@ -102,7 +104,8 @@ struct NewPlace: View {
             HStack {
                 Map(coordinateRegion: $vm.newPlaceRegion, annotationItems: vm.currentSongs) { song in
                     MapAnnotation(coordinate: song.coordinate, content: {
-                        MapPin(stream: song)
+                        Text("fix later")
+//                        MapPin(stream: song)
                     })
                 }
                     .frame(height: 110)
@@ -159,7 +162,8 @@ struct NewPlace: View {
             
             List {
                 ForEach(vm.currentSongs, id: \.timestamp) { stream in
-                    SongRowMini(stream: stream)
+//                    SongRowMini(stream: stream)
+                    Text("fuck a type check")
                 }
             }
             .listStyle(.plain)
@@ -167,19 +171,20 @@ struct NewPlace: View {
             .padding(.top)
     }
 }
+ */
 
-struct NewPlace_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationStack {
-            Map(coordinateRegion: .constant(MKCoordinateRegion(center: MapDefaults.coordinate, span: MapDefaults.span)))
-                .ignoresSafeArea(.all)
-                .sheet(isPresented: .constant(true)) {
-                    NewPlace()
-                        .presentationDetents([.large])
-                        .interactiveDismissDisabled()
-                        .presentationDragIndicator(.hidden)
-                        .environmentObject(ViewModel())
-                }
-        }
+/*
+#Preview {
+    NavigationStack {
+        Map(coordinateRegion: .constant(MKCoordinateRegion(center: MapDefaults.coordinate, span: MapDefaults.span)))
+            .ignoresSafeArea(.all)
+            .sheet(isPresented: .constant(true)) {
+                NewPlace()
+                    .presentationDetents([.large])
+                    .interactiveDismissDisabled()
+                    .presentationDragIndicator(.hidden)
+                    .environmentObject(ViewModel())
+            }
     }
 }
+*/
