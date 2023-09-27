@@ -11,49 +11,14 @@ import SDWebImageSwiftUI
 
 struct SongView: View {
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.selectedDetent) private var selectedDetent
+    @EnvironmentObject private var vm: ViewModel
     
-    var stream: SStream
+    var stream: ShazamStream
     
     var body: some View {
-        if (selectedDetent != PresentationDetent.height(65)) {
+        if (vm.selectedDetent != PresentationDetent.height(65)) {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .top) {
-                    WebImage(url: stream.artworkURL)
-                        .resizable()
-                        .placeholder {
-                            ProgressView()
-                                .scaledToFit()
-                                .frame(width: 96, height: 96)
-                                .padding(.trailing, 5)
-                        }
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 96, height: 96)
-                        .cornerRadius(3.0)
-                        .padding(.trailing, 5)
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(stream.trackTitle ?? "Unknown Song")
-                            .fontWeight(.bold)
-                            .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.80) : Color.black.opacity(0.80))
-                            .font(.system(size: 17))
-                            .padding(.bottom, 3)
-                            .lineLimit(1)
-                        Text(stream.artist ?? "Unknown Artist")
-                            .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.6) : Color.black.opacity(0.6))
-                            .font(.system(size: 14))
-                            .padding(.bottom, 3)
-                            .lineLimit(1)
-                        Text(stream.timestamp?.formatted(.dateTime.hour().minute().timeZone()) ?? "Something went wrong")
-                            .foregroundColor(Color.gray)
-                            .font(.system(size: 13))
-                        Spacer()
-                        
-                        PlayButton(appleMusicID: stream.appleMusicID!)
-                    }
-                    Spacer()
-                }
-                .fixedSize(horizontal: false, vertical: true)
-                
+                card
                 
                 Text("Details")
                     .font(.headline)
@@ -80,14 +45,14 @@ struct SongView: View {
                         VStack(alignment: .leading) {
                             Text("Speed")
                                 .font(.subheadline)
-                            Text(String(stream.speed))
+                            Text(String(stream.speed ?? 0))
                                 .font(.title2)
                         }
                         Spacer()
                         VStack(alignment: .leading) {
                             Text("Altitude")
                                 .font(.subheadline)
-                            Text(String(stream.altitude))
+                            Text(String(stream.altitude ?? 0))
                                 .font(.title2)
                         }
                         Spacer()
@@ -115,9 +80,64 @@ struct SongView: View {
                 insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
                 removal: .opacity.animation(.easeInOut(duration: 0.15)))
             )
+            .navigationTitle(stream.definiteDate)
+            .toolbar {
+                ToolbarItem() {
+                    Menu {
+                        if (stream.appleMusicURL != nil) {
+                            ShareLink(item: stream.appleMusicURL!) {
+                                Label("Apple Music", systemImage: "arrow.up.forward.square")
+                            }
+                        }
+                        Button(action: {}) { // generate a preview image ..?
+                            Label("Preview", systemImage: "photo.stack")
+                        }
+                    } label: {
+                        Label("Share", systemImage: "square.and.arrow.up")
+                    }
+                }
+            }
         } else {
             Spacer()
         }
+    }
+    
+    var card: some View {
+        HStack(alignment: .top) {
+            WebImage(url: stream.artworkURL)
+                .resizable()
+                .placeholder {
+                    ProgressView()
+                        .scaledToFit()
+                        .frame(width: 96, height: 96)
+                        .padding(.trailing, 5)
+                }
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 96, height: 96)
+                .cornerRadius(3.0)
+                .padding(.trailing, 5)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(stream.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.80) : Color.black.opacity(0.80))
+                    .font(.system(size: 17))
+                    .padding(.bottom, 3)
+                    .lineLimit(1)
+                Text(stream.artist)
+                    .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.6) : Color.black.opacity(0.6))
+                    .font(.system(size: 14))
+                    .padding(.bottom, 3)
+                    .lineLimit(1)
+                Text(stream.definiteDateAndTime)
+                    .foregroundColor(Color.gray)
+                    .font(.system(size: 13))
+                Spacer()
+                
+                PlayButton(appleMusicID: stream.appleMusicID ?? "1486262969")
+            }
+            Spacer()
+        }
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
