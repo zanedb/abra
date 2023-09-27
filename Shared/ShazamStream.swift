@@ -32,11 +32,11 @@ import MapKit
     var country: String?
     var countryCode: String?
     
-    init(title: String, artist: String, isExplicit: Bool, artworkURL: URL, timestamp: Date, latitude: Double, longitude: Double) {
+    init(title: String, artist: String, isExplicit: Bool, artworkURL: URL, latitude: Double, longitude: Double) {
         self.title = title
         self.artist = artist
         self.isExplicit = isExplicit
-        self.timestamp = timestamp
+        self.timestamp = .now
         self.artworkURL = artworkURL
         self.latitude = latitude
         self.longitude = longitude
