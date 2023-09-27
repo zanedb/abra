@@ -8,20 +8,34 @@
 import SwiftUI
 import MapKit
 import SwiftData
-import CoreData
-import Combine
+import SDWebImageSwiftUI
 
 struct MapView: View {
-    @Query(sort: \ShazamStream.timestamp, order: .reverse)
+    @EnvironmentObject private var vm: ViewModel
     var shazams: [ShazamStream]
+    @Binding var position: MapCameraPosition
     
     var body: some View {
-        Map {
+        Map(position: $position, selection: $vm.selectedTag) {
             ForEach(shazams, id: \.id) { shazam in
                 Annotation(shazam.title, coordinate: shazam.coordinate) {
-                    MapPin(stream: shazam)
+                    WebImage(url: shazam.artworkURL)
+                        .resizable()
+                        .placeholder {
+                            ProgressView()
+                                .scaledToFit()
+                                .frame(width: 30, height: 30)
+                        }
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 30, height: 30)
+                        .clipShape(RoundedRectangle(cornerRadius: 3.0))
+                        .shadow(radius: 3, x: 2, y: 2)
+                        .tag(shazam.id)
                 }
+                .annotationTitles(.hidden)
             }
+            
+            UserAnnotation()
         }
         .mapControls {
             MapUserLocationButton()
@@ -30,4 +44,8 @@ struct MapView: View {
     }
 }
 
+#Preview {
+    MapView(shazams: [.preview], position: .constant(.automatic))
+        .environmentObject(ViewModel())
+        .modelContainer(PreviewSampleData.container)
 }

@@ -16,6 +16,7 @@ struct ContentView: View {
     
     @State var searchText: String = ""
     @State var viewBy: ViewBy = .time
+    @State var position: MapCameraPosition = .automatic
     
     @Query(sort: \ShazamStream.timestamp, order: .reverse)
     var shazams: [ShazamStream]
@@ -44,7 +45,7 @@ struct ContentView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            MapView()
+            MapView(shazams: filtered, position: $position)
                 .inspector(isPresented: .constant(true)) {
                     SheetView(navPath: $navPath, searchText: $searchText, viewBy: $viewBy, filtered: filtered, sections: viewBy == .time ? timeSections : placeSections)
                         .presentationDetents([.height(65), .fraction(0.50), .large], selection: $vm.selectedDetent)
