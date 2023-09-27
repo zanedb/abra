@@ -30,7 +30,4 @@ struct MapView: View {
     }
 }
 
-enum MapDefaults {
-    static let coordinate = CLLocationCoordinate2D(latitude: UserDefaults.standard.double(forKey: "LatCoord"), longitude: UserDefaults.standard.double(forKey: "LongCoord"))
-    static let span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
 }

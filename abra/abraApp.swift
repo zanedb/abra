@@ -23,13 +23,12 @@ struct abraApp: App {
                     location.requestPermission()
                 }
                 .environmentObject(vm)
-//                .onChange(of: scenePhase) { phase in
-//                    // MARK: on app close, save last active region to defaults, next launch opens there
-//                    if phase == .inactive {
-//                        UserDefaults.standard.set(vm.center.latitude, forKey: "LatCoord")
-//                        UserDefaults.standard.set(vm.center.longitude, forKey: "LongCoord")
-//                    }
-//                }
+                .onChange(of: scenePhase) {
+                    // MARK: on app close, stop shazam session if active
+                    if scenePhase == .inactive {
+                        vm.stopRecording()
+                    }
+                }
         }
         .modelContainer(for: ShazamStream.self)
     }
