@@ -20,6 +20,7 @@ import MapKit
     
     var isrc: String?
     var shazamID: String?
+    var shazamLibraryID: UUID?
     var appleMusicID: String?
     var appleMusicURL: URL?
     
@@ -27,6 +28,7 @@ import MapKit
     var longitude: Double
     var speed: Double?
     var altitude: Double?
+    var thoroughfare: String?
     var city: String?
     var state: String?
     var country: String?
