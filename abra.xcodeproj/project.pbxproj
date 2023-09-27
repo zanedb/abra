@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2F0547372A5172A7002177D4 /* MapPin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547362A5172A7002177D4 /* MapPin.swift */; };
 		2F0547392A5217B0002177D4 /* NewPlace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547382A5217B0002177D4 /* NewPlace.swift */; };
 		2F6093702A2EDFB30092A6DD /* abraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F60936F2A2EDFB30092A6DD /* abraApp.swift */; };
 		2F6093742A2EDFB50092A6DD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F6093732A2EDFB50092A6DD /* Assets.xcassets */; };
@@ -35,10 +34,10 @@
 		2FC1E0952A622A7B00EF92D4 /* IconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC1E0942A622A7B00EF92D4 /* IconPicker.swift */; };
 		2FC1E0982A622BA800EF92D4 /* sfsymbols.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2FC1E0972A622BA800EF92D4 /* sfsymbols.txt */; };
 		2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC675622A3FACD200FD7638 /* SearchBar.swift */; };
+		2FC8CCEF2AC399B600523478 /* SectionedQuery in Frameworks */ = {isa = PBXBuildFile; productRef = 2FC8CCEE2AC399B600523478 /* SectionedQuery */; };
 		2FE766D22A30515E00952513 /* SongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE766D12A30515E00952513 /* SongRow.swift */; };
 		2FED7C172A4402AD00FF3943 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2FED7C162A4402AD00FF3943 /* SDWebImageSwiftUI */; };
 		2FED7C192A4440C800FF3943 /* NoResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FED7C182A4440C800FF3943 /* NoResults.swift */; };
-		2FED7C1B2A4440DF00FF3943 /* SongList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FED7C1A2A4440DF00FF3943 /* SongList.swift */; };
 		2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FF310C92A4A6DE900DA2A80 /* Searching.swift */; };
 /* End PBXBuildFile section */
 
@@ -60,7 +59,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2F0547362A5172A7002177D4 /* MapPin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapPin.swift; sourceTree = "<group>"; };
 		2F0547382A5217B0002177D4 /* NewPlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPlace.swift; sourceTree = "<group>"; };
 		2F60936C2A2EDFB30092A6DD /* abra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = abra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F60936F2A2EDFB30092A6DD /* abraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = abraApp.swift; sourceTree = "<group>"; };
@@ -95,7 +93,6 @@
 		2FD8448B2A2F089000B67301 /* abra.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = abra.entitlements; sourceTree = "<group>"; };
 		2FE766D12A30515E00952513 /* SongRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongRow.swift; sourceTree = "<group>"; };
 		2FED7C182A4440C800FF3943 /* NoResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoResults.swift; sourceTree = "<group>"; };
-		2FED7C1A2A4440DF00FF3943 /* SongList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongList.swift; sourceTree = "<group>"; };
 		2FF310C92A4A6DE900DA2A80 /* Searching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Searching.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -104,6 +101,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2FC8CCEF2AC399B600523478 /* SectionedQuery in Frameworks */,
 				2FED7C172A4402AD00FF3943 /* SDWebImageSwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -228,10 +226,8 @@
 				2FC675622A3FACD200FD7638 /* SearchBar.swift */,
 				2FE766D12A30515E00952513 /* SongRow.swift */,
 				2FB9AF002A3193F5003C7A21 /* SongSheet.swift */,
-				2FED7C1A2A4440DF00FF3943 /* SongList.swift */,
 				2F8919EF2A4442BA0012DFF6 /* PlacesList.swift */,
 				2F0547382A5217B0002177D4 /* NewPlace.swift */,
-				2F0547362A5172A7002177D4 /* MapPin.swift */,
 				2F659BC32A40426300EA43F9 /* PlayButton.swift */,
 				2FED7C182A4440C800FF3943 /* NoResults.swift */,
 				2FF310C92A4A6DE900DA2A80 /* Searching.swift */,
@@ -258,6 +254,7 @@
 			name = abra;
 			packageProductDependencies = (
 				2FED7C162A4402AD00FF3943 /* SDWebImageSwiftUI */,
+				2FC8CCEE2AC399B600523478 /* SectionedQuery */,
 			);
 			productName = abra;
 			productReference = 2F60936C2A2EDFB30092A6DD /* abra.app */;
@@ -333,6 +330,7 @@
 			mainGroup = 2F6093632A2EDFB30092A6DD;
 			packageReferences = (
 				2FED7C152A4402AC00FF3943 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
+				2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */,
 			);
 			productRefGroup = 2F60936D2A2EDFB30092A6DD /* Products */;
 			projectDirPath = "";
@@ -377,7 +375,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2FED7C1B2A4440DF00FF3943 /* SongList.swift in Sources */,
 				2F6093A42A2EEDFE0092A6DD /* MapView.swift in Sources */,
 				2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */,
 				2F6093792A2EDFB50092A6DD /* Persistence.swift in Sources */,
@@ -395,7 +392,6 @@
 				2FE766D22A30515E00952513 /* SongRow.swift in Sources */,
 				2FA7D81C2AC0E9780039AD5C /* ModelContainerPreview.swift in Sources */,
 				2F8919F02A4442BA0012DFF6 /* PlacesList.swift in Sources */,
-				2F0547372A5172A7002177D4 /* MapPin.swift in Sources */,
 				2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */,
 				2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */,
 				2F6093A62A2EF1F70092A6DD /* Location.swift in Sources */,
@@ -749,6 +745,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Whiffer/swiftdata-sectionedquery";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		2FED7C152A4402AC00FF3943 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI.git";
@@ -760,6 +764,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		2FC8CCEE2AC399B600523478 /* SectionedQuery */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */;
+			productName = SectionedQuery;
+		};
 		2FED7C162A4402AD00FF3943 /* SDWebImageSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2FED7C152A4402AC00FF3943 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;

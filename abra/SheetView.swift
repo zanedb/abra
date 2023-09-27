@@ -7,101 +7,72 @@
 
 import SwiftUI
 import SwiftData
+import SectionedQuery
 
-struct NewSheetView: View {
-    @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var vm: NewViewModel
-    
-    @FocusState var focused: Bool
-    @State var searchText: String = ""
-    
-    @Query(sort: \ShazamStream.timestamp, order: .reverse)
-    var shazams: [ShazamStream]
-    
-    var filtered: [ShazamStream] {
-        guard searchText.isEmpty == false else { return shazams }
-        
-        return shazams.filter { $0.title.lowercased().contains(searchText.lowercased()) }
-    }
-    
-    var body: some View {
-        NavigationStack {
-            SearchBar(prompt: "Search Shazams…", search: $searchText, focused: _focused)
-                .padding(.horizontal)
-                .padding(.top, (vm.selectedDetent != PresentationDetent.height(65) || focused) ? 14 : 0)
-            
-            if (vm.selectedDetent != PresentationDetent.height(65) || focused) {
-                if (filtered.isEmpty) {
-                    if (searchText.isEmpty) {
-                        EmptyLibrary()  
-                    } else {
-                        NoResults()
-                    }
-                } else {
-                    VStack(spacing: 0){
-                        List {
-                            ForEach(filtered, id: \.id) { shazam in
-                                SongRow(stream: shazam)
-                            }
-                            .onDelete(perform: { indexSet in
-                                for index in indexSet {
-                                    let itemToDelete = filtered[index]
-                                    modelContext.delete(itemToDelete)
-                                }
-                            })
-                        }
-                        .listStyle(.inset)
-                    }
-                    .transition(.asymmetric(
-                        insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
-                        removal: .opacity.animation(.easeInOut(duration: 0.15)))
-                    )
-                }
-            }
-//            .searchable(text: $searchText)
-        }
-    }
+enum ViewBy {
+    case time
+    case place
 }
 
 struct SheetView: View {
-    @Environment(\.selectedDetent) private var selectedDetent
-    
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var vm: ViewModel
+    
     @FocusState var focused: Bool
+    @Binding var searchText: String
+    @Binding var viewBy: ViewBy
+    var filtered: [ShazamStream]
+    var sections: SectionedResults<String, ShazamStream>
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navPath) {
             VStack {
-                SearchBar(prompt: "Search Shazams…", search: $vm.searchText, focused: _focused)
+                SearchBar(prompt: "Search Shazams", search: $searchText, focused: _focused)
                     .padding(.horizontal)
-                    .padding(.top, (selectedDetent != PresentationDetent.height(65) || focused) ? 14 : 0)
+                    .padding(.top, (vm.selectedDetent != PresentationDetent.height(65) || focused) ? 14 : 0)
+                    .onChange(of: focused) {
+                        // MARK: this doesn't work.
+                        // TODO: fix.
+                        print(focused)
+                    }
                 
-                if (selectedDetent != PresentationDetent.height(65) || focused) { // TODO: animate this based on vm.detentHeight
-                    VStack(spacing: 0) {
-                        if (!vm.searchText.isEmpty && vm.streams.isEmpty) {
+                if (vm.selectedDetent != PresentationDetent.height(65) || focused) {
+                    VStack(spacing: 0){
+                        if(searchText.isEmpty && filtered.isEmpty) {
+                            EmptyLibrary()
+                        } else if (searchText.isEmpty) {
+                            Picker("", selection: $viewBy) {
+                                Text("Recents").tag(ViewBy.time)
+                                Text("Locations").tag(ViewBy.place)
+                            }
+                            .pickerStyle(.segmented)
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                            
+                            List {
+                                ForEach(sections) { section in
+                                    Section(header: Text("\(section.id)")) {
+                                        ForEach(section, id: \.self) { shazam in
+                                            NavigationLink {
+                                                SongView(stream: shazam)
+                                            } label: {
+                                                SongRow(stream: shazam)
+                                            }
+                                        }
+                                    }
+                                    .listSectionSeparator(.hidden, edges: .bottom)
+                                }
+                            }
+                            .listStyle(.inset)
+                        } else if (!searchText.isEmpty && filtered.isEmpty) {
                             NoResults()
                         } else {
-                            if (vm.searchText.isEmpty) { // MARK: temp remove places in search results bc they're useless!
-                                PlacesList()
-                                    .transition(.asymmetric(
-                                        insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
-                                        removal: .opacity.animation(.easeInOut(duration: 0.15)))
-                                    )
+                            List {
+                                ForEach(filtered, id: \.id) { shazam in
+                                    SongRow(stream: shazam)
+                                }
                             }
-                            
-                            HStack(spacing: 0) {
-                                Text(vm.searchText.isEmpty ? "Recent Shazams" : "Search Results")
-                                    .foregroundColor(.gray)
-                                    .bold()
-                                    .font(.system(size: 14))
-                                    .id("Descriptor" + (vm.searchText.isEmpty ? "Library" : "Search"))
-                                    .transition(.opacity.animation(.easeInOut(duration: 0.075)))
-                                Spacer()
-                            }
-                            .padding(.horizontal)
-                            .padding(.top, 15)
-                            
-                            SongList()
+                            .listStyle(.inset)
                         }
                     }
                     .transition(.asymmetric(
