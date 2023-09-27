@@ -48,7 +48,7 @@ struct SongSheet: View {
                     
                     Spacer()
                     
-                    PlayButton(appleMusicID: stream.appleMusicID!)
+                    PlayButton(appleMusicID: stream.appleMusicID ?? "1486262969")
                 }
             }
             .frame(height: 96)
@@ -58,5 +58,7 @@ struct SongSheet: View {
 }
 
 #Preview {
-    SongSheet(stream: .preview)
+    ModelContainerPreview(PreviewSampleData.inMemoryContainer) {
+        SongSheet(stream: .preview)
+    }
 }

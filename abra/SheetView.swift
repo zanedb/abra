@@ -63,18 +63,6 @@ struct NewSheetView: View {
     }
 }
 
-#Preview {
-    ContentView()
-        .modelContainer(PreviewSampleData.container)
-        .environmentObject(NewViewModel())
-}
-
-
-
-
-
-
-
 struct SheetView: View {
     @Environment(\.selectedDetent) private var selectedDetent
     
@@ -127,4 +115,10 @@ struct SheetView: View {
                 .navigationBarTitleDisplayMode(.inline)
         }
     }
+}
+
+#Preview {
+    ContentView()
+        .modelContainer(PreviewSampleData.container)
+        .environmentObject(ViewModel())
 }

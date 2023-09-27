@@ -121,8 +121,10 @@ struct SongView: View {
     }
 }
 
-struct SongView_Previews: PreviewProvider {
-    static var previews: some View {
-        SongView(stream: SStream.example)
+#Preview {
+    // MARK: this doesn't work because '.preview' is not referencing the injected object
+    // need to get a reference to the actual object in PreviewSampleData somehow
+    ModelContainerPreview(PreviewSampleData.inMemoryContainer) {
+        SongView(stream: .preview)
     }
 }

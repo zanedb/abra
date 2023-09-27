@@ -73,19 +73,15 @@ struct SearchBar: View {
     }
 }
 
-struct SearchBar_Previews: PreviewProvider {
-    @State private var search: String = ""
-    
-    static var previews: some View {
-        NavigationStack {
-            SearchBar(search: .constant(""), focused: FocusState())
-                .padding()
-                .environmentObject(ViewModel())
-            List {
-                
-            }
-            .listStyle(.plain)
-            .searchable(text: .constant(""), placement: .toolbar, prompt: "Search Shazams…")
+#Preview {
+    NavigationStack {
+        SearchBar(search: .constant(""), focused: FocusState())
+            .padding()
+            .environmentObject(ViewModel())
+        List {
+            
         }
+        .listStyle(.plain)
+        .searchable(text: .constant(""), placement: .toolbar, prompt: "Search Shazams…")
     }
 }
