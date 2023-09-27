@@ -10,6 +10,8 @@ import SDWebImageSwiftUI
 
 struct SongRow: View {
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var vm: ViewModel
     
     var stream: ShazamStream
     
@@ -38,7 +40,7 @@ struct SongRow: View {
                     .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.6) : Color.black.opacity(0.6))
                     .font(.system(size: 14))
                     .padding(.bottom, 3)
-                Text(stream.timestamp.formatted(.dateTime.day().month().hour().minute()))
+                Text(stream.relativeTime)
                     .foregroundColor(Color.gray)
                     .font(.system(size: 13))
                 Spacer()
@@ -49,6 +51,29 @@ struct SongRow: View {
             Spacer()
         }
         .frame(height: 96)
+        .contextMenu {
+            if (stream.appleMusicURL != nil) {
+                Link(destination: stream.appleMusicURL!) {
+                    Label("Open in Apple Music", systemImage: "arrow.up.forward.app.fill")
+                }
+                ShareLink(item: stream.appleMusicURL!) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                }
+                Divider()
+            }
+            Button(role: .destructive, action: { deleteStream(stream) }, label: {
+                Label("Remove", systemImage: "trash")
+            })
+        }
+    }
+    
+    private func deleteStream(_ shazam: ShazamStream) {
+        withAnimation {
+            modelContext.delete(shazam)
+        }
+        Task {
+            try? await vm.deleteFromShazamLibrary(shazam)
+        }
     }
 }
 
