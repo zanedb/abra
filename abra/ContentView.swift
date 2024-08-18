@@ -6,54 +6,72 @@
 //
 
 import SwiftUI
+import SwiftData
+import SectionedQuery
+import MapKit
 
 struct ContentView: View {
-     @EnvironmentObject private var vm: ViewModel
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var vm: ViewModel
+    
+    @State var searchText: String = ""
+    @State var viewBy: ViewBy = .time
+    @State var position: MapCameraPosition = .automatic
+    
+    @Query(sort: \ShazamStream.timestamp, order: .reverse)
+    var shazams: [ShazamStream]
+    
+    var filtered: [ShazamStream] {
+        guard searchText.isEmpty == false else { return shazams }
+        
+        return shazams.filter { $0.title.lowercased().contains(searchText.lowercased()) }
+    }
+    
+    @SectionedQuery(
+        sectionIdentifier: \ShazamStream.timeGroupedString,
+                    sortDescriptors: [SortDescriptor(\ShazamStream.timestamp, order: .reverse)],
+                    predicate: nil,
+                    animation: .default
+    )
+    private var timeSections
+    
+    @SectionedQuery(
+        sectionIdentifier: \ShazamStream.placeGroupedString,
+                    sortDescriptors: [SortDescriptor(\ShazamStream.timestamp, order: .reverse)],
+                    predicate: nil,
+                    animation: .default
+    )
+    private var placeSections
     
     var body: some View {
         ZStack(alignment: .top) {
-            UIKitMapView()
-                .edgesIgnoringSafeArea(.all)
-                .sheet(isPresented: .constant(true)) {
-                    sheet
+            MapView(shazams: filtered, position: $position)
+                .inspector(isPresented: .constant(true)) {
+                    SheetView(searchText: $searchText, viewBy: $viewBy, filtered: filtered, sections: viewBy == .time ? timeSections : placeSections)
+                        .presentationDetents([.height(65), .fraction(0.50), .large], selection: $vm.selectedDetent)
+                        .presentationBackgroundInteraction(.enabled)
+                        .interactiveDismissDisabled()
+                        .sheet(isPresented: $vm.isMatching) {
+                            searching
+                        }
+//                        .sheet(isPresented: $vm.newPlaceSheetShown) {
+//                            newPlace
+//                        }
                 }
-            
-            HStack(alignment: .top) {
-                Spacer()
-                LocateButton()
-            }
-                .padding(.trailing, 10)
         }
-    }
-    
-    private var sheet: some View {
-        SheetView()
-            .padding(.top, 4)
-            .environment(\.selectedDetent, vm.selectedDetent)
-            .readHeight() // track view height for map
-            .onPreferenceChange(HeightPreferenceKey.self) { height in
-                if let height {
-                    vm.detentHeight = height
-                }
-            }
-            .presentationDetents([.height(65), .fraction(0.50), .large], largestUndimmed: .large, selection: $vm.selectedDetent)
-            .interactiveDismissDisabled()
-            .ignoresSafeArea()
-            .sheet(isPresented: $vm.shazam.searching) {
-                searching
-            }
-            .sheet(isPresented: $vm.newPlaceSheetShown) {
-                newPlace
-            }
+        .onAppear {
+            // MARK: get modelContext in viewModel. prob not best solution.
+            vm.modelContext = modelContext
+        }
     }
     
     private var searching: some View {
         Searching()
-            .presentationDetents([.fraction(0.50)]/*, largestUndimmed: .large*/)
+            .presentationDetents([.fraction(0.50)])
             .interactiveDismissDisabled()
             .presentationDragIndicator(.hidden)
             .overlay(
-                Button { vm.shazam.stopRecognition() } label: {
+                Button { vm.stopRecording() } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.gray)
                         .font(.system(size: 36))
@@ -65,20 +83,18 @@ struct ContentView: View {
             )
     }
     
-    private var newPlace: some View {
-        NewPlace()
-            .presentationDetents([.large])
-            .interactiveDismissDisabled()
-            .presentationDragIndicator(.hidden)
-    }
+//    private var newPlace: some View {
+//        NewPlace()
+//            .presentationDetents([.large])
+//            .interactiveDismissDisabled()
+//            .presentationDragIndicator(.hidden)
+//    }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-        
-//        ContentView()
-//            .previewDevice(PreviewDevice(rawValue: "iPad Pro (12.9-inch) (6th generation)"))
-//            .previewDisplayName("iPad Pro 12.9")
-    }
+#Preview {
+    ContentView()
+        .environmentObject(ViewModel())
+        .modelContainer(PreviewSampleData.container)
+    // .previewDevice(PreviewDevice(rawValue: "iPad Pro (12.9-inch) (6th generation)"))
+    // .previewDisplayName("iPad Pro 12.9")
 }

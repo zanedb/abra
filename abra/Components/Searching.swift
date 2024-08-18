@@ -76,8 +76,6 @@ struct Searching: View {
     }
 }
 
-struct Searching_Previews: PreviewProvider {
-    static var previews: some View {
-        Searching()
-    }
+#Preview {
+    Searching()
 }

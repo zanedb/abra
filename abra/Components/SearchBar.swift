@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Combine
 
 struct SearchBar: View {
     @Environment(\.colorScheme) private var colorScheme
@@ -44,6 +43,9 @@ struct SearchBar: View {
                     }
                 )
                 .focused($focused)
+                .onChange(of: focused) {
+                    print("focus state changed", focused)
+                }
             
             if (focused || (!focused && search != "")) {
                 Button(action: {
@@ -56,10 +58,10 @@ struct SearchBar: View {
                     .padding(.leading, 3)
                     .transition(.asymmetric(
                         insertion: .opacity.animation(.easeInOut(duration: 0.2)),
-                        removal: .opacity.animation(.easeInOut(duration: 0.1))
+                        removal: .opacity.animation(.easeInOut(duration: 0.01))
                     ))
             } else {
-                Button(action: { vm.shazam.startRecognition() }) {
+                Button(action: { Task { await vm.match() } }) {
                     Image(systemName: "shazam.logo.fill")
                         .symbolRenderingMode(.multicolor)
                         .tint(.blue)
@@ -74,19 +76,15 @@ struct SearchBar: View {
     }
 }
 
-struct SearchBar_Previews: PreviewProvider {
-    @State private var search: String = ""
-    
-    static var previews: some View {
-        NavigationStack {
-            SearchBar(search: .constant(""), focused: FocusState())
-                .padding()
-                .environmentObject(ViewModel())
-            List {
-                
-            }
-            .listStyle(.plain)
-            .searchable(text: .constant(""), placement: .toolbar, prompt: "Search Shazams…")
+#Preview {
+    NavigationStack {
+        SearchBar(search: .constant(""), focused: FocusState())
+            .padding()
+            .environmentObject(ViewModel())
+        List {
+            
         }
+        .listStyle(.plain)
+        .searchable(text: .constant(""), placement: .toolbar, prompt: "Search Shazams…")
     }
 }

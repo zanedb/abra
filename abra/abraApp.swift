@@ -11,8 +11,6 @@ import SwiftUI
 struct abraApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
-    let persistenceController = PersistenceController.shared
-
     @ObservedObject var vm = ViewModel()
     @StateObject var location = Location()
     
@@ -24,15 +22,14 @@ struct abraApp: App {
                     // TODO: handle no location perms
                     location.requestPermission()
                 }
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
                 .environmentObject(vm)
-                .onChange(of: scenePhase) { phase in
-                    // MARK: on app close, save last active region to defaults, next launch opens there
-                    if phase == .inactive {
-                        UserDefaults.standard.set(vm.center.latitude, forKey: "LatCoord")
-                        UserDefaults.standard.set(vm.center.longitude, forKey: "LongCoord")
+                .onChange(of: scenePhase) {
+                    // MARK: on app close, stop shazam session if active
+                    if scenePhase == .inactive {
+                        vm.stopRecording()
                     }
                 }
         }
+        .modelContainer(for: ShazamStream.self)
     }
 }

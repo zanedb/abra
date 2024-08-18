@@ -20,8 +20,6 @@ struct PlayButton: View {
     }
 }
 
-struct PlayButton_Previews: PreviewProvider {
-    static var previews: some View {
-        PlayButton(appleMusicID: SStream.example.appleMusicID ?? "1486262969")
-    }
+#Preview {
+    PlayButton(appleMusicID: ShazamStream.preview.appleMusicID ?? "1486262969")
 }

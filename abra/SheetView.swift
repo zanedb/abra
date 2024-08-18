@@ -6,46 +6,80 @@
 //
 
 import SwiftUI
+import SwiftData
+import SectionedQuery
+
+enum ViewBy {
+    case time
+    case place
+}
+
+// navPath.append() requires type to be Codable
+// therefore I must wrap ShazamStream's id in an otherwise useless struct
+struct Path: Hashable, Codable {
+    var sStreamId: PersistentIdentifier?
+}
 
 struct SheetView: View {
-    @Environment(\.selectedDetent) private var selectedDetent
-    
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var vm: ViewModel
+    
+    @State var navPath = NavigationPath()
     @FocusState var focused: Bool
+    @Binding var searchText: String
+    @Binding var viewBy: ViewBy
+    var filtered: [ShazamStream]
+    var sections: SectionedResults<String, ShazamStream>
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navPath) {
             VStack {
-                SearchBar(prompt: "Search Shazams…", search: $vm.searchText, focused: _focused)
+                SearchBar(prompt: "Search Shazams", search: $searchText, focused: _focused)
                     .padding(.horizontal)
-                    .padding(.top, (selectedDetent != PresentationDetent.height(65) || focused) ? 14 : 0)
+                    .padding(.top, (vm.selectedDetent != PresentationDetent.height(65) || focused) ? 14 : 0)
+                    .onChange(of: focused) {
+                        // MARK: this doesn't work.
+                        // TODO: fix.
+                        print(focused)
+                    }
                 
-                if (selectedDetent != PresentationDetent.height(65) || focused) { // TODO: animate this based on vm.detentHeight
-                    VStack(spacing: 0) {
-                        if (!vm.searchText.isEmpty && vm.streams.isEmpty) {
+                if (vm.selectedDetent != PresentationDetent.height(65) || focused) {
+                    VStack(spacing: 0){
+                        if(searchText.isEmpty && filtered.isEmpty) {
+                            EmptyLibrary()
+                        } else if (searchText.isEmpty) {
+                            Picker("", selection: $viewBy) {
+                                Text("Recents").tag(ViewBy.time)
+                                Text("Locations").tag(ViewBy.place)
+                            }
+                            .pickerStyle(.segmented)
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                            
+                            List {
+                                ForEach(sections) { section in
+                                    Section(header: Text("\(section.id)")) {
+                                        ForEach(section, id: \.self) { shazam in
+                                            NavigationLink {
+                                                SongView(stream: shazam)
+                                            } label: {
+                                                SongRow(stream: shazam)
+                                            }
+                                        }
+                                    }
+                                    .listSectionSeparator(.hidden, edges: .bottom)
+                                }
+                            }
+                            .listStyle(.inset)
+                        } else if (!searchText.isEmpty && filtered.isEmpty) {
                             NoResults()
                         } else {
-                            if (vm.searchText.isEmpty) { // MARK: temp remove places in search results bc they're useless!
-                                PlacesList()
-                                    .transition(.asymmetric(
-                                        insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
-                                        removal: .opacity.animation(.easeInOut(duration: 0.15)))
-                                    )
+                            List {
+                                ForEach(filtered, id: \.id) { shazam in
+                                    SongRow(stream: shazam)
+                                }
                             }
-                            
-                            HStack(spacing: 0) {
-                                Text(vm.searchText.isEmpty ? "Recent Shazams" : "Search Results")
-                                    .foregroundColor(.gray)
-                                    .bold()
-                                    .font(.system(size: 14))
-                                    .id("Descriptor" + (vm.searchText.isEmpty ? "Library" : "Search"))
-                                    .transition(.opacity.animation(.easeInOut(duration: 0.075)))
-                                Spacer()
-                            }
-                            .padding(.horizontal)
-                            .padding(.top, 15)
-                            
-                            SongList()
+                            .listStyle(.inset)
                         }
                     }
                     .transition(.asymmetric(
@@ -55,14 +89,25 @@ struct SheetView: View {
                 }
             }
                 .toolbar(.hidden)
+                // Find ShazamStream from id and display SongView
+                .navigationDestination(for: Path.self) { selection in
+                    if let sstream = modelContext.model(for: selection.sStreamId!) as? ShazamStream {
+                        SongView(stream: sstream)
+                    }
+                }
                 .navigationTitle("Library")
                 .navigationBarTitleDisplayMode(.inline)
+//            .searchable(text: $searchText)
+        }
+        // Map annotation tapped -> wrap id in Path and add to navPath
+        .onChange(of: vm.mapSelection) {
+            navPath.append(Path(sStreamId: vm.mapSelection!))
         }
     }
 }
 
-struct SheetView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+#Preview {
+    ContentView()
+        .modelContainer(PreviewSampleData.container)
+        .environmentObject(ViewModel())
 }
