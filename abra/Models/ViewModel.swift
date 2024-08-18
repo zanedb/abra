@@ -77,6 +77,7 @@ struct MatchResult: Identifiable, Equatable {
         if (location.lastSeenLocation?.coordinate.latitude == nil || location.lastSeenLocation?.coordinate.longitude == nil) {
             print("Couldn't get location in time")
             // TODO: actually handle this
+            return // MARK: prevent a crash
         }
         
         let newShazamStream = ShazamStream(
