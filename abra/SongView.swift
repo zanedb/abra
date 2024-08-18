@@ -97,6 +97,9 @@ struct SongView: View {
                     }
                 }
             }
+            .onAppear {
+                vm.selectedSS = stream // Used to center map
+            }
         } else {
             Spacer()
         }

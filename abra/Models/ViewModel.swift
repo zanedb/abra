@@ -24,6 +24,7 @@ struct MatchResult: Identifiable, Equatable {
     private var location: Location = Location.shared
     
     @Published var selectedDetent: PresentationDetent = PresentationDetent.fraction(0.5)
+    @Published var selectedSS: ShazamStream?
     @Published var isMatching = false
     @Published var currentMatchResult: MatchResult?
     
