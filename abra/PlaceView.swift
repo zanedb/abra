@@ -18,6 +18,6 @@ struct PlaceView: View {
 
 struct PlaceView_Previews: PreviewProvider {
     static var previews: some View {
-        PlaceView(place: Place.example)
+        PlaceView(place: Place.preview)
     }
 }

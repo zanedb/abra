@@ -8,11 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		2F0547392A5217B0002177D4 /* NewPlace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547382A5217B0002177D4 /* NewPlace.swift */; };
+		2F1727442C719B2700EEA500 /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1727432C719B2700EEA500 /* Place.swift */; };
 		2F6093702A2EDFB30092A6DD /* abraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F60936F2A2EDFB30092A6DD /* abraApp.swift */; };
 		2F6093742A2EDFB50092A6DD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F6093732A2EDFB50092A6DD /* Assets.xcassets */; };
 		2F6093772A2EDFB50092A6DD /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F6093762A2EDFB50092A6DD /* Preview Assets.xcassets */; };
-		2F6093792A2EDFB50092A6DD /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093782A2EDFB50092A6DD /* Persistence.swift */; };
-		2F60937C2A2EDFB50092A6DD /* abra.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2F60937A2A2EDFB50092A6DD /* abra.xcdatamodeld */; };
 		2F6093872A2EDFB60092A6DD /* abraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093862A2EDFB60092A6DD /* abraTests.swift */; };
 		2F6093912A2EDFB60092A6DD /* abraUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093902A2EDFB60092A6DD /* abraUITests.swift */; };
 		2F6093932A2EDFB60092A6DD /* abraUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093922A2EDFB60092A6DD /* abraUITestsLaunchTests.swift */; };
@@ -22,7 +21,6 @@
 		2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F659BC12A403A0000EA43F9 /* SongView.swift */; };
 		2F659BC42A40426300EA43F9 /* PlayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F659BC32A40426300EA43F9 /* PlayButton.swift */; };
 		2F8919F02A4442BA0012DFF6 /* PlacesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8919EF2A4442BA0012DFF6 /* PlacesList.swift */; };
-		2F8919F22A4443FD0012DFF6 /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8919F12A4443FD0012DFF6 /* Place.swift */; };
 		2F9D49532A79CECE002CB9E5 /* PlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9D49522A79CECE002CB9E5 /* PlaceView.swift */; };
 		2F9F32C72A569F8000F44203 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9F32C62A569F8000F44203 /* ViewModel.swift */; };
 		2FA7D81A2AC0E60F0039AD5C /* ShazamStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA7D8192AC0E60F0039AD5C /* ShazamStream.swift */; };
@@ -60,12 +58,11 @@
 
 /* Begin PBXFileReference section */
 		2F0547382A5217B0002177D4 /* NewPlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPlace.swift; sourceTree = "<group>"; };
+		2F1727432C719B2700EEA500 /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
 		2F60936C2A2EDFB30092A6DD /* abra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = abra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F60936F2A2EDFB30092A6DD /* abraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = abraApp.swift; sourceTree = "<group>"; };
 		2F6093732A2EDFB50092A6DD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2F6093762A2EDFB50092A6DD /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		2F6093782A2EDFB50092A6DD /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
-		2F60937B2A2EDFB50092A6DD /* abra.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = abra.xcdatamodel; sourceTree = "<group>"; };
 		2F60937D2A2EDFB50092A6DD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2F6093822A2EDFB60092A6DD /* abraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = abraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F6093862A2EDFB60092A6DD /* abraTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = abraTests.swift; sourceTree = "<group>"; };
@@ -78,7 +75,6 @@
 		2F659BC12A403A0000EA43F9 /* SongView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongView.swift; sourceTree = "<group>"; };
 		2F659BC32A40426300EA43F9 /* PlayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayButton.swift; sourceTree = "<group>"; };
 		2F8919EF2A4442BA0012DFF6 /* PlacesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlacesList.swift; sourceTree = "<group>"; };
-		2F8919F12A4443FD0012DFF6 /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
 		2F9D49522A79CECE002CB9E5 /* PlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceView.swift; sourceTree = "<group>"; };
 		2F9F32C62A569F8000F44203 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		2FA7D8192AC0E60F0039AD5C /* ShazamStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamStream.swift; sourceTree = "<group>"; };
@@ -158,9 +154,7 @@
 				2F6093A72A2EF2290092A6DD /* Models */,
 				2FE766D02A30512400952513 /* Components */,
 				2F6093732A2EDFB50092A6DD /* Assets.xcassets */,
-				2F6093782A2EDFB50092A6DD /* Persistence.swift */,
 				2F60937D2A2EDFB50092A6DD /* Info.plist */,
-				2F60937A2A2EDFB50092A6DD /* abra.xcdatamodeld */,
 				2F6093752A2EDFB50092A6DD /* Preview Content */,
 			);
 			path = abra;
@@ -197,7 +191,6 @@
 				2F9F32C62A569F8000F44203 /* ViewModel.swift */,
 				2F6093A52A2EF1F70092A6DD /* Location.swift */,
 				2FB9AEFE2A30A383003C7A21 /* Music.swift */,
-				2F8919F12A4443FD0012DFF6 /* Place.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -206,6 +199,7 @@
 			isa = PBXGroup;
 			children = (
 				2FA7D8192AC0E60F0039AD5C /* ShazamStream.swift */,
+				2F1727432C719B2700EEA500 /* Place.swift */,
 				2FA7D81B2AC0E9780039AD5C /* ModelContainerPreview.swift */,
 				2FA7D81D2AC0EA240039AD5C /* PreviewSampleData.swift */,
 			);
@@ -377,7 +371,6 @@
 			files = (
 				2F6093A42A2EEDFE0092A6DD /* MapView.swift in Sources */,
 				2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */,
-				2F6093792A2EDFB50092A6DD /* Persistence.swift in Sources */,
 				2F6093A22A2EEC960092A6DD /* ContentView.swift in Sources */,
 				2FC1E0952A622A7B00EF92D4 /* IconPicker.swift in Sources */,
 				2FED7C192A4440C800FF3943 /* NoResults.swift in Sources */,
@@ -386,14 +379,13 @@
 				2FA7D81E2AC0EA240039AD5C /* PreviewSampleData.swift in Sources */,
 				2F6093702A2EDFB30092A6DD /* abraApp.swift in Sources */,
 				2F9F32C72A569F8000F44203 /* ViewModel.swift in Sources */,
-				2F8919F22A4443FD0012DFF6 /* Place.swift in Sources */,
-				2F60937C2A2EDFB50092A6DD /* abra.xcdatamodeld in Sources */,
 				2FB9AF012A3193F5003C7A21 /* SongSheet.swift in Sources */,
 				2FE766D22A30515E00952513 /* SongRow.swift in Sources */,
 				2FA7D81C2AC0E9780039AD5C /* ModelContainerPreview.swift in Sources */,
 				2F8919F02A4442BA0012DFF6 /* PlacesList.swift in Sources */,
 				2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */,
 				2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */,
+				2F1727442C719B2700EEA500 /* Place.swift in Sources */,
 				2F6093A62A2EF1F70092A6DD /* Location.swift in Sources */,
 				2FA7D81A2AC0E60F0039AD5C /* ShazamStream.swift in Sources */,
 				2F0547392A5217B0002177D4 /* NewPlace.swift in Sources */,
@@ -775,19 +767,6 @@
 			productName = SDWebImageSwiftUI;
 		};
 /* End XCSwiftPackageProductDependency section */
-
-/* Begin XCVersionGroup section */
-		2F60937A2A2EDFB50092A6DD /* abra.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				2F60937B2A2EDFB50092A6DD /* abra.xcdatamodel */,
-			);
-			currentVersion = 2F60937B2A2EDFB50092A6DD /* abra.xcdatamodel */;
-			path = abra.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 2F6093642A2EDFB30092A6DD /* Project object */;
 }
