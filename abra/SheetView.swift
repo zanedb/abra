@@ -14,10 +14,17 @@ enum ViewBy {
     case place
 }
 
+// navPath.append() requires type to be Codable
+// therefore I must wrap ShazamStream's id in an otherwise useless struct
+struct Path: Hashable, Codable {
+    var sStreamId: PersistentIdentifier?
+}
+
 struct SheetView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var vm: ViewModel
     
+    @State var navPath = NavigationPath()
     @FocusState var focused: Bool
     @Binding var searchText: String
     @Binding var viewBy: ViewBy
@@ -82,8 +89,18 @@ struct SheetView: View {
                 }
             }
                 .toolbar(.hidden)
+                // Find ShazamStream from id and display SongView
+                .navigationDestination(for: Path.self) { selection in
+                    if let sstream = modelContext.model(for: selection.sStreamId!) as? ShazamStream {
+                        SongView(stream: sstream)
+                    }
+                }
                 .navigationTitle("Library")
                 .navigationBarTitleDisplayMode(.inline)
+        }
+        // Map annotation tapped -> wrap id in Path and add to navPath
+        .onChange(of: vm.mapSelection) {
+            navPath.append(Path(sStreamId: vm.mapSelection!))
         }
     }
 }

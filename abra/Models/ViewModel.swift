@@ -25,6 +25,7 @@ struct MatchResult: Identifiable, Equatable {
     
     @Published var selectedDetent: PresentationDetent = PresentationDetent.fraction(0.5)
     @Published var selectedSS: ShazamStream?
+    @Published var mapSelection: PersistentIdentifier?
     @Published var isMatching = false
     @Published var currentMatchResult: MatchResult?
     

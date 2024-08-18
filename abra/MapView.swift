@@ -16,7 +16,7 @@ struct MapView: View {
     @Binding var position: MapCameraPosition
     
     var body: some View {
-        Map(position: $position, selection: $vm.selectedTag) {
+        Map(position: $position, selection: $vm.mapSelection) {
             ForEach(shazams, id: \.id) { shazam in
                 Annotation(shazam.title, coordinate: shazam.coordinate) {
                     WebImage(url: shazam.artworkURL)
@@ -30,12 +30,12 @@ struct MapView: View {
                         .frame(width: 30, height: 30)
                         .clipShape(RoundedRectangle(cornerRadius: 3.0))
                         .shadow(radius: 3, x: 2, y: 2)
-                        .tag(shazam.id)
                 }
                 .annotationTitles(.hidden)
+                .tag(shazam.id)
             }
             
-            UserAnnotation()
+            UserAnnotation() // User's location dot
         }
         .mapControls {
             MapUserLocationButton()

@@ -47,7 +47,7 @@ struct ContentView: View {
         ZStack(alignment: .top) {
             MapView(shazams: filtered, position: $position)
                 .inspector(isPresented: .constant(true)) {
-                    SheetView(navPath: $navPath, searchText: $searchText, viewBy: $viewBy, filtered: filtered, sections: viewBy == .time ? timeSections : placeSections)
+                    SheetView(searchText: $searchText, viewBy: $viewBy, filtered: filtered, sections: viewBy == .time ? timeSections : placeSections)
                         .presentationDetents([.height(65), .fraction(0.50), .large], selection: $vm.selectedDetent)
                         .presentationBackgroundInteraction(.enabled)
                         .interactiveDismissDisabled()
