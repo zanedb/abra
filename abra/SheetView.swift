@@ -97,6 +97,7 @@ struct SheetView: View {
                 }
                 .navigationTitle("Library")
                 .navigationBarTitleDisplayMode(.inline)
+//            .searchable(text: $searchText)
         }
         // Map annotation tapped -> wrap id in Path and add to navPath
         .onChange(of: vm.mapSelection) {

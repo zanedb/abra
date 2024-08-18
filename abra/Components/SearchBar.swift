@@ -43,6 +43,9 @@ struct SearchBar: View {
                     }
                 )
                 .focused($focused)
+                .onChange(of: focused) {
+                    print("focus state changed", focused)
+                }
             
             if (focused || (!focused && search != "")) {
                 Button(action: {
