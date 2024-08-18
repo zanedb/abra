@@ -45,7 +45,9 @@ struct MapView: View {
         .onChange(of: vm.selectedSS) {
             if (vm.selectedSS != nil) {
                 let region = MKCoordinateRegion(center: vm.selectedSS!.coordinate, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-                position = .region(region)
+                withAnimation {
+                    position = .region(region)
+                }
             }
         }
     }
