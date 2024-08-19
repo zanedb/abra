@@ -12,6 +12,7 @@ struct abraApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     @ObservedObject var vm = ViewModel()
+    @ObservedObject var library = LibraryService()
     @StateObject var location = Location()
     
     var body: some Scene {
@@ -23,6 +24,7 @@ struct abraApp: App {
                     location.requestPermission()
                 }
                 .environmentObject(vm)
+                .environmentObject(library)
                 .onChange(of: scenePhase) {
                     // MARK: on app close, stop shazam session if active
                     if scenePhase == .inactive {

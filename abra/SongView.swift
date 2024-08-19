@@ -8,10 +8,12 @@
 import SwiftUI
 import MapKit
 import SDWebImageSwiftUI
+import SwiftData
 
 struct SongView: View {
     @Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject private var vm: ViewModel
+    @EnvironmentObject private var library: LibraryService
     
     var stream: ShazamStream
     
@@ -20,58 +22,13 @@ struct SongView: View {
             VStack(alignment: .leading, spacing: 0) {
                 card
                 
-                Text("Details")
-                    .font(.headline)
-                    .padding(.top)
-                GroupBox {
-                    HStack(spacing: 0) {
-                        VStack(alignment: .leading) {
-                            Text("City")
-                                .font(.subheadline)
-                            Text(stream.city ?? "?")
-                                .font(.title2)
-                        }
-                        Spacer()
-                        VStack(alignment: .leading) {
-                            Text("Country")
-                                .font(.subheadline)
-                            Text(stream.country ?? "?")
-                                .font(.title2)
-                        }
-                        Spacer()
-                    }
-                    .padding(.bottom)
-                    HStack(spacing: 0) {
-                        VStack(alignment: .leading) {
-                            Text("Speed")
-                                .font(.subheadline)
-                            Text(String(stream.speed ?? 0))
-                                .font(.title2)
-                        }
-                        Spacer()
-                        VStack(alignment: .leading) {
-                            Text("Altitude")
-                                .font(.subheadline)
-                            Text(String(stream.altitude ?? 0))
-                                .font(.title2)
-                        }
-                        Spacer()
-                    }
+                if (!library.hasIgnoredPhotosRequest) {
+                    Text("Moments")
+                        .font(.headline)
+                        .padding(.top)
+                        .padding(.bottom, 8)
+                    Photos(stream: stream)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 5)
-                
-                /*
-                Map(
-                    coordinateRegion: .constant(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: stream.latitude, longitude: stream.longitude), span: MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001))),
-                    annotationItems: [stream]
-                ) { location in
-                    MapMarker(coordinate: location.coordinate)
-                }
-                .frame(maxHeight: 200)
-                .cornerRadius(5)
-                .padding(.vertical)
-                 */
                 
                 Spacer()
             }
