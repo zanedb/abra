@@ -145,9 +145,11 @@ struct SongView: View {
 }
 
 #Preview {
-    // MARK: this doesn't work because '.preview' is not referencing the injected object
-    // need to get a reference to the actual object in PreviewSampleData somehow
-    ModelContainerPreview(PreviewSampleData.inMemoryContainer) {
-        SongView(stream: .preview)
-    }
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: ShazamStream.self, configurations: config)
+
+    let s = ShazamStream.preview
+    return SongView(stream: s)
+        .modelContainer(container)
+        .environmentObject(ViewModel())
 }
