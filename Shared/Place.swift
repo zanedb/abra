@@ -25,7 +25,7 @@ import MapKit
     var createdAt: Date
     var updatedAt: Date
     
-    init(name: String, iconName: String, colorName: String, latitude: Double, longitude: Double, radius: Double) {
+    init(name: String = "", iconName: String = "house", colorName: String = "blue", latitude: Double = 37.3316876, longitude: Double = -122.0327261, radius: Double = 10) {
         self.name = name
         self.iconName = iconName
         self.colorName = colorName
