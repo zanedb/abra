@@ -40,16 +40,7 @@ struct SongView: View {
             .navigationTitle(stream.definiteDate)
             .toolbar {
                 ToolbarItem() {
-                    Menu {
-                        if (stream.appleMusicURL != nil) {
-                            ShareLink(item: stream.appleMusicURL!) {
-                                Label("Apple Music", systemImage: "arrow.up.forward.square")
-                            }
-                        }
-                        Button(action: {}) { // generate a preview image ..?
-                            Label("Preview", systemImage: "photo.stack")
-                        }
-                    } label: {
+                    ShareLink(item: stream.appleMusicURL!) {
                         Label("Share", systemImage: "square.and.arrow.up")
                     }
                 }
