@@ -52,9 +52,9 @@ struct SheetView: View {
                                 Text("Recents").tag(ViewBy.time)
                                 Text("Locations").tag(ViewBy.place)
                             }
-                            .pickerStyle(.segmented)
-                            .padding(.horizontal)
-                            .padding(.top, 8)
+                                .pickerStyle(.segmented)
+                                .padding(.horizontal)
+                                .padding(.top, 8)
                             
                             List {
                                 ForEach(sections) { section in
@@ -67,19 +67,23 @@ struct SheetView: View {
                                             }
                                         }
                                     }
-                                    .listSectionSeparator(.hidden, edges: .bottom)
+                                        .listSectionSeparator(.hidden, edges: .bottom)
                                 }
                             }
-                            .listStyle(.inset)
+                                .listStyle(.inset)
                         } else if (!searchText.isEmpty && filtered.isEmpty) {
                             NoResults()
                         } else {
                             List {
                                 ForEach(filtered, id: \.id) { shazam in
-                                    SongRow(stream: shazam)
+                                    NavigationLink {
+                                        SongView(stream: shazam)
+                                    } label: {
+                                        SongRow(stream: shazam)
+                                    }
                                 }
                             }
-                            .listStyle(.inset)
+                                .listStyle(.inset)
                         }
                     }
                     .transition(.asymmetric(
