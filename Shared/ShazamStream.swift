@@ -12,11 +12,11 @@ import SwiftData
 import MapKit
 
 @Model final class ShazamStream {
-    var title: String
-    var artist: String
-    var isExplicit: Bool
-    var artworkURL: URL
-    var timestamp: Date
+    var title: String = ""
+    var artist: String = ""
+    var isExplicit: Bool = false
+    var artworkURL: URL = URL(string: "https://upload.wikimedia.org/wikipedia/en/c/cf/Denzel_Curry_-_Melt_My_Eyez_See_Your_Future.png")!
+    var timestamp: Date = Date.now
     
     var isrc: String?
     var shazamID: String?
@@ -24,8 +24,8 @@ import MapKit
     var appleMusicID: String?
     var appleMusicURL: URL?
     
-    var latitude: Double
-    var longitude: Double
+    var latitude: Double = 37.721941
+    var longitude: Double = -122.4739084
     var speed: Double?
     var altitude: Double?
     var thoroughfare: String?
@@ -34,7 +34,7 @@ import MapKit
     var country: String?
     var countryCode: String?
     
-    init(title: String, artist: String, isExplicit: Bool, artworkURL: URL, latitude: Double, longitude: Double) {
+    init(title: String = "", artist: String = "", isExplicit: Bool = false, artworkURL: URL = URL(string: "https://upload.wikimedia.org/wikipedia/en/c/cf/Denzel_Curry_-_Melt_My_Eyez_See_Your_Future.png")!, latitude: Double = 37.721941, longitude: Double = -122.4739084) {
         self.title = title
         self.artist = artist
         self.isExplicit = isExplicit

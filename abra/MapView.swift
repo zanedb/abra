@@ -41,9 +41,17 @@ struct MapView: View {
             MapUserLocationButton()
             MapCompass()
         }
-        // Center map on selected ShazamStream when opened from list
+        // Handle ShazamStream selected from list
         .onChange(of: vm.selectedSS) {
             if (vm.selectedSS != nil) {
+                // In case the keyboard is open & a SongRow was clicked, hide it
+                // This is hacky, but works!
+                hideKeyboard()
+                
+                // If the inspector is > than 0.50 of the screen, shrink it so it fits neatly behind our new sheet!
+                if (vm.selectedDetent == .large) { vm.selectedDetent = .fraction(0.50) }
+                
+                // Center map
                 let region = MKCoordinateRegion(center: vm.selectedSS!.coordinate, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
                 withAnimation {
                     position = .region(region)
@@ -58,3 +66,12 @@ struct MapView: View {
         .environmentObject(ViewModel())
         .modelContainer(PreviewSampleData.container)
 }
+
+
+#if canImport(UIKit)
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+#endif

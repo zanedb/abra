@@ -20,6 +20,7 @@
 		2F6093A62A2EF1F70092A6DD /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093A52A2EF1F70092A6DD /* Location.swift */; };
 		2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F659BC12A403A0000EA43F9 /* SongView.swift */; };
 		2F659BC42A40426300EA43F9 /* PlayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F659BC32A40426300EA43F9 /* PlayButton.swift */; };
+		2F8908882C73106D0002850C /* Photos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8908872C73106D0002850C /* Photos.swift */; };
 		2F8919F02A4442BA0012DFF6 /* PlacesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8919EF2A4442BA0012DFF6 /* PlacesList.swift */; };
 		2F9D49532A79CECE002CB9E5 /* PlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9D49522A79CECE002CB9E5 /* PlaceView.swift */; };
 		2F9F32C72A569F8000F44203 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9F32C62A569F8000F44203 /* ViewModel.swift */; };
@@ -34,6 +35,8 @@
 		2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC675622A3FACD200FD7638 /* SearchBar.swift */; };
 		2FC8CCEF2AC399B600523478 /* SectionedQuery in Frameworks */ = {isa = PBXBuildFile; productRef = 2FC8CCEE2AC399B600523478 /* SectionedQuery */; };
 		2FE766D22A30515E00952513 /* SongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE766D12A30515E00952513 /* SongRow.swift */; };
+		2FEACDF72C7317AF00F79E2D /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEACDF62C7317AF00F79E2D /* Library.swift */; };
+		2FEACDFB2C7320B000F79E2D /* Thumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */; };
 		2FED7C172A4402AD00FF3943 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2FED7C162A4402AD00FF3943 /* SDWebImageSwiftUI */; };
 		2FED7C192A4440C800FF3943 /* NoResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FED7C182A4440C800FF3943 /* NoResults.swift */; };
 		2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FF310C92A4A6DE900DA2A80 /* Searching.swift */; };
@@ -74,6 +77,7 @@
 		2F6093A52A2EF1F70092A6DD /* Location.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 		2F659BC12A403A0000EA43F9 /* SongView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongView.swift; sourceTree = "<group>"; };
 		2F659BC32A40426300EA43F9 /* PlayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayButton.swift; sourceTree = "<group>"; };
+		2F8908872C73106D0002850C /* Photos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photos.swift; sourceTree = "<group>"; };
 		2F8919EF2A4442BA0012DFF6 /* PlacesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlacesList.swift; sourceTree = "<group>"; };
 		2F9D49522A79CECE002CB9E5 /* PlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceView.swift; sourceTree = "<group>"; };
 		2F9F32C62A569F8000F44203 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
@@ -88,6 +92,8 @@
 		2FC675622A3FACD200FD7638 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		2FD8448B2A2F089000B67301 /* abra.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = abra.entitlements; sourceTree = "<group>"; };
 		2FE766D12A30515E00952513 /* SongRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongRow.swift; sourceTree = "<group>"; };
+		2FEACDF62C7317AF00F79E2D /* Library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Library.swift; sourceTree = "<group>"; };
+		2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thumbnail.swift; sourceTree = "<group>"; };
 		2FED7C182A4440C800FF3943 /* NoResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoResults.swift; sourceTree = "<group>"; };
 		2FF310C92A4A6DE900DA2A80 /* Searching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Searching.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -191,6 +197,7 @@
 				2F9F32C62A569F8000F44203 /* ViewModel.swift */,
 				2F6093A52A2EF1F70092A6DD /* Location.swift */,
 				2FB9AEFE2A30A383003C7A21 /* Music.swift */,
+				2FEACDF62C7317AF00F79E2D /* Library.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -226,6 +233,8 @@
 				2FED7C182A4440C800FF3943 /* NoResults.swift */,
 				2FF310C92A4A6DE900DA2A80 /* Searching.swift */,
 				2FC1E0942A622A7B00EF92D4 /* IconPicker.swift */,
+				2F8908872C73106D0002850C /* Photos.swift */,
+				2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -298,7 +307,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1430;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					2F60936B2A2EDFB30092A6DD = {
 						CreatedOnToolsVersion = 14.3.1;
@@ -373,6 +382,8 @@
 				2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */,
 				2F6093A22A2EEC960092A6DD /* ContentView.swift in Sources */,
 				2FC1E0952A622A7B00EF92D4 /* IconPicker.swift in Sources */,
+				2F8908882C73106D0002850C /* Photos.swift in Sources */,
+				2FEACDF72C7317AF00F79E2D /* Library.swift in Sources */,
 				2FED7C192A4440C800FF3943 /* NoResults.swift in Sources */,
 				2F659BC42A40426300EA43F9 /* PlayButton.swift in Sources */,
 				2F9D49532A79CECE002CB9E5 /* PlaceView.swift in Sources */,
@@ -385,6 +396,7 @@
 				2F8919F02A4442BA0012DFF6 /* PlacesList.swift in Sources */,
 				2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */,
 				2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */,
+				2FEACDFB2C7320B000F79E2D /* Thumbnail.swift in Sources */,
 				2F1727442C719B2700EEA500 /* Place.swift in Sources */,
 				2F6093A62A2EF1F70092A6DD /* Location.swift in Sources */,
 				2FA7D81A2AC0E60F0039AD5C /* ShazamStream.swift in Sources */,
@@ -479,7 +491,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -535,7 +547,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -563,6 +575,7 @@
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "We use this to play & save your Shazams.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We map your Shazams and provide location-based playlists.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "..to use Shazam";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We display relevant photos alongside Shazams. Nothing is ever uploaded.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -600,6 +613,7 @@
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "We use this to play & save your Shazams.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We map your Shazams and provide location-based playlists.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "..to use Shazam";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We display relevant photos alongside Shazams. Nothing is ever uploaded.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -622,13 +636,12 @@
 		2F60939A2A2EDFB60092A6DD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 69MX9ABFW5;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abraTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -642,13 +655,12 @@
 		2F60939B2A2EDFB60092A6DD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 69MX9ABFW5;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abraTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -662,7 +674,6 @@
 		2F60939D2A2EDFB60092A6DD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 69MX9ABFW5;
@@ -680,7 +691,6 @@
 		2F60939E2A2EDFB60092A6DD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 69MX9ABFW5;

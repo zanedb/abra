@@ -54,15 +54,21 @@ struct ContentView: View {
                         .sheet(isPresented: $vm.isMatching) {
                             searching
                         }
+                        .sheet(item: $vm.selectedSS) { selection in
+                            SongView(stream: selection)
+                                .presentationDetents([.fraction(0.50), .large])
+                                .presentationBackgroundInteraction(.enabled)
+                                .edgesIgnoringSafeArea(.bottom)
+                        }
 //                        .sheet(isPresented: $vm.newPlaceSheetShown) {
 //                            newPlace
 //                        }
                 }
         }
-        .onAppear {
-            // MARK: get modelContext in viewModel. prob not best solution.
-            vm.modelContext = modelContext
-        }
+            .onAppear {
+                // MARK: get modelContext in viewModel. prob not best solution.
+                vm.modelContext = modelContext
+            }
     }
     
     private var searching: some View {
