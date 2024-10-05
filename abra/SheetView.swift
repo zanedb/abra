@@ -60,9 +60,7 @@ struct SheetView: View {
                                 ForEach(sections) { section in
                                     Section(header: Text("\(section.id)")) {
                                         ForEach(section, id: \.self) { shazam in
-                                            NavigationLink {
-                                                SongView(stream: shazam)
-                                            } label: {
+                                            Button(action: { vm.selectedSS = shazam }) {
                                                 SongRow(stream: shazam)
                                             }
                                         }
@@ -70,15 +68,13 @@ struct SheetView: View {
                                         .listSectionSeparator(.hidden, edges: .bottom)
                                 }
                             }
-                                .listStyle(.inset)
+                            .listStyle(.inset)
                         } else if (!searchText.isEmpty && filtered.isEmpty) {
                             NoResults()
                         } else {
                             List {
                                 ForEach(filtered, id: \.id) { shazam in
-                                    NavigationLink {
-                                        SongView(stream: shazam)
-                                    } label: {
+                                    Button(action: { vm.selectedSS = shazam }) {
                                         SongRow(stream: shazam)
                                     }
                                 }
@@ -94,18 +90,16 @@ struct SheetView: View {
             }
                 .toolbar(.hidden)
                 // Find ShazamStream from id and display SongView
-                .navigationDestination(for: Path.self) { selection in
-                    if let sstream = modelContext.model(for: selection.sStreamId!) as? ShazamStream {
-                        SongView(stream: sstream)
-                    }
-                }
                 .navigationTitle("Library")
                 .navigationBarTitleDisplayMode(.inline)
 //            .searchable(text: $searchText)
         }
-        // Map annotation tapped -> wrap id in Path and add to navPath
-        .onChange(of: vm.mapSelection) {
-            navPath.append(Path(sStreamId: vm.mapSelection!))
+            // Map annotation tapped -> set selection on ViewModel
+            .onChange(of: vm.mapSelection) {
+                if let sstream = modelContext.model(for: vm.mapSelection!) as? ShazamStream {
+                    vm.selectedSS = sstream
+                }
+            }
         }
     }
 }

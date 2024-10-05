@@ -54,6 +54,11 @@ struct ContentView: View {
                         .sheet(isPresented: $vm.isMatching) {
                             searching
                         }
+                        .sheet(item: $vm.selectedSS) { selection in
+                            SongView(stream: selection)
+                                .presentationDetents([.fraction(0.50), .large])
+                                .presentationBackgroundInteraction(.enabled)
+                        }
 //                        .sheet(isPresented: $vm.newPlaceSheetShown) {
 //                            newPlace
 //                        }

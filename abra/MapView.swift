@@ -41,9 +41,13 @@ struct MapView: View {
             MapUserLocationButton()
             MapCompass()
         }
-        // Center map on selected ShazamStream when opened from list
+        // Handle ShazamStream selected from list
         .onChange(of: vm.selectedSS) {
             if (vm.selectedSS != nil) {
+                // If the inspector is > than 0.50 of the screen, shrink it so it fits neatly behind our new sheet!
+                if (vm.selectedDetent == .large) { vm.selectedDetent = .fraction(0.50) }
+                
+                // Center map
                 let region = MKCoordinateRegion(center: vm.selectedSS!.coordinate, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
                 withAnimation {
                     position = .region(region)
