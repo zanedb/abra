@@ -24,50 +24,48 @@ struct SheetView: View {
     var sections: SectionedResults<String, ShazamStream>
     
     var body: some View {
-        NavigationStack {
-            VStack {
-                SearchBar(prompt: "Search Shazams", search: $searchText)
-                    .padding(.horizontal)
-                    .padding(.top, vm.selectedDetent != PresentationDetent.height(65) ? 14 : 0)
-                
-                if (vm.selectedDetent != PresentationDetent.height(65)) {
-                    VStack(spacing: 0){
-                        if(searchText.isEmpty && filtered.isEmpty) {
-                            EmptyLibrary()
-                        } else if (searchText.isEmpty) {
-                            picker
-                            
-                            List {
-                                ForEach(sections) { section in
-                                    Section(header: Text("\(section.id)")) {
-                                        ForEach(section, id: \.self) { shazam in
-                                            Button(action: { vm.selectedSS = shazam }) {
-                                                SongRow(stream: shazam)
-                                            }
+        VStack {
+            SearchBar(prompt: "Search Shazams", search: $searchText)
+                .padding(.horizontal)
+                .padding(.top, vm.selectedDetent != PresentationDetent.height(65) ? 14 : 0)
+            
+            if (vm.selectedDetent != PresentationDetent.height(65)) {
+                VStack(spacing: 0){
+                    if(searchText.isEmpty && filtered.isEmpty) {
+                        EmptyLibrary()
+                    } else if (searchText.isEmpty) {
+                        picker
+                        
+                        List {
+                            ForEach(sections) { section in
+                                Section(header: Text("\(section.id)")) {
+                                    ForEach(section, id: \.self) { shazam in
+                                        Button(action: { vm.selectedSS = shazam }) {
+                                            SongRow(stream: shazam)
                                         }
                                     }
-                                        .listSectionSeparator(.hidden, edges: .bottom)
                                 }
+                                    .listSectionSeparator(.hidden, edges: .bottom)
                             }
-                            .listStyle(.inset)
-                        } else if (!searchText.isEmpty && filtered.isEmpty) {
-                            NoResults()
-                        } else {
-                            List {
-                                ForEach(filtered, id: \.id) { shazam in
-                                    Button(action: { vm.selectedSS = shazam }) {
-                                        SongRow(stream: shazam)
-                                    }
-                                }
-                            }
-                                .listStyle(.inset)
                         }
+                        .listStyle(.inset)
+                    } else if (!searchText.isEmpty && filtered.isEmpty) {
+                        NoResults()
+                    } else {
+                        List {
+                            ForEach(filtered, id: \.id) { shazam in
+                                Button(action: { vm.selectedSS = shazam }) {
+                                    SongRow(stream: shazam)
+                                }
+                            }
+                        }
+                            .listStyle(.inset)
                     }
+                }
                     .transition(.asymmetric(
                         insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
                         removal: .opacity.animation(.easeInOut(duration: 0.15)))
                     )
-                }
             }
         }
             // Map annotation tapped -> set selection on ViewModel
@@ -76,7 +74,6 @@ struct SheetView: View {
                     vm.selectedSS = sstream
                 }
             }
-//                .searchable(text: $searchText)
     }
     
     var picker: some View {
