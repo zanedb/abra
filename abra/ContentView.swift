@@ -58,6 +58,7 @@ struct ContentView: View {
                             SongView(stream: selection)
                                 .presentationDetents([.fraction(0.50), .large])
                                 .presentationBackgroundInteraction(.enabled)
+                                .edgesIgnoringSafeArea(.bottom)
                         }
 //                        .sheet(isPresented: $vm.newPlaceSheetShown) {
 //                            newPlace
