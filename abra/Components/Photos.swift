@@ -33,7 +33,12 @@ struct Photos: View {
             if showError {
                 permissionView
             } else {
-                libraryView
+                if (library.results.isEmpty) {
+                    // TODO: use this space better
+                    emptyView
+                } else {
+                    libraryView
+                }
             }
         }
             .onAppear {
@@ -47,7 +52,7 @@ struct Photos: View {
                 .fill(.gray.opacity(0.15))
                 .frame(maxHeight: 172)
                 .clipShape(RoundedRectangle(
-                    cornerRadius: 16
+                    cornerRadius: 8
                 ))
             
             // MARK: this creates an X button that closes the card permanently
@@ -117,9 +122,21 @@ struct Photos: View {
                 }
             }
                 .clipShape(RoundedRectangle(
-                    cornerRadius: 16
+                    cornerRadius: 8
                 ))
         }
+    }
+    
+    var emptyView: some View {
+        ZStack {
+            Rectangle()
+                .fill(.gray.opacity(0.15))
+                .frame(maxHeight: 172)
+                .clipShape(RoundedRectangle(
+                    cornerRadius: 8
+                ))
+        }
+            .frame(maxWidth: .infinity)
     }
 }
 
