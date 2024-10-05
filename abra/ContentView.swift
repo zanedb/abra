@@ -64,10 +64,10 @@ struct ContentView: View {
 //                        }
                 }
         }
-        .onAppear {
-            // MARK: get modelContext in viewModel. prob not best solution.
-            vm.modelContext = modelContext
-        }
+            .onAppear {
+                // MARK: get modelContext in viewModel. prob not best solution.
+                vm.modelContext = modelContext
+            }
     }
     
     private var searching: some View {

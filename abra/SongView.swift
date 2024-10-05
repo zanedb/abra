@@ -18,39 +18,18 @@ struct SongView: View {
     var stream: ShazamStream
     
     var body: some View {
-        if (vm.selectedDetent != PresentationDetent.height(65)) {
-            VStack(alignment: .leading, spacing: 0) {
-                card
-                
-                if (!library.hasIgnoredPhotosRequest) {
-                    Text("Moments")
-                        .font(.headline)
-                        .padding(.top)
-                        .padding(.bottom, 8)
-                    Photos(stream: stream)
-                }
-                
-                Spacer()
+        VStack(alignment: .leading, spacing: 0) {
+            card
+            
+            if (!library.hasIgnoredPhotosRequest) {
+                Text("Moments")
+                    .font(.headline)
+                    .padding(.top)
+                    .padding(.bottom, 8)
+                Photos(stream: stream)
             }
-            .padding()
-            .transition(.asymmetric(
-                insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
-                removal: .opacity.animation(.easeInOut(duration: 0.15)))
-            )
-            .navigationTitle(stream.definiteDate)
-            .toolbar {
-                ToolbarItem() {
-                    ShareLink(item: stream.appleMusicURL!) {
-                        Label("Share", systemImage: "square.and.arrow.up")
-                    }
-                }
-            }
-            .onAppear {
-                vm.selectedSS = stream // Used to center map
-            }
-        } else {
-            Spacer()
         }
+            .padding()
     }
     
     var card: some View {

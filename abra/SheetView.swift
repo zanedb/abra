@@ -14,47 +14,28 @@ enum ViewBy {
     case place
 }
 
-// navPath.append() requires type to be Codable
-// therefore I must wrap ShazamStream's id in an otherwise useless struct
-struct Path: Hashable, Codable {
-    var sStreamId: PersistentIdentifier?
-}
-
 struct SheetView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var vm: ViewModel
     
-    @State var navPath = NavigationPath()
-    @FocusState var focused: Bool
     @Binding var searchText: String
     @Binding var viewBy: ViewBy
     var filtered: [ShazamStream]
     var sections: SectionedResults<String, ShazamStream>
     
     var body: some View {
-        NavigationStack(path: $navPath) {
+        NavigationStack {
             VStack {
-                SearchBar(prompt: "Search Shazams", search: $searchText, focused: _focused)
+                SearchBar(prompt: "Search Shazams", search: $searchText)
                     .padding(.horizontal)
-                    .padding(.top, (vm.selectedDetent != PresentationDetent.height(65) || focused) ? 14 : 0)
-                    .onChange(of: focused) {
-                        // MARK: this doesn't work.
-                        // TODO: fix.
-                        print(focused)
-                    }
+                    .padding(.top, vm.selectedDetent != PresentationDetent.height(65) ? 14 : 0)
                 
-                if (vm.selectedDetent != PresentationDetent.height(65) || focused) {
+                if (vm.selectedDetent != PresentationDetent.height(65)) {
                     VStack(spacing: 0){
                         if(searchText.isEmpty && filtered.isEmpty) {
                             EmptyLibrary()
                         } else if (searchText.isEmpty) {
-                            Picker("", selection: $viewBy) {
-                                Text("Recents").tag(ViewBy.time)
-                                Text("Locations").tag(ViewBy.place)
-                            }
-                                .pickerStyle(.segmented)
-                                .padding(.horizontal)
-                                .padding(.top, 8)
+                            picker
                             
                             List {
                                 ForEach(sections) { section in
@@ -88,11 +69,6 @@ struct SheetView: View {
                     )
                 }
             }
-                .toolbar(.hidden)
-                // Find ShazamStream from id and display SongView
-                .navigationTitle("Library")
-                .navigationBarTitleDisplayMode(.inline)
-//            .searchable(text: $searchText)
         }
             // Map annotation tapped -> set selection on ViewModel
             .onChange(of: vm.mapSelection) {
@@ -100,7 +76,17 @@ struct SheetView: View {
                     vm.selectedSS = sstream
                 }
             }
+//                .searchable(text: $searchText)
+    }
+    
+    var picker: some View {
+        Picker("", selection: $viewBy) {
+            Text("Recents").tag(ViewBy.time)
+            Text("Locations").tag(ViewBy.place)
         }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.top, 8)
     }
 }
 
