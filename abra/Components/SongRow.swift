@@ -70,6 +70,7 @@ struct SongRow: View {
     private func deleteStream(_ shazam: ShazamStream) {
         withAnimation {
             modelContext.delete(shazam)
+            try? modelContext.save()
         }
         Task {
             try? await vm.deleteFromShazamLibrary(shazam)
