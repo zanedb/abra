@@ -39,10 +39,12 @@ struct SongView: View {
     
     var toolbar: some View {
         HStack(alignment: .center) {
-            ShareLink(item: stream.appleMusicURL!) {
-                Label("Share", systemImage: "square.and.arrow.up")
-                    .labelStyle(.iconOnly)
-                    .font(.system(size: 20))
+            if (stream.appleMusicURL != nil) {
+                ShareLink(item: stream.appleMusicURL!) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                        .labelStyle(.iconOnly)
+                        .font(.system(size: 20))
+                }
             }
             
             Spacer()
