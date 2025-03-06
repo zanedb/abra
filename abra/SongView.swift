@@ -7,7 +7,6 @@
 
 import SwiftUI
 import MapKit
-import SDWebImageSwiftUI
 import SwiftData
 
 struct SongView: View {
@@ -61,18 +60,18 @@ struct SongView: View {
     
     var card: some View {
         HStack(alignment: .top) {
-            WebImage(url: stream.artworkURL)
-                .resizable()
-                .placeholder {
-                    ProgressView()
-                        .scaledToFit()
-                        .frame(width: 96, height: 96)
-                        .padding(.trailing, 5)
-                }
-                .aspectRatio(contentMode: .fit)
+            AsyncImage(url: stream.artworkURL) { image in
+                image
+                    .resizable()
+            } placeholder: {
+                ProgressView()
+                    .scaledToFit()
+            }
+            .aspectRatio(contentMode: .fit)
                 .frame(width: 96, height: 96)
                 .cornerRadius(3.0)
                 .padding(.trailing, 5)
+            
             VStack(alignment: .leading, spacing: 0) {
                 Text(stream.title)
                     .fontWeight(.bold)

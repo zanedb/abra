@@ -37,7 +37,6 @@
 		2FE766D22A30515E00952513 /* SongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE766D12A30515E00952513 /* SongRow.swift */; };
 		2FEACDF72C7317AF00F79E2D /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEACDF62C7317AF00F79E2D /* Library.swift */; };
 		2FEACDFB2C7320B000F79E2D /* Thumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */; };
-		2FED7C172A4402AD00FF3943 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2FED7C162A4402AD00FF3943 /* SDWebImageSwiftUI */; };
 		2FED7C192A4440C800FF3943 /* NoResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FED7C182A4440C800FF3943 /* NoResults.swift */; };
 		2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FF310C92A4A6DE900DA2A80 /* Searching.swift */; };
 /* End PBXBuildFile section */
@@ -104,7 +103,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				2FC8CCEF2AC399B600523478 /* SectionedQuery in Frameworks */,
-				2FED7C172A4402AD00FF3943 /* SDWebImageSwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,7 +254,6 @@
 			);
 			name = abra;
 			packageProductDependencies = (
-				2FED7C162A4402AD00FF3943 /* SDWebImageSwiftUI */,
 				2FC8CCEE2AC399B600523478 /* SectionedQuery */,
 			);
 			productName = abra;
@@ -332,7 +329,6 @@
 			);
 			mainGroup = 2F6093632A2EDFB30092A6DD;
 			packageReferences = (
-				2FED7C152A4402AC00FF3943 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 				2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */,
 			);
 			productRefGroup = 2F60936D2A2EDFB30092A6DD /* Products */;
@@ -755,14 +751,6 @@
 				minimumVersion = 1.0.0;
 			};
 		};
-		2FED7C152A4402AC00FF3943 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -770,11 +758,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */;
 			productName = SectionedQuery;
-		};
-		2FED7C162A4402AD00FF3943 /* SDWebImageSwiftUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2FED7C152A4402AC00FF3943 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;
-			productName = SDWebImageSwiftUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

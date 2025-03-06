@@ -8,7 +8,6 @@
 import SwiftUI
 import MapKit
 import SwiftData
-import SDWebImageSwiftUI
 
 struct MapView: View {
     @EnvironmentObject private var vm: ViewModel
@@ -19,13 +18,13 @@ struct MapView: View {
         Map(position: $position, selection: $vm.mapSelection) {
             ForEach(shazams, id: \.id) { shazam in
                 Annotation(shazam.title, coordinate: shazam.coordinate) {
-                    WebImage(url: shazam.artworkURL)
-                        .resizable()
-                        .placeholder {
-                            ProgressView()
-                                .scaledToFit()
-                                .frame(width: 30, height: 30)
-                        }
+                    AsyncImage(url: shazam.artworkURL) { image in
+                        image
+                            .resizable()
+                    } placeholder: {
+                        ProgressView()
+                            .scaledToFit()
+                    }
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 30, height: 30)
                         .clipShape(RoundedRectangle(cornerRadius: 3.0))
