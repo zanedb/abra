@@ -21,7 +21,7 @@ struct SongView: View {
         VStack(alignment: .leading, spacing: 0) {
             toolbar
             
-            card
+            SongSheet(stream: stream)
             
             if (!library.hasIgnoredPhotosRequest) {
                 Text("Moments")
@@ -56,44 +56,6 @@ struct SongView: View {
             }
         }
             .padding(.bottom, 12)
-    }
-    
-    var card: some View {
-        HStack(alignment: .top) {
-            AsyncImage(url: stream.artworkURL) { image in
-                image
-                    .resizable()
-            } placeholder: {
-                ProgressView()
-                    .scaledToFit()
-            }
-            .aspectRatio(contentMode: .fit)
-                .frame(width: 96, height: 96)
-                .cornerRadius(3.0)
-                .padding(.trailing, 5)
-            
-            VStack(alignment: .leading, spacing: 0) {
-                Text(stream.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.80) : Color.black.opacity(0.80))
-                    .font(.system(size: 17))
-                    .padding(.bottom, 3)
-                    .lineLimit(1)
-                Text(stream.artist)
-                    .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.6) : Color.black.opacity(0.6))
-                    .font(.system(size: 14))
-                    .padding(.bottom, 3)
-                    .lineLimit(1)
-                Text(stream.definiteDateAndTime)
-                    .foregroundColor(Color.gray)
-                    .font(.system(size: 13))
-                Spacer()
-                
-                PlayButton(appleMusicID: stream.appleMusicID ?? "1486262969")
-            }
-            Spacer()
-        }
-        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
