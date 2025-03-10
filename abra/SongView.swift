@@ -24,10 +24,19 @@ struct SongView: View {
             SongSheet(stream: stream)
             
             if (!library.hasIgnoredPhotosRequest) {
-                Text("Moments")
-                    .font(.headline)
+                HStack {
+                    Text(stream.timestamp, style: .date)
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    Text(stream.timestamp, style: .time)
+                        .font(.system(size: 14))
+                        .foregroundColor(.gray)
+                }
                     .padding(.top)
                     .padding(.bottom, 8)
+                
                 Photos(stream: stream)
             }
             

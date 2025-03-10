@@ -34,8 +34,7 @@ struct Photos: View {
                 permissionView
             } else {
                 if (library.results.isEmpty) {
-                    // TODO: use this space better
-                    emptyView
+                    EmptyView()
                 } else {
                     libraryView
                 }
@@ -125,18 +124,6 @@ struct Photos: View {
                     cornerRadius: 8
                 ))
         }
-    }
-    
-    var emptyView: some View {
-        ZStack {
-            Rectangle()
-                .fill(.gray.opacity(0.15))
-                .frame(maxHeight: 172)
-                .clipShape(RoundedRectangle(
-                    cornerRadius: 8
-                ))
-        }
-            .frame(maxWidth: .infinity)
     }
 }
 
