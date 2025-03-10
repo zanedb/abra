@@ -64,6 +64,12 @@ extension Date {
         return dateFormatter.string(from: self)
     }
     
+    var timeSince: String {
+        let rDF = RelativeDateTimeFormatter()
+        rDF.unitsStyle = .abbreviated
+        return rDF.localizedString(for: self, relativeTo: Date.now)
+    }
+    
     func relativeGroupString() -> String {
         if (Calendar.current.isDateInToday(self)) {
             return "Today"
@@ -82,21 +88,19 @@ extension ShazamStream {
         CLLocationCoordinate2D(latitude: self.latitude, longitude: self.longitude)
     }
     
-    public var relativeTime: String {
-        if (timestamp.isInLastThirtyDays()) {
-            RelativeDateTimeFormatter().localizedString(for: timestamp, relativeTo: Date.now)
+    public var cityState: String {
+        if (city != nil && state != nil) {
+            "\(city!), \(state!)"
         } else {
-            timestamp.formatted(.dateTime.day().month().hour().minute())
+            "Unknown"
         }
     }
     
-    public var definiteDate: String {
-        if (Calendar.current.isDateInToday(timestamp)) {
-            "Today"
-        } else if (Calendar.current.isDateInYesterday(timestamp)) {
-            "Yesterday"
+    public var relativeDateTime: String {
+        if (timestamp.isInLastThirtyDays()) {
+            timestamp.timeSince
         } else {
-            timestamp.formatted(.dateTime.weekday().day().month())
+            timestamp.formatted(.dateTime.day().month())
         }
     }
     

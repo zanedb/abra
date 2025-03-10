@@ -29,22 +29,29 @@ struct SongRow: View {
                 .padding(.trailing, 5)
             
             VStack(alignment: .leading, spacing: 0) {
-                Text(stream.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.80) : Color.black.opacity(0.80))
-                    .font(.system(size: 17))
-                    .padding(.bottom, 3)
+                HStack(alignment: .top) {
+                    Text(stream.title)
+                        .fontWeight(.bold)
+                        .font(.system(size: 17))
+                        .padding(.bottom, 3)
+                        .lineLimit(2)
+                    
+                    Spacer()
+                    
+                    Text(stream.relativeDateTime)
+                        .foregroundColor(Color.gray)
+                        .font(.system(size: 14))
+                }
                 Text(stream.artist)
-                    .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.6) : Color.black.opacity(0.6))
+                    .foregroundColor(.gray)
                     .font(.system(size: 14))
                     .padding(.bottom, 3)
-                Text(stream.relativeTime)
-                    .foregroundColor(Color.gray)
-                    .font(.system(size: 13))
+                
                 Spacer()
-                Text((stream.city ?? "Invalid location") + ", " + (stream.countryCode ?? "oops!"))
+                
+                Text(stream.cityState)
                     .foregroundColor(Color.gray)
-                    .font(.system(size: 12))
+                    .font(.system(size: 14))
             }
             Spacer()
         }
