@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		2F0547392A5217B0002177D4 /* NewPlace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547382A5217B0002177D4 /* NewPlace.swift */; };
 		2F1727442C719B2700EEA500 /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1727432C719B2700EEA500 /* Place.swift */; };
+		2F4BE1D22D7FA059006AFFC2 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 2F4BE1D12D7FA056006AFFC2 /* .gitignore */; };
 		2F6093702A2EDFB30092A6DD /* abraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F60936F2A2EDFB30092A6DD /* abraApp.swift */; };
 		2F6093742A2EDFB50092A6DD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F6093732A2EDFB50092A6DD /* Assets.xcassets */; };
 		2F6093772A2EDFB50092A6DD /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F6093762A2EDFB50092A6DD /* Preview Assets.xcassets */; };
@@ -61,6 +62,7 @@
 /* Begin PBXFileReference section */
 		2F0547382A5217B0002177D4 /* NewPlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPlace.swift; sourceTree = "<group>"; };
 		2F1727432C719B2700EEA500 /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
+		2F4BE1D12D7FA056006AFFC2 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		2F60936C2A2EDFB30092A6DD /* abra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = abra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F60936F2A2EDFB30092A6DD /* abraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = abraApp.swift; sourceTree = "<group>"; };
 		2F6093732A2EDFB50092A6DD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -130,6 +132,7 @@
 				2F60936E2A2EDFB30092A6DD /* abra */,
 				2F6093852A2EDFB60092A6DD /* abraTests */,
 				2F60938F2A2EDFB60092A6DD /* abraUITests */,
+				2F4BE1D12D7FA056006AFFC2 /* .gitignore */,
 				2F60936D2A2EDFB30092A6DD /* Products */,
 			);
 			sourceTree = "<group>";
@@ -347,6 +350,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F4BE1D22D7FA059006AFFC2 /* .gitignore in Resources */,
 				2F6093772A2EDFB50092A6DD /* Preview Assets.xcassets in Resources */,
 				2F6093742A2EDFB50092A6DD /* Assets.xcassets in Resources */,
 				2FC1E0982A622BA800EF92D4 /* sfsymbols.txt in Resources */,
