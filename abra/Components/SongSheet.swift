@@ -39,7 +39,9 @@ struct SongSheet: View {
                 
                 Spacer()
                 
-                PlayButton(appleMusicID: stream.appleMusicID ?? "1486262969")
+                if (stream.appleMusicID != nil) {
+                    PlayButton(appleMusicID: stream.appleMusicID!)
+                }
             }
         }
             .frame(height: 96)
