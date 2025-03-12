@@ -68,6 +68,8 @@ struct SheetView: View {
         }
             // Map annotation tapped -> set selection on ViewModel
             .onChange(of: vm.mapSelection) {
+                guard (vm.mapSelection != nil) else { return }
+                
                 if let sstream = modelContext.model(for: vm.mapSelection!) as? ShazamStream {
                     vm.selectedSS = sstream
                 }
