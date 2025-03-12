@@ -1,8 +1,6 @@
 //
 //  Place.swift
-//  abra
-//
-//  Created by Zane on 8/17/24.
+//  Abra
 //
 
 import Foundation

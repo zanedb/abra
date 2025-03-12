@@ -1,8 +1,8 @@
 //
 //  ActivityAttributes.swift
-//  abra
+//  Abra
 //
-//  Created by Zane on 3/11/25.
+//  Defines shared attributes between the Widget and Abra bundles, used in the ViewModel and Widget components.
 //
 
 import ActivityKit

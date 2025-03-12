@@ -1,10 +1,8 @@
 //
 //  ModelContainerPreview.swift
-//  abra
+//  Abra
 //
 //  A view to use only in previews that creates a model container before showing the preview content.
-//
-//  Created by Zane on 9/24/23.
 //
 
 import SwiftUI

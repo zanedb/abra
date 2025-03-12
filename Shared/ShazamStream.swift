@@ -1,10 +1,8 @@
 //
 //  ShazamStream.swift
-//  abra
+//  Abra
 //
 //  The model class of ShazamStream (formerly SStream).
-//
-//  Created by Zane on 9/24/23.
 //
 
 import Foundation
@@ -102,10 +100,6 @@ extension ShazamStream {
         } else {
             timestamp.formatted(.dateTime.day().month())
         }
-    }
-    
-    public var definiteDateAndTime: String {
-        timestamp.formatted(.dateTime.day().month().hour().minute())
     }
     
     public var timeGroupedString: String {

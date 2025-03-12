@@ -1,10 +1,8 @@
 //
 //  PreviewSampleData.swift
-//  abra
+//  Abra
 //
 //  The preview sample data actor which provides an in-memory model container.
-//
-//  Created by Zane on 9/24/23.
 //
 
 import SwiftData
