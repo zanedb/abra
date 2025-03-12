@@ -43,6 +43,17 @@ class Music: NSObject, ObservableObject {
     }
     
     func play(id: String) {
+        if currentTrackID == id {
+            // Resume if currently playing song is requested
+            musicPlayer.play()
+            
+            DispatchQueue.main.async {
+                self.isPlaying = true
+            }
+            
+            return
+        }
+        
         errorMessage = nil
         currentTrackID = id
         
