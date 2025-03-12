@@ -25,12 +25,6 @@ struct abraApp: App {
                 }
                 .environmentObject(vm)
                 .environmentObject(library)
-                .onChange(of: scenePhase) {
-                    // MARK: on app close, stop shazam session if active
-                    if scenePhase == .inactive {
-                        vm.stopRecording()
-                    }
-                }
         }
         .modelContainer(for: ShazamStream.self)
     }

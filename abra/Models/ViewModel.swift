@@ -12,6 +12,7 @@ import ShazamKit
 import CoreData
 import Combine
 import MapKit
+import ActivityKit
 
 struct MatchResult: Identifiable, Equatable {
     let id = UUID()
@@ -28,6 +29,9 @@ struct MatchResult: Identifiable, Equatable {
     @Published var mapSelection: PersistentIdentifier?
     @Published var isMatching = false
     @Published var currentMatchResult: MatchResult?
+    @Published private(set) var isActivityRunning: Bool = false
+    
+    private var currentActivity: Activity<WidgetAttributes>? = nil
     
     var currentMediaItem: SHMatchedMediaItem? {
         currentMatchResult?.match?.mediaItems.first
@@ -50,6 +54,7 @@ struct MatchResult: Identifiable, Equatable {
     func match() async {
         isMatching = true
         location.requestLocation() // we'll need this soon
+        startActivity()
         
         for await result in session.results {
             switch result {
@@ -115,11 +120,63 @@ struct MatchResult: Identifiable, Equatable {
     func stopRecording() {
         session.cancel()
         isMatching = false
+        endActivity()
     }
     
-    func endSession() {
+    private func endSession() {
         // Reset result of any previous match
         isMatching = false
+        endActivity()
         currentMatchResult = MatchResult(match: nil)
+    }
+    
+    private func startActivity() {
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        
+        do {
+            let attributes = WidgetAttributes()
+            let initialState = WidgetAttributes.ContentState(
+                takingTooLong: false
+            )
+            
+            let activity = try Activity.request(
+                attributes: attributes,
+                content: .init(state: initialState, staleDate: nil),
+                pushType: nil
+            )
+            
+            currentActivity = activity
+            isActivityRunning = true
+            
+            print("Started activity with ID: \(activity.id)")
+        } catch {
+            print("Error starting Live Activity: \(error)")
+        }
+    }
+    
+    private func updateActivity(takingTooLong: Bool) {
+        Task {
+            guard let activity = currentActivity else { return }
+            
+            let updatedState = WidgetAttributes.ContentState(takingTooLong: takingTooLong)
+            
+            await activity.update(ActivityContent(state: updatedState, staleDate: nil))
+            print("Updated activity with ID: \(activity.id)")
+        }
+    }
+    
+    private func endActivity() {
+        Task {
+            guard let activity = currentActivity else { return }
+            
+            let dismissalPolicy = ActivityUIDismissalPolicy.default
+            let finalState = WidgetAttributes.ContentState(takingTooLong: false)
+            
+            await activity.end(.init(state: finalState, staleDate: nil), dismissalPolicy: dismissalPolicy)
+            print("Ended activity with ID: \(activity.id)")
+            
+            currentActivity = nil
+            isActivityRunning = false
+        }
     }
 }
