@@ -51,9 +51,19 @@ struct MapView: View {
                 if (vm.selectedDetent == .large) { vm.selectedDetent = .fraction(0.50) }
                 
                 // Center map
-                let region = MKCoordinateRegion(center: vm.selectedSS!.coordinate, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+                // Offset latitude (move northward) by approximately 35% of the span
+                // There's probably a better way to do this as this value is set based on my limited personal testing
+                let span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                let offsetLatitude = vm.selectedSS!.latitude + (span.latitudeDelta * -0.35)
+                
                 withAnimation {
-                    position = .region(region)
+                    position = .region(MKCoordinateRegion(
+                        center: CLLocationCoordinate2D(
+                            latitude: offsetLatitude,
+                            longitude: vm.selectedSS!.longitude
+                        ),
+                        span: span
+                    ))
                 }
             }
         }
