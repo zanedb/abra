@@ -64,19 +64,19 @@ struct SongRow: View {
                 }
                 Divider()
             }
-            Button(role: .destructive, action: { deleteStream(stream) }, label: {
+            Button(role: .destructive, action: { deleteStream() }, label: {
                 Label("Remove", systemImage: "trash")
             })
         }
     }
     
-    private func deleteStream(_ shazam: ShazamStream) {
+    private func deleteStream() {
         withAnimation {
-            modelContext.delete(shazam)
+            modelContext.delete(stream)
             try? modelContext.save()
         }
         Task {
-            try? await vm.deleteFromShazamLibrary(shazam)
+            try? await vm.deleteFromShazamLibrary(stream)
         }
     }
 }
