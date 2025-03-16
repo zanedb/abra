@@ -12,9 +12,10 @@ struct WidgetLiveActivity: Widget {
         ActivityConfiguration(for: WidgetAttributes.self) { context in
             HStack {
                 leading
-                center
-                trailing
                     .foregroundStyle(.white)
+                center(context: context)
+                    .foregroundStyle(.white)
+                trailing(context: context)
             }
                 .activityBackgroundTint(.black)
                 .padding()
@@ -24,10 +25,10 @@ struct WidgetLiveActivity: Widget {
                     leading
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    trailing
+                    trailing(context: context)
                 }
                 DynamicIslandExpandedRegion(.center) {
-                    center
+                    center(context: context)
                 }
             } compactLeading: {
                 Image(systemName: "shazam.logo.fill")
@@ -45,22 +46,24 @@ struct WidgetLiveActivity: Widget {
             .frame(width: 55, height: 55)
     }
     
-    var trailing: some View {
-        Image(systemName: "xmark.circle.fill")
-            .symbolRenderingMode(.hierarchical)
-            .resizable()
-            .font(Font.title.weight(.light))
-            .foregroundStyle(.blue)
-            .frame(width: 59, height: 59)
-            .accessibilityLabel("Stop listening")
+    func trailing(context: ActivityViewContext<WidgetAttributes>) -> some View {
+        Button(intent: DismissLiveActivityIntent(activityID: context.activityID)) {
+            Image(systemName: "xmark.circle.fill")
+                .symbolRenderingMode(.hierarchical)
+                .resizable()
+                .font(Font.title.weight(.light))
+                .foregroundStyle(.blue)
+                .frame(width: 55, height: 55)
+                .accessibilityLabel("Stop listening")
+        }
+            .buttonStyle(PlainButtonStyle())
     }
     
-    var center: some View {
+    func center(context: ActivityViewContext<WidgetAttributes>) -> some View {
         HStack(spacing: 0) {
-            Text("Listening...")
+            Text(context.state.takingTooLong ? "Still listening…" : "Listening…")
                 .font(.system(size: 17, weight: .bold))
-                .foregroundStyle(LinearGradient(gradient: Gradient(colors: [Color.blue, Color.blue, Color.white]), startPoint: .leading, endPoint: .trailing))
-                .padding(.leading, 8)
+                .padding(.leading, 5)
             
             Spacer()
         }
