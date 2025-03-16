@@ -20,12 +20,12 @@ struct PlayButton: View {
             }
             
             if music.isPlaying {
-                music.stopPlayback()
-                
                 // If the PlayButton is on a different SongView, start new playback
                 if music.currentTrackID != appleMusicID {
-                    music.play(id: appleMusicID)
+                    return music.play(id: appleMusicID)
                 }
+                
+                music.stopPlayback()
             } else {
                 music.play(id: appleMusicID)
             }
