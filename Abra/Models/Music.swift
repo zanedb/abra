@@ -8,7 +8,7 @@ import MusicKit
 import StoreKit
 import MediaPlayer
 
-class Music: NSObject, ObservableObject {
+class MusicService: NSObject, ObservableObject {
     let musicPlayer = MPMusicPlayerController.systemMusicPlayer
     
     @Published var isPlaying = false
@@ -89,5 +89,5 @@ class Music: NSObject, ObservableObject {
 
 struct MusicController {
     static let shared = MusicController()
-    let music = Music()
+    let music = MusicService()
 }

@@ -9,8 +9,8 @@ import Foundation
 import CoreLocation
 import MapKit
 
-class Location: NSObject, ObservableObject, CLLocationManagerDelegate {
-    static let shared = Location() // not sure this is the best way to handle this
+class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate {
+    static let shared = LocationService() // not sure this is the best way to handle this
     
     @Published var authorizationStatus: CLAuthorizationStatus
     @Published var lastSeenLocation: CLLocation?
