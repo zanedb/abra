@@ -14,11 +14,10 @@ struct WidgetLiveActivity: Widget {
                 leading
                 center
                 trailing
+                    .foregroundStyle(.white)
             }
+                .activityBackgroundTint(.black)
                 .padding()
-                .activityBackgroundTint(nil)
-                .activitySystemActionForegroundColor(Color.black)
-
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
@@ -43,7 +42,7 @@ struct WidgetLiveActivity: Widget {
     var leading: some View{
         Image(systemName: "shazam.logo.fill")
             .resizable()
-            .frame(width: 59, height: 59)
+            .frame(width: 55, height: 55)
     }
     
     var trailing: some View {
@@ -64,12 +63,6 @@ struct WidgetLiveActivity: Widget {
                 .padding(.leading, 8)
             
             Spacer()
-            
-            Image(systemName: "waveform")
-                .resizable()
-                .frame(width: 20, height: 20)
-                .foregroundStyle(LinearGradient(gradient: Gradient(colors: [Color.blue, Color.blue, Color.white]), startPoint: .leading, endPoint: .trailing))
-                .padding(.trailing, 9)
         }
     }
 }
