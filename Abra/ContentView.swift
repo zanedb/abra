@@ -99,6 +99,5 @@ struct ContentView: View {
     ContentView()
         .environmentObject(ViewModel())
         .modelContainer(PreviewSampleData.container)
-    // .previewDevice(PreviewDevice(rawValue: "iPad Pro (12.9-inch) (6th generation)"))
-    // .previewDisplayName("iPad Pro 12.9")
+        .environmentObject(LibraryService())
 }

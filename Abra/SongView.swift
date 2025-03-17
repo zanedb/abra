@@ -69,9 +69,21 @@ struct SongView: View {
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: ShazamStream.self, configurations: config)
-
-    let s = ShazamStream.preview
-    return SongView(stream: s)
+    
+    struct ContentView: View {
+        @State private var showSheet = true
+        let stream = ShazamStream.preview
+        
+        var body: some View {
+            EmptyView()
+                .inspector(isPresented: $showSheet) {
+                    SongView(stream: stream)
+                        .environmentObject(ViewModel())
+                        .environmentObject(LibraryService())
+                }
+        }
+    }
+    
+    return ContentView()
         .modelContainer(container)
-        .environmentObject(ViewModel())
 }
