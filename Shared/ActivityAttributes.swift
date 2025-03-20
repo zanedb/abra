@@ -12,16 +12,32 @@ struct WidgetAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         var takingTooLong: Bool
     }
+}
 
-    var dismissIntent: DismissLiveActivityIntent {
-        DismissLiveActivityIntent()
+/// Starts the Shazam recording session and the Live Activity
+struct StartShazamSessionIntent: AppIntent {
+    static var title: LocalizedStringResource = "Recognize Music"
+    static var description: IntentDescription = IntentDescription("Starts recognizing the current song using Shazam")
+    static var openAppWhenRun: Bool = true // Also included alongside @MainActor
+    
+    init() {}
+    
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        // Tell ViewModel to start the recording session
+        NotificationCenter.default.post(
+            name: Notification.Name("StartShazamRecordingIntent"),
+            object: nil
+        )
+        
+        return .result()
     }
 }
 
 /// Ends the Shazam recording session and the Live Activity
-struct DismissLiveActivityIntent: AppIntent {
-    static var title: LocalizedStringResource = "Dismiss Live Activity"
-    static var description: IntentDescription = IntentDescription("Stops the Shazam recording session")
+struct EndShazamSessionIntent: AppIntent {
+    static var title: LocalizedStringResource = "Stop Recognizing Music"
+    static var description: IntentDescription = IntentDescription("Stops the current Shazam session")
     static var openAppWhenRun: Bool = true // Also included alongside @MainActor
     
     @Parameter(title: "Activity ID")

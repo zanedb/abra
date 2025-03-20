@@ -59,6 +59,13 @@ enum MatchingError: Error {
         
         NotificationCenter.default.addObserver(
             self,
+            selector: #selector(handleStartRecordingIntent),
+            name: Notification.Name("StartShazamRecordingIntent"),
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
             selector: #selector(handleStopRecordingIntent),
             name: Notification.Name("StopShazamRecordingIntent"),
             object: nil
@@ -82,8 +89,13 @@ enum MatchingError: Error {
     
     // MARK: - NotificationCenter Listeners
     
+    @objc private func handleStartRecordingIntent(_ notification: Notification) {
+        Task {
+            await match()
+        }
+    }
+    
     @objc private func handleStopRecordingIntent(_ notification: Notification) {
-        // Handle the intent by stopping recording
         stopRecording()
     }
     

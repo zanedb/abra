@@ -7,7 +7,7 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
-struct WidgetLiveActivity: Widget {
+struct RecognizingLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: WidgetAttributes.self) { context in
             HStack {
@@ -47,7 +47,7 @@ struct WidgetLiveActivity: Widget {
     }
     
     func trailing(context: ActivityViewContext<WidgetAttributes>) -> some View {
-        Button(intent: DismissLiveActivityIntent(activityID: context.activityID)) {
+        Button(intent: EndShazamSessionIntent(activityID: context.activityID)) {
             Image(systemName: "xmark.circle.fill")
                 .symbolRenderingMode(.hierarchical)
                 .resizable()
@@ -70,7 +70,7 @@ struct WidgetLiveActivity: Widget {
     }
 }
 
-struct WidgetLiveActivity_Previews: PreviewProvider {
+struct RecognizingLiveActivity_Previews: PreviewProvider {
     static let attributes = WidgetAttributes()
     
     static let contentState = WidgetAttributes.ContentState(takingTooLong: false)
