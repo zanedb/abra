@@ -8,7 +8,7 @@ import SwiftUI
 import WidgetKit
 
 /// Starts a Shazam recording session from Control Center
-struct RecognizeMusicControl: ControlWidget {
+struct Control: ControlWidget {
     let kind: String = "app.zane.abra.widget"
     
     var body: some ControlWidgetConfiguration {

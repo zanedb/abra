@@ -9,7 +9,7 @@ import SwiftUI
 @main
 struct AbraWidgetBundle: WidgetBundle {
     var body: some Widget {
-        RecognizeMusicControl()
-        RecognizingLiveActivity()
+        Control()
+        LiveActivity()
     }
 }

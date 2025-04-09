@@ -7,7 +7,7 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
-struct RecognizingLiveActivity: Widget {
+struct LiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: WidgetAttributes.self) { context in
             HStack {
