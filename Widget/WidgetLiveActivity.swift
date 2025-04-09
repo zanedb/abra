@@ -70,7 +70,7 @@ struct LiveActivity: Widget {
     }
 }
 
-struct RecognizingLiveActivity_Previews: PreviewProvider {
+struct LiveActivity_Previews: PreviewProvider {
     static let attributes = WidgetAttributes()
     
     static let contentState = WidgetAttributes.ContentState(takingTooLong: false)
