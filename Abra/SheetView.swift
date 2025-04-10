@@ -3,9 +3,9 @@
 //  Abra
 //
 
-import SwiftUI
-import SwiftData
 import SectionedQuery
+import SwiftData
+import SwiftUI
 
 enum ViewBy {
     case time
@@ -27,11 +27,11 @@ struct SheetView: View {
                 .padding(.horizontal)
                 .padding(.top, vm.selectedDetent != PresentationDetent.height(65) ? 14 : 0)
             
-            if (vm.selectedDetent != PresentationDetent.height(65)) {
-                VStack(spacing: 0){
-                    if(searchText.isEmpty && filtered.isEmpty) {
+            if vm.selectedDetent != PresentationDetent.height(65) {
+                VStack(spacing: 0) {
+                    if searchText.isEmpty && filtered.isEmpty {
                         EmptyLibrary()
-                    } else if (searchText.isEmpty) {
+                    } else if searchText.isEmpty {
                         picker
                         
                         List {
@@ -41,13 +41,15 @@ struct SheetView: View {
                                         Button(action: { vm.selectedSS = shazam }) {
                                             SongRow(stream: shazam)
                                         }
+                                        .listRowBackground(Color.clear)
                                     }
                                 }
-                                    .listSectionSeparator(.hidden, edges: .bottom)
+                                .listSectionSeparator(.hidden, edges: .bottom)
                             }
                         }
                         .listStyle(.inset)
-                    } else if (!searchText.isEmpty && filtered.isEmpty) {
+                        .scrollContentBackground(.hidden)
+                    } else if !searchText.isEmpty && filtered.isEmpty {
                         NoResults()
                     } else {
                         List {
@@ -55,25 +57,27 @@ struct SheetView: View {
                                 Button(action: { vm.selectedSS = shazam }) {
                                     SongRow(stream: shazam)
                                 }
+                                .listRowBackground(Color.clear)
                             }
                         }
-                            .listStyle(.inset)
+                        .listStyle(.inset)
+                        .scrollContentBackground(.hidden)
                     }
                 }
-                    .transition(.asymmetric(
-                        insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
-                        removal: .opacity.animation(.easeInOut(duration: 0.15)))
-                    )
+                .transition(.asymmetric(
+                    insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
+                    removal: .opacity.animation(.easeInOut(duration: 0.15)))
+                )
             }
         }
-            // Map annotation tapped -> set selection on ViewModel
-            .onChange(of: vm.mapSelection) {
-                guard (vm.mapSelection != nil) else { return }
+        // Map annotation tapped -> set selection on ViewModel
+        .onChange(of: vm.mapSelection) {
+            guard vm.mapSelection != nil else { return }
                 
-                if let sstream = modelContext.model(for: vm.mapSelection!) as? ShazamStream {
-                    vm.selectedSS = sstream
-                }
+            if let sstream = modelContext.model(for: vm.mapSelection!) as? ShazamStream {
+                vm.selectedSS = sstream
             }
+        }
     }
     
     var picker: some View {
@@ -81,9 +85,9 @@ struct SheetView: View {
             Text("Recents").tag(ViewBy.time)
             Text("Locations").tag(ViewBy.place)
         }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            .padding(.top, 8)
+        .pickerStyle(.segmented)
+        .padding(.horizontal)
+        .padding(.top, 8)
     }
 }
 
@@ -91,4 +95,5 @@ struct SheetView: View {
     ContentView()
         .modelContainer(PreviewSampleData.container)
         .environmentObject(ViewModel())
+        .environmentObject(LibraryService())
 }
