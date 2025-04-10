@@ -3,6 +3,7 @@
 //  Abra
 //
 
+import Kingfisher
 import SwiftUI
 
 struct SongSheet: View {
@@ -12,13 +13,9 @@ struct SongSheet: View {
     
     var body: some View {
         HStack {
-            AsyncImage(url: stream.artworkURL) { image in
-                image
-                    .resizable()
-            } placeholder: {
-                ProgressView()
-                    .scaledToFit()
-            }
+            KFImage(stream.artworkURL)
+                .resizable()
+                .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 96, height: 96)
                 .cornerRadius(3.0)
@@ -37,12 +34,12 @@ struct SongSheet: View {
                 
                 Spacer()
                 
-                if (stream.appleMusicID != nil) {
+                if stream.appleMusicID != nil {
                     PlayButton(appleMusicID: stream.appleMusicID!)
                 }
             }
         }
-            .frame(height: 96)
+        .frame(height: 96)
     }
 }
 

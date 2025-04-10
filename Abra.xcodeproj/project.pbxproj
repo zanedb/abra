@@ -10,6 +10,7 @@
 		2F0547392A5217B0002177D4 /* NewPlace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547382A5217B0002177D4 /* NewPlace.swift */; };
 		2F1727442C719B2700EEA500 /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1727432C719B2700EEA500 /* Place.swift */; };
 		2F30A7C72DA77EB500DFE607 /* VariableBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */; };
+		2F3DAB722DA785CB001004B9 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F3DAB712DA785CB001004B9 /* Kingfisher */; };
 		2F4BE1D22D7FA059006AFFC2 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 2F4BE1D12D7FA056006AFFC2 /* .gitignore */; };
 		2F4BE1DA2D7FEE1C006AFFC2 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F4BE1D92D7FEE1C006AFFC2 /* WidgetKit.framework */; };
 		2F4BE1DC2D7FEE1C006AFFC2 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F4BE1DB2D7FEE1C006AFFC2 /* SwiftUI.framework */; };
@@ -161,6 +162,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F3DAB722DA785CB001004B9 /* Kingfisher in Frameworks */,
 				2FC8CCEF2AC399B600523478 /* SectionedQuery in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -354,6 +356,7 @@
 			name = Abra;
 			packageProductDependencies = (
 				2FC8CCEE2AC399B600523478 /* SectionedQuery */,
+				2F3DAB712DA785CB001004B9 /* Kingfisher */,
 			);
 			productName = abra;
 			productReference = 2F60936C2A2EDFB30092A6DD /* Abra.app */;
@@ -432,6 +435,7 @@
 			mainGroup = 2F6093632A2EDFB30092A6DD;
 			packageReferences = (
 				2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */,
+				2F3DAB702DA785CB001004B9 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			productRefGroup = 2F60936D2A2EDFB30092A6DD /* Products */;
 			projectDirPath = "";
@@ -942,6 +946,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		2F3DAB702DA785CB001004B9 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.3.1;
+			};
+		};
 		2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Whiffer/swiftdata-sectionedquery";
@@ -953,6 +965,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		2F3DAB712DA785CB001004B9 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2F3DAB702DA785CB001004B9 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
 		2FC8CCEE2AC399B600523478 /* SectionedQuery */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */;

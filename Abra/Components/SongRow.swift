@@ -3,6 +3,7 @@
 //  Abra
 //
 
+import Kingfisher
 import SwiftUI
 
 struct SongRow: View {
@@ -14,13 +15,9 @@ struct SongRow: View {
     
     var body: some View {
         HStack {
-            AsyncImage(url: stream.artworkURL) { image in
-                image
-                    .resizable()
-            } placeholder: {
-                ProgressView()
-                    .scaledToFit()
-            }
+            KFImage(stream.artworkURL)
+                .resizable()
+                .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 96, height: 96)
                 .cornerRadius(3.0)
@@ -55,7 +52,7 @@ struct SongRow: View {
         }
         .frame(height: 96)
         .contextMenu {
-            if (stream.appleMusicURL != nil) {
+            if stream.appleMusicURL != nil {
                 Link(destination: stream.appleMusicURL!) {
                     Label("Open in Apple Music", systemImage: "arrow.up.forward.app.fill")
                 }
@@ -86,13 +83,9 @@ struct SongRowMini: View {
     
     var body: some View {
         HStack {
-            AsyncImage(url: stream.artworkURL) { image in
-                image
-                    .resizable()
-            } placeholder: {
-                ProgressView()
-                    .scaledToFit()
-            }
+            KFImage(stream.artworkURL)
+                .resizable()
+                .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 48, height: 48)
                 .cornerRadius(3.0)
