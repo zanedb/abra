@@ -38,6 +38,8 @@ struct SongSheet: View {
                     PlayButton(appleMusicID: stream.appleMusicID!)
                 }
             }
+            
+            Spacer()
         }
         .frame(height: 96)
     }
