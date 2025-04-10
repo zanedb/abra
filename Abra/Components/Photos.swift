@@ -3,8 +3,8 @@
 //  Abra
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct Photos: View {
     @EnvironmentObject private var vm: ViewModel
@@ -12,18 +12,18 @@ struct Photos: View {
     @Environment(\.openURL) private var openURL
 
     @State private var showError = false
-    
+
     var stream: ShazamStream
-    
+
     func requestForAuthorizationIfNecessary() {
         // Make sure photo library access is granted
         // If not, we'll show the permission grant view
         guard library.authorizationStatus != .authorized || library.authorizationStatus != .limited else { return }
         library.requestAuthorization(date: stream.timestamp,
                                      handleError: { error in
-            guard error != nil else { return }
-            showError = true
-        })
+                                         guard error != nil else { return }
+                                         showError = true
+                                     })
     }
 
     var body: some View {
@@ -31,18 +31,18 @@ struct Photos: View {
             if showError {
                 permissionView
             } else {
-                if (library.results.isEmpty) {
+                if library.results.isEmpty {
                     EmptyView()
                 } else {
                     libraryView
                 }
             }
         }
-            .onAppear {
-                requestForAuthorizationIfNecessary()
-            }
+        .onAppear {
+            requestForAuthorizationIfNecessary()
+        }
     }
-    
+
     var permissionView: some View {
         ZStack {
             Rectangle()
@@ -51,7 +51,7 @@ struct Photos: View {
                 .clipShape(RoundedRectangle(
                     cornerRadius: 8
                 ))
-            
+
             // MARK: this creates an X button that closes the card permanently
             // I'm disabling this for now because it is annoying to reset
             // Also, there's no settings UI yet so no it's irreversible
@@ -71,57 +71,55 @@ struct Photos: View {
 //                .frame(maxHeight: 172)
 //                .padding(.top, 24)
 //                .padding(.trailing)
-            
+
             VStack {
                 Text("We can show relevant photos if you grant full library access.")
                     .font(.subheadline)
                     .multilineTextAlignment(.center)
                     .padding(.top, 1)
-                
+
                 Button(action: {
-                    if (showError) {
+                    if showError {
                         // Go to app-specific settings
                         openURL(URL(string: UIApplication.openSettingsURLString)!)
                     } else {
                         library.requestAuthorization(date: stream.timestamp,
                                                      handleError: { error in
-                            guard error != nil else { return }
-                            showError = true
-                        })
+                                                         guard error != nil else { return }
+                                                         showError = true
+                                                     })
                     }
                 }, label: {
-                    HStack() {
+                    HStack {
                         Image(systemName: showError ? "xmark.app" : "hand.raised.app")
                             .font(.system(size: 24))
                         Text("Full Photo Library")
                     }
                 })
-                    .padding(.top, 8)
+                .padding(.top, 8)
             }
-                .padding(.horizontal)
-                .frame(maxWidth: 256)
+            .padding(.horizontal)
+            .frame(maxWidth: 256)
         }
     }
-    
+
     var libraryView: some View {
-        ScrollView {
-            LazyVGrid(
-                // 3-column row with adaptive width of 100 for each grid item
-                // 1px space between columns and rows
-                columns: Array(
-                    repeating: .init(.adaptive(minimum: 100), spacing: 1),
-                    count: 3
-                ),
-                spacing: 1
-            ) {
-                ForEach(library.results, id: \.self) { asset in
-                    Thumbnail(assetLocalId: asset.localIdentifier)
-                }
+        LazyVGrid(
+            // 3-column row with adaptive width of 100 for each grid item
+            // 1px space between columns and rows
+            columns: Array(
+                repeating: .init(.adaptive(minimum: 100), spacing: 1),
+                count: 3
+            ),
+            spacing: 1
+        ) {
+            ForEach(library.results, id: \.self) { asset in
+                Thumbnail(assetLocalId: asset.localIdentifier)
             }
-                .clipShape(RoundedRectangle(
-                    cornerRadius: 8
-                ))
         }
+        .clipShape(RoundedRectangle(
+            cornerRadius: 8
+        ))
     }
 }
 
