@@ -55,7 +55,10 @@ struct SongView: View {
             
             Spacer()
             
-            Button { dismiss() } label: {
+            Button {
+                dismiss()
+                vm.mapSelection = nil // Clear map selection so that repeat presses still trigger .onChange()
+            } label: {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundColor(.gray)
                     .font(.system(size: 32))
