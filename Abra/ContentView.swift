@@ -42,39 +42,38 @@ struct ContentView: View {
     private var placeSections
     
     var body: some View {
-        ZStack(alignment: .top) {
-            MapView(shazams: filtered, position: $position)
-                .inspector(isPresented: .constant(true)) {
-                    SheetView(searchText: $searchText, viewBy: $viewBy, filtered: filtered, sections: viewBy == .time ? timeSections : placeSections)
-                        .presentationDetents([.height(65), .fraction(0.50), .large], selection: $vm.selectedDetent)
-                        .presentationBackgroundInteraction(.enabled)
-                        .interactiveDismissDisabled()
-                        .sheet(isPresented: $vm.isMatching) {
-                            searching
-                        }
-                        .sheet(item: $vm.selectedSS) { selection in
-                            SongView(stream: selection)
-                                .presentationDetents([.fraction(0.50), .large])
-                                .presentationBackgroundInteraction(.enabled)
-                                .edgesIgnoringSafeArea(.bottom)
-                        }
+        MapView(shazams: filtered, position: $position)
+            .inspector(isPresented: .constant(true)) {
+                SheetView(searchText: $searchText, viewBy: $viewBy, filtered: filtered, sections: viewBy == .time ? timeSections : placeSections)
+                    .presentationDetents([.height(65), .fraction(0.50), .large], selection: $vm.selectedDetent)
+                    .presentationBackgroundInteraction(.enabled)
+                    .interactiveDismissDisabled()
+                    .sheet(isPresented: $vm.isMatching) {
+                        searching
+                    }
+                    .sheet(item: $vm.selectedSS) { selection in
+                        SongView(stream: selection)
+                            .presentationDetents([.fraction(0.50), .large])
+                            .presentationBackgroundInteraction(.enabled)
+                            .edgesIgnoringSafeArea(.bottom)
+                    }
 //                        .sheet(isPresented: $vm.newPlaceSheetShown) {
 //                            newPlace
 //                        }
-                }
-        }
-        .overlay(alignment: .top) {
-            GeometryReader { geom in
-                VariableBlurView(maxBlurRadius: 5, direction: .blurredTopClearBottom)
-                    .frame(height: geom.safeAreaInsets.top)
-                    .ignoresSafeArea()
             }
-        }
-        .onAppear {
-            // MARK: get modelContext in viewModel. prob not best solution.
+            .overlay(alignment: .top) {
+                GeometryReader { geom in
+                    VariableBlurView(maxBlurRadius: 5, direction: .blurredTopClearBottom)
+                        .frame(height: geom.safeAreaInsets.top)
+                        .ignoresSafeArea()
+                }
+            }
+            .onAppear {
+                // MARK: Obtain modelContext in ViewModel through .onAppear modifier
+                // There's probably a better solution.
 
-            vm.modelContext = modelContext
-        }
+                vm.modelContext = modelContext
+            }
     }
     
     private var searching: some View {
