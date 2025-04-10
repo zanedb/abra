@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		2F0547392A5217B0002177D4 /* NewPlace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0547382A5217B0002177D4 /* NewPlace.swift */; };
 		2F1727442C719B2700EEA500 /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1727432C719B2700EEA500 /* Place.swift */; };
+		2F30A7C72DA77EB500DFE607 /* VariableBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */; };
 		2F4BE1D22D7FA059006AFFC2 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 2F4BE1D12D7FA056006AFFC2 /* .gitignore */; };
 		2F4BE1DA2D7FEE1C006AFFC2 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F4BE1D92D7FEE1C006AFFC2 /* WidgetKit.framework */; };
 		2F4BE1DC2D7FEE1C006AFFC2 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F4BE1DB2D7FEE1C006AFFC2 /* SwiftUI.framework */; };
@@ -89,6 +90,7 @@
 /* Begin PBXFileReference section */
 		2F0547382A5217B0002177D4 /* NewPlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPlace.swift; sourceTree = "<group>"; };
 		2F1727432C719B2700EEA500 /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
+		2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableBlur.swift; sourceTree = "<group>"; };
 		2F4BE1D12D7FA056006AFFC2 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		2F4BE1D72D7FEE1C006AFFC2 /* WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F4BE1D92D7FEE1C006AFFC2 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -294,6 +296,7 @@
 		2FE766D02A30512400952513 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */,
 				2FC675622A3FACD200FD7638 /* SearchBar.swift */,
 				2FE766D12A30515E00952513 /* SongRow.swift */,
 				2FB9AF002A3193F5003C7A21 /* SongSheet.swift */,
@@ -514,6 +517,7 @@
 				2F1727442C719B2700EEA500 /* Place.swift in Sources */,
 				2F6093A62A2EF1F70092A6DD /* Location.swift in Sources */,
 				2FA7D81A2AC0E60F0039AD5C /* ShazamStream.swift in Sources */,
+				2F30A7C72DA77EB500DFE607 /* VariableBlur.swift in Sources */,
 				2F0547392A5217B0002177D4 /* NewPlace.swift in Sources */,
 				2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */,
 				2FB9AEFF2A30A383003C7A21 /* Music.swift in Sources */,

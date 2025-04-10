@@ -3,10 +3,10 @@
 //  Abra
 //
 
-import SwiftUI
-import SwiftData
-import SectionedQuery
 import MapKit
+import SectionedQuery
+import SwiftData
+import SwiftUI
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -27,17 +27,17 @@ struct ContentView: View {
     
     @SectionedQuery(
         sectionIdentifier: \ShazamStream.timeGroupedString,
-                    sortDescriptors: [SortDescriptor(\ShazamStream.timestamp, order: .reverse)],
-                    predicate: nil,
-                    animation: .default
+        sortDescriptors: [SortDescriptor(\ShazamStream.timestamp, order: .reverse)],
+        predicate: nil,
+        animation: .default
     )
     private var timeSections
     
     @SectionedQuery(
         sectionIdentifier: \ShazamStream.placeGroupedString,
-                    sortDescriptors: [SortDescriptor(\ShazamStream.timestamp, order: .reverse)],
-                    predicate: nil,
-                    animation: .default
+        sortDescriptors: [SortDescriptor(\ShazamStream.timestamp, order: .reverse)],
+        predicate: nil,
+        animation: .default
     )
     private var placeSections
     
@@ -63,10 +63,18 @@ struct ContentView: View {
 //                        }
                 }
         }
-            .onAppear {
-                // MARK: get modelContext in viewModel. prob not best solution.
-                vm.modelContext = modelContext
+        .overlay(alignment: .top) {
+            GeometryReader { geom in
+                VariableBlurView(maxBlurRadius: 5, direction: .blurredTopClearBottom)
+                    .frame(height: geom.safeAreaInsets.top)
+                    .ignoresSafeArea()
             }
+        }
+        .onAppear {
+            // MARK: get modelContext in viewModel. prob not best solution.
+
+            vm.modelContext = modelContext
+        }
     }
     
     private var searching: some View {
