@@ -16,6 +16,7 @@ struct SongRow: View {
     var body: some View {
         HStack {
             KFImage(stream.artworkURL)
+                .cancelOnDisappear(true)
                 .resizable()
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
@@ -84,6 +85,7 @@ struct SongRowMini: View {
     var body: some View {
         HStack {
             KFImage(stream.artworkURL)
+                .cancelOnDisappear(true)
                 .resizable()
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
