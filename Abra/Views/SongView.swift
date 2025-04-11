@@ -3,9 +3,9 @@
 //  Abra
 //
 
-import SwiftUI
 import MapKit
 import SwiftData
+import SwiftUI
 
 struct SongView: View {
     @Environment(\.colorScheme) private var colorScheme
@@ -19,33 +19,37 @@ struct SongView: View {
         VStack(alignment: .leading, spacing: 0) {
             toolbar
             
-            SongSheet(stream: stream)
-            
-            if (!library.hasIgnoredPhotosRequest) {
-                HStack {
-                    Text(stream.timestamp, style: .date)
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    Text(stream.timestamp, style: .time)
-                        .font(.system(size: 14))
-                        .foregroundColor(.gray)
-                }
+            ScrollView {
+                SongSheet(stream: stream)
+                
+                SongInfo(stream: stream)
+                
+                if !library.hasIgnoredPhotosRequest {
+                    HStack {
+                        Text(stream.timestamp, style: .date)
+                            .font(.headline)
+                        
+                        Spacer()
+                        
+                        Text(stream.timestamp, style: .time)
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                    }
                     .padding(.top)
                     .padding(.bottom, 8)
+                    
+                    Photos(stream: stream)
+                }
                 
-                Photos(stream: stream)
+                Spacer()
             }
-            
-            Spacer()
         }
-            .padding()
+        .padding()
     }
     
     var toolbar: some View {
         HStack(alignment: .center) {
-            if (stream.appleMusicURL != nil) {
+            if stream.appleMusicURL != nil {
                 ShareLink(item: stream.appleMusicURL!) {
                     Label("Share", systemImage: "square.and.arrow.up")
                         .labelStyle(.iconOnly)
@@ -65,7 +69,7 @@ struct SongView: View {
                     .symbolRenderingMode(.hierarchical)
             }
         }
-            .padding(.bottom, 12)
+        .padding(.bottom, 12)
     }
 }
 

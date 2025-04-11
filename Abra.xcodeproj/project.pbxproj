@@ -184,6 +184,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2F3DAB752DA89C54001004B9 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2F6093A12A2EEC960092A6DD /* ContentView.swift */,
+				2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */,
+				2F659BC12A403A0000EA43F9 /* SongView.swift */,
+				2F6093A32A2EEDFE0092A6DD /* MapView.swift */,
+				2F9D49522A79CECE002CB9E5 /* PlaceView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		2F4BE1D82D7FEE1C006AFFC2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -224,12 +236,8 @@
 				2FC1E0962A622B9500EF92D4 /* Resources */,
 				2FD8448B2A2F089000B67301 /* Abra.entitlements */,
 				2F60936F2A2EDFB30092A6DD /* AbraApp.swift */,
-				2F6093A12A2EEC960092A6DD /* ContentView.swift */,
-				2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */,
-				2F659BC12A403A0000EA43F9 /* SongView.swift */,
-				2F6093A32A2EEDFE0092A6DD /* MapView.swift */,
-				2F9D49522A79CECE002CB9E5 /* PlaceView.swift */,
 				2F6093A72A2EF2290092A6DD /* Models */,
+				2F3DAB752DA89C54001004B9 /* Views */,
 				2FE766D02A30512400952513 /* Components */,
 				2F6093732A2EDFB50092A6DD /* Assets.xcassets */,
 				2F60937D2A2EDFB50092A6DD /* Info.plist */,
@@ -573,7 +581,6 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 69MX9ABFW5;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = widget/Info.plist;
@@ -724,6 +731,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 69MX9ABFW5;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
