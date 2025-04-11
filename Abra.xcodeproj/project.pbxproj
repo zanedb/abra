@@ -958,7 +958,7 @@
 		};
 		2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Whiffer/swiftdata-sectionedquery";
+			repositoryURL = "https://github.com/beechtom/swiftdata-sectionedquery";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.0.0;

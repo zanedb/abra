@@ -1,5 +1,5 @@
 {
-  "originHash" : "cc749588bca720b30fb4f46a342a92fa843d7594a2ebbca46bb8a1c6d5eb1455",
+  "originHash" : "b26b96a5051fc15c3a5b0bd93ff674ca1c51b7829675f3ef8f8887649d1c0ed2",
   "pins" : [
     {
       "identity" : "kingfisher",
@@ -11,30 +11,12 @@
       }
     },
     {
-      "identity" : "swift-algorithms",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-algorithms",
-      "state" : {
-        "revision" : "b14b7f4c528c942f121c8b860b9410b2bf57825e",
-        "version" : "1.0.0"
-      }
-    },
-    {
-      "identity" : "swift-numerics",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-numerics",
-      "state" : {
-        "revision" : "0a5bc04095a675662cf24757cc0640aa2204253b",
-        "version" : "1.0.2"
-      }
-    },
-    {
       "identity" : "swiftdata-sectionedquery",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Whiffer/swiftdata-sectionedquery",
+      "location" : "https://github.com/beechtom/swiftdata-sectionedquery",
       "state" : {
-        "revision" : "958835024bffa9ee8a995b34ba1821e6358c041f",
-        "version" : "1.0.3"
+        "revision" : "af2451407fe4f3cf06ff52318cd81a1d26df52bd",
+        "version" : "1.2.0"
       }
     }
   ],

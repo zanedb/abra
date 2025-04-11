@@ -25,21 +25,9 @@ struct ContentView: View {
         return shazams.filter { $0.title.lowercased().contains(searchText.lowercased()) }
     }
     
-    @SectionedQuery(
-        sectionIdentifier: \ShazamStream.timeGroupedString,
-        sortDescriptors: [SortDescriptor(\ShazamStream.timestamp, order: .reverse)],
-        predicate: nil,
-        animation: .default
-    )
-    private var timeSections
+    @SectionedQuery(\.timeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var timeSections: SectionedResults<String, ShazamStream>
     
-    @SectionedQuery(
-        sectionIdentifier: \ShazamStream.placeGroupedString,
-        sortDescriptors: [SortDescriptor(\ShazamStream.timestamp, order: .reverse)],
-        predicate: nil,
-        animation: .default
-    )
-    private var placeSections
+    @SectionedQuery(\.placeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var placeSections: SectionedResults<String, ShazamStream>
     
     var body: some View {
         MapView(shazams: filtered, position: $position)
