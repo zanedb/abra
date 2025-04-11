@@ -3,14 +3,14 @@
 //  Abra
 //
 
-import Foundation
-import SwiftUI
-import SwiftData
-import ShazamKit
-import CoreData
-import MapKit
 import ActivityKit
+import CoreData
+import Foundation
+import MapKit
 import os
+import ShazamKit
+import SwiftData
+import SwiftUI
 
 /// Represents the result of a Shazam matching operation
 struct MatchResult: Identifiable, Equatable {
@@ -49,6 +49,25 @@ enum MatchingError: Error {
     
     var currentMediaItem: SHMatchedMediaItem? {
         currentMatchResult?.match?.mediaItems.first
+    }
+    
+    /// Requests microphone permission from the user
+    /// - Returns: A boolean indicating if permission was granted
+    var isMicAuthorized: Bool {
+        get async {
+            let status = AVCaptureDevice.authorizationStatus(for: .audio)
+            
+            // Determine if the user previously authorized camera access.
+            var isAuthorized = status == .authorized
+            
+            // If the system hasn't determined the user's authorization status,
+            // explicitly prompt them for approval.
+            if status == .notDetermined {
+                isAuthorized = await AVCaptureDevice.requestAccess(for: .audio)
+            }
+            
+            return isAuthorized
+        }
     }
     
     // MARK: - Initialization
@@ -223,7 +242,8 @@ enum MatchingError: Error {
         }
         
         guard let latitude = location.lastSeenLocation?.coordinate.latitude,
-              let longitude = location.lastSeenLocation?.coordinate.longitude else {
+              let longitude = location.lastSeenLocation?.coordinate.longitude
+        else {
             throw MatchingError.noLocation
         }
         

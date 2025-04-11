@@ -14,7 +14,7 @@ struct Control: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: kind) {
             ControlWidgetButton(action: StartShazamSessionIntent()) {
-                Label("Recognize Music", systemImage: "shazam.logo.fill")
+                Label("Recognize Music", systemImage: "shazam.logo")
             }
         }
             .displayName("Recognize Music")

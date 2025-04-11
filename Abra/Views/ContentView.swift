@@ -12,6 +12,8 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var vm: ViewModel
     
+    @AppStorage("hasCompletedOnboarding") var onboarded: Bool = false
+    
     @State var searchText: String = ""
     @State var viewBy: ViewBy = .time
     @State var position: MapCameraPosition = .automatic
@@ -48,6 +50,16 @@ struct ContentView: View {
 //                        .sheet(isPresented: $vm.newPlaceSheetShown) {
 //                            newPlace
 //                        }
+            }
+            .overlay {
+                if !onboarded {
+                    VisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
+                        .edgesIgnoringSafeArea(.all)
+                        .transition(.opacity.animation(.easeInOut(duration: 0.25)))
+                    
+                    OnboardingView()
+                        .transition(.blurReplace.animation(.easeInOut(duration: 0.25)))
+                }
             }
             .overlay(alignment: .top) {
                 GeometryReader { geom in
