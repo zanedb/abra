@@ -132,4 +132,5 @@ struct Photos: View {
         .padding()
         .modelContainer(container)
         .environmentObject(ViewModel())
+        .environmentObject(LibraryService())
 }
