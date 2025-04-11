@@ -30,7 +30,7 @@ struct SheetView: View {
             if vm.selectedDetent != PresentationDetent.height(65) {
                 VStack(spacing: 0) {
                     if searchText.isEmpty && filtered.isEmpty {
-                        EmptyLibrary()
+                        ContentUnavailableView {} description: { Text("Your library is empty.") }
                     } else if searchText.isEmpty {
                         picker
                         
@@ -50,7 +50,11 @@ struct SheetView: View {
                         .listStyle(.inset)
                         .scrollContentBackground(.hidden)
                     } else if !searchText.isEmpty && filtered.isEmpty {
-                        NoResults()
+                        ContentUnavailableView {
+                            Label("No Results", systemImage: "moon.stars")
+                        } description: {
+                            Text("Try a new search.")
+                        }
                     } else {
                         List {
                             ForEach(filtered, id: \.id) { shazam in

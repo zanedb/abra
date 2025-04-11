@@ -125,7 +125,11 @@ struct IconPicker: View {
             }
             
             if (symbols.filter { searchText.isEmpty ? true : $0.localizedCaseInsensitiveContains(searchText) }.isEmpty) {
-                NoResults()
+                ContentUnavailableView {
+                    Label("No Results", systemImage: "moon.stars")
+                } description: {
+                    Text("Try a new search.")
+                }
             }
         }
     }
