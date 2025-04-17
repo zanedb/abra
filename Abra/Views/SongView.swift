@@ -45,6 +45,9 @@ struct SongView: View {
             }
         }
         .padding()
+        .onDisappear {
+            vm.mapSelection = nil // Clear map selection so that repeat presses still trigger .onChange()
+        }
     }
     
     var toolbar: some View {
@@ -61,7 +64,6 @@ struct SongView: View {
             
             Button {
                 dismiss()
-                vm.mapSelection = nil // Clear map selection so that repeat presses still trigger .onChange()
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundColor(.gray)
