@@ -30,3 +30,59 @@ struct VisualEffectView: UIViewRepresentable {
     func makeUIView(context: UIViewRepresentableContext<Self>) -> UIVisualEffectView { UIVisualEffectView() }
     func updateUIView(_ uiView: UIVisualEffectView, context: UIViewRepresentableContext<Self>) { uiView.effect = effect }
 }
+
+
+// MARK: - Date Helpers
+extension Date {
+    var isInLastSevenDays: Bool {
+        let now = Date()
+        guard let aWeekAgo = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: now) else { return false }
+        return self <= now && self > aWeekAgo
+    }
+    
+    var isInLastThirtyDays: Bool {
+        let now = Date()
+        guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: now) else { return false }
+        return self <= now && self > thirtyDaysAgo
+    }
+    
+    var isThisYear: Bool {
+        let calendar = Calendar.current
+        let dateComponents = calendar.dateComponents([.year], from: self)
+        let currentYearComponents = calendar.dateComponents([.year], from: Date())
+        
+        return dateComponents.year == currentYearComponents.year
+    }
+    
+    var month: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMMM"
+        return dateFormatter.string(from: self)
+    }
+    
+    var year: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy"
+        return dateFormatter.string(from: self)
+    }
+    
+    var timeSince: String {
+        let rDF = RelativeDateTimeFormatter()
+        rDF.unitsStyle = .abbreviated
+        return rDF.localizedString(for: self, relativeTo: Date.now)
+    }
+    
+    var relativeGroupString: String {
+        if Calendar.current.isDateInToday(self) {
+            return "Today"
+        } else if isInLastSevenDays {
+            return "Last 7 Days"
+        } else if isInLastThirtyDays {
+            return "Last 30 Days"
+        } else if isThisYear {
+            return month
+        } else {
+            return "\(month) \(year)"
+        }
+    }
+}

@@ -43,60 +43,6 @@ import SwiftData
     }
 }
 
-extension Date {
-    func isInLastSevenDays() -> Bool {
-        let now = Date()
-        guard let aWeekAgo = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: now) else { return false }
-        return self <= now && self > aWeekAgo
-    }
-    
-    func isInLastThirtyDays() -> Bool {
-        let now = Date()
-        guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: now) else { return false }
-        return self <= now && self > thirtyDaysAgo
-    }
-    
-    func isThisYear() -> Bool {
-        let calendar = Calendar.current
-        let dateComponents = calendar.dateComponents([.year], from: self)
-        let currentYearComponents = calendar.dateComponents([.year], from: Date())
-        
-        return dateComponents.year == currentYearComponents.year
-    }
-    
-    var month: String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MMMM"
-        return dateFormatter.string(from: self)
-    }
-    
-    var year: String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy"
-        return dateFormatter.string(from: self)
-    }
-    
-    var timeSince: String {
-        let rDF = RelativeDateTimeFormatter()
-        rDF.unitsStyle = .abbreviated
-        return rDF.localizedString(for: self, relativeTo: Date.now)
-    }
-    
-    func relativeGroupString() -> String {
-        if Calendar.current.isDateInToday(self) {
-            return "Today"
-        } else if isInLastSevenDays() {
-            return "Last 7 Days"
-        } else if isInLastThirtyDays() {
-            return "Last 30 Days"
-        } else if isThisYear() {
-            return month
-        } else {
-            return "\(month) \(year)"
-        }
-    }
-}
-
 extension ShazamStream {
     public var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
@@ -111,7 +57,7 @@ extension ShazamStream {
     }
     
     public var relativeDateTime: String {
-        if timestamp.isInLastThirtyDays() {
+        if timestamp.isInLastThirtyDays {
             timestamp.timeSince
         } else {
             timestamp.formatted(.dateTime.day().month())
@@ -127,7 +73,7 @@ extension ShazamStream {
     }
     
     public var timeGroupedString: String {
-        timestamp.relativeGroupString()
+        timestamp.relativeGroupString
     }
     
     public var placeGroupedString: String {
