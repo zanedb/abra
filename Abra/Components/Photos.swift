@@ -47,7 +47,7 @@ struct Photos: View {
         ZStack {
             Rectangle()
                 .fill(.gray.opacity(0.15))
-                .frame(maxHeight: 172)
+                .frame(height: 172)
                 .clipShape(RoundedRectangle(
                     cornerRadius: 8
                 ))
