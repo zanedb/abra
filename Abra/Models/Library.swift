@@ -69,10 +69,10 @@ class LibraryService: ObservableObject {
         
         let fetchOptions = PHFetchOptions()
         
-        // Select photos starting an hour (3640ms) before ShazamStream was created
-        // and ending an hour (3640ms) after
-        let startDate = date.addingTimeInterval(-3640)
-        let endDate = date.addingTimeInterval(3640)
+        // Select photos starting an hour (3600s) before ShazamStream was created
+        // and ending an hour (3600s) after
+        let startDate = date.addingTimeInterval(-3600)
+        let endDate = date.addingTimeInterval(3600)
         fetchOptions.predicate = NSPredicate(format: "creationDate >= %@ && creationDate <= %@", startDate as CVarArg, endDate as CVarArg)
         
         fetchOptions.sortDescriptors = [
