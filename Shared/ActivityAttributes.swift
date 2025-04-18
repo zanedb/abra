@@ -16,9 +16,9 @@ struct WidgetAttributes: ActivityAttributes {
 
 /// Starts the Shazam recording session and the Live Activity
 struct StartShazamSessionIntent: AppIntent {
-    static var title: LocalizedStringResource = "Recognize Music"
-    static var description: IntentDescription = IntentDescription("Starts recognizing the current song using Shazam")
-    static var openAppWhenRun: Bool = true // Also included alongside @MainActor
+    static let title: LocalizedStringResource = "Recognize Music"
+    static let description: IntentDescription = IntentDescription("Starts recognizing the current song using Shazam")
+    static let openAppWhenRun: Bool = true // Also included alongside @MainActor
     
     init() {}
     
@@ -36,9 +36,9 @@ struct StartShazamSessionIntent: AppIntent {
 
 /// Ends the Shazam recording session and the Live Activity
 struct EndShazamSessionIntent: AppIntent {
-    static var title: LocalizedStringResource = "Stop Recognizing Music"
-    static var description: IntentDescription = IntentDescription("Stops the current Shazam session")
-    static var openAppWhenRun: Bool = true // Also included alongside @MainActor
+    static let title: LocalizedStringResource = "Stop Recognizing Music"
+    static let description: IntentDescription = IntentDescription("Stops the current Shazam session")
+    static let openAppWhenRun: Bool = true // Also included alongside @MainActor
     
     @Parameter(title: "Activity ID")
     var activityID: String
