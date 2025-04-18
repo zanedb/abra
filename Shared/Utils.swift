@@ -23,6 +23,12 @@ extension View {
     }
 }
 
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
 // MARK: - VisualEffectView()
 // Borrowing from UIKit...
 struct VisualEffectView: UIViewRepresentable {
