@@ -41,7 +41,6 @@ enum MatchingError: Error {
     
     @Published var selectedDetent: PresentationDetent = .fraction(0.5)
     @Published var selectedSS: ShazamStream?
-    @Published var mapSelection: PersistentIdentifier?
     @Published var isMatching = false
     @Published var currentMatchResult: MatchResult?
     @Published var matchingError: MatchingError?

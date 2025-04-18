@@ -8,6 +8,7 @@
 import Foundation
 import MapKit
 import SwiftData
+import ClusterMap
 
 @Model final class ShazamStream {
     var title: String = ""
@@ -43,10 +44,21 @@ import SwiftData
     }
 }
 
-extension ShazamStream {
+extension ShazamStream: CoordinateIdentifiable {
     public var coordinate: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        get {
+            CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        }
+        set(newValue) {
+            //
+        }
     }
+}
+
+extension ShazamStream {
+//    public var coordinate: CLLocationCoordinate2D {
+//        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+//    }
     
     public var cityState: String {
         if city != nil && state != nil {

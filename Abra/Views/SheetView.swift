@@ -13,7 +13,6 @@ enum ViewBy {
 }
 
 struct SheetView: View {
-    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var vm: ViewModel
     
     @Binding var searchText: String
@@ -72,14 +71,6 @@ struct SheetView: View {
                     insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
                     removal: .opacity.animation(.easeInOut(duration: 0.15)))
                 )
-            }
-        }
-        // Map annotation tapped -> set selection on ViewModel
-        .onChange(of: vm.mapSelection) {
-            guard vm.mapSelection != nil else { return }
-                
-            if let sstream = modelContext.model(for: vm.mapSelection!) as? ShazamStream {
-                vm.selectedSS = sstream
             }
         }
     }
