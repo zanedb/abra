@@ -4,8 +4,8 @@
 //
 
 import Foundation
-import ShazamKit
 import os
+import ShazamKit
 
 /// Errors that can occur during Shazam operations
 enum ShazamError: Error {
@@ -59,7 +59,7 @@ actor ShazamService {
                     logger.info("Match found: \(match.mediaItems.first?.title ?? "unknown")")
                     resultHandler(.success(match))
                     
-                case .noMatch(_):
+                case .noMatch:
                     logger.info("No match found")
                     resultHandler(.failure(.noMatch))
                     
