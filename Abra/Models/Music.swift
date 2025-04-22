@@ -4,19 +4,18 @@
 //
 
 import Foundation
+import MediaPlayer
 import MusicKit
 import StoreKit
-import MediaPlayer
 
-class MusicService: NSObject, ObservableObject {
+@Observable class MusicService {
     let musicPlayer = MPMusicPlayerController.systemMusicPlayer
     
-    @Published var isPlaying = false
-    @Published var currentTrackID: String?
-    @Published var errorMessage: String?
+    private(set) var isPlaying = false
+    private(set) var currentTrackID: String?
+    private(set) var errorMessage: String?
     
-    override init() {
-        super.init()
+    init() {
         setupNotifications()
     }
     
@@ -36,26 +35,23 @@ class MusicService: NSObject, ObservableObject {
     }
     
     @objc private func playbackStateChanged() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.isPlaying = self.musicPlayer.playbackState == .playing
+        Task { @MainActor in
+            isPlaying = musicPlayer.playbackState == .playing
         }
     }
     
     func play(id: String) {
+    func play(id: String) async {
         if currentTrackID == id {
             // Resume if currently playing song is requested
             musicPlayer.play()
             
-            DispatchQueue.main.async {
-                self.isPlaying = true
+            Task { @MainActor in
+                isPlaying = true
             }
-            
+                
             return
         }
-        
-        errorMessage = nil
-        currentTrackID = id
         
         musicPlayer.setQueue(with: [id])
         
@@ -63,7 +59,7 @@ class MusicService: NSObject, ObservableObject {
             guard let self = self else { return }
             
             if let error = error {
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     self.errorMessage = error.localizedDescription
                     self.isPlaying = false
                 }
@@ -71,7 +67,9 @@ class MusicService: NSObject, ObservableObject {
             }
             
             self.musicPlayer.play()
-            DispatchQueue.main.async {
+            Task { @MainActor in
+                self.errorMessage = nil
+                self.currentTrackID = id
                 self.isPlaying = true
             }
         }
@@ -79,15 +77,17 @@ class MusicService: NSObject, ObservableObject {
     
     func stopPlayback() {
         musicPlayer.pause()
-        isPlaying = false
+        Task { @MainActor in
+            isPlaying = false
+        }
     }
     
-    func authorize() async -> MusicAuthorization.Status {
-        return await MusicAuthorization.request()
+    func authorize() async {
+        let status = await MusicAuthorization.request()
+        if status != .authorized {
+            Task { @MainActor in
+                errorMessage = "Music playback is not authorized."
+            }
+        }
     }
-}
-
-struct MusicController {
-    static let shared = MusicController()
-    let music = MusicService()
 }
