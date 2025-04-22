@@ -45,9 +45,6 @@ struct SongView: View {
             }
         }
         .padding()
-        .onDisappear {
-            vm.mapSelection = nil // Clear map selection so that repeat presses still trigger .onChange()
-        }
     }
     
     var toolbar: some View {
