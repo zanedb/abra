@@ -39,8 +39,6 @@ enum MatchingError: Error {
     
     // MARK: - Published Properties
     
-    @Published var selectedDetent: PresentationDetent = .fraction(0.5)
-    @Published var selectedSS: ShazamStream?
     @Published var isMatching = false
     @Published var currentMatchResult: MatchResult?
     @Published var matchingError: MatchingError?
@@ -279,7 +277,8 @@ enum MatchingError: Error {
         context.insert(newShazamStream)
         try context.save()
         
-        selectedSS = newShazamStream
+        // TODO: rewrite this so it STILL SETS SELECTION TO NEW AFTER CREATION
+        // selectedSS = newShazamStream
         logger.info("Created new ShazamStream: \(newShazamStream.title)")
     }
     

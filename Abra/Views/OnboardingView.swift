@@ -178,7 +178,7 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    MapView(shazams: [.preview], position: .constant(.automatic))
+    MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), shazams: [.preview])
         .environmentObject(ViewModel())
         .modelContainer(PreviewSampleData.container)
         .overlay {
