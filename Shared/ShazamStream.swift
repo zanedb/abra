@@ -98,3 +98,8 @@ extension ShazamStream {
                      latitude: 37.721941, longitude: -122.4739084)
     }
 }
+
+struct ShazamStreamGroup: Identifiable {
+    var id = UUID()
+    var wrapped: [ShazamStream]
+}

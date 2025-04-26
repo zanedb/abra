@@ -43,9 +43,9 @@ struct ContentView: View {
                             .presentationBackgroundInteraction(.enabled)
                             .edgesIgnoringSafeArea(.bottom)
                     }
-//                        .sheet(isPresented: $vm.newPlaceSheetShown) {
-//                            newPlace
-//                        }
+                    .sheet(item: $groupSelection) { group in
+                        list(group)
+                    }
             }
             .overlay {
                 if !onboarded {
@@ -90,12 +90,11 @@ struct ContentView: View {
             )
     }
     
-//    private var newPlace: some View {
-//        NewPlace()
-//            .presentationDetents([.large])
-//            .interactiveDismissDisabled()
-//            .presentationDragIndicator(.hidden)
-//    }
+    private func list(_ group: ShazamStreamGroup) -> some View {
+        SongList(streams: group.wrapped, selection: $selection)
+            .presentationDetents([.fraction(0.50), .large])
+            .presentationBackgroundInteraction(.enabled)
+    }
 }
 
 #Preview {

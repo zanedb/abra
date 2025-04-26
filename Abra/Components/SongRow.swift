@@ -107,7 +107,6 @@ struct SongRowMini: View {
                             .imageScale(.small)
                     }
                 }
-                .padding(.bottom, -5)
                 .padding(.trailing, 16)
                 
                 Text(stream.artist)
@@ -118,6 +117,7 @@ struct SongRowMini: View {
             
             Spacer()
         }
+        .frame(maxHeight: 52)
     }
 }
 
@@ -126,6 +126,7 @@ struct SongRowMini: View {
         VStack {
             SongRow(stream: .preview)
                 .padding()
+            
             SongRowMini(stream: .preview)
                 .padding()
         }

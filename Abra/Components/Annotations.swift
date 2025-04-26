@@ -23,6 +23,7 @@ struct ShazamAnnotationView: View {
 
 struct ClusterAnnotationView: View {
     var cluster: ShazamClusterAnnotation
+    @State var callout: Bool = false
 
     var body: some View {
         ZStack {
@@ -43,6 +44,54 @@ struct ClusterAnnotationView: View {
                 .padding(.horizontal, 2)
         }
         .contentShape(Circle())
+        .onLongPressGesture {
+            callout.toggle()
+        }
+        .overlay {
+            if callout {
+                ClusterCalloutView(action: { print("do it!") }, count: cluster.count)
+                    .padding(.bottom, 8)
+                    .offset(y: -75)
+            }
+        }
+    }
+}
+
+struct ClusterCalloutView: View {
+    let action: () -> Void
+    var count: Int
+
+    var body: some View {
+        VStack {
+            HStack {
+                Text("\(count) Shazams selected")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                Spacer()
+            }
+
+            Divider()
+
+            Button(action: action) {
+                HStack {
+                    Text("Group in a playlist")
+                        .font(.subheadline)
+                        .foregroundColor(.accentColor)
+
+                    Spacer()
+
+                    Image(systemName: "list.bullet")
+                        .font(.system(size: 14))
+                        .foregroundColor(.accentColor)
+                }
+            }
+        }
+        .padding(12)
+        .background(Material.regularMaterial)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.15), radius: 3, x: 0, y: 1)
+        .frame(width: 230)
     }
 }
 
