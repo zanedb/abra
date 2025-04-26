@@ -3,37 +3,48 @@
 //  Abra
 //
 
-import SwiftUI
 import MapKit
+import SwiftUI
 
-// don't worry we'll get to you too
-/*
 struct NewPlace: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var vm: ViewModel
     
     @State private var placeName: String = ""
-    @State private var radius: Double = 0.25
-    @State private var showingSheet: Bool = false
-    @State private var showingIconPicker: Bool = false
     @State private var symbol: String = ""
+    @State private var showingIconPicker: Bool = false
+    @State private var radius: Double = 0.25
     
     let step = 0.25
-    let range = 0.25...1
+    let range = 0.25 ... 1
+    
+    private var notReady: Bool {
+        placeName == "" || symbol == ""
+    }
+    
+    private var position: Binding<MapCameraPosition> {
+        Binding {
+            let delta = radius / 69 // This is only “accurate” for latitude, since long is relative to lat’s distance from equator.
+            return .region(MKCoordinateRegion(center: center, span: .init(latitudeDelta: delta, longitudeDelta: delta)))
+        } set: { _ in }
+    }
+    
+    var streams: [ShazamStream]
+    var center: CLLocationCoordinate2D
     
     var body: some View {
         NavigationStack {
-            VStack() {
+            VStack {
                 Divider()
-                VStack() {
+                VStack {
                     HStack {
-                        Button (action: { showingSheet = true }) {
+                        Button(action: { showingIconPicker.toggle() }) {
                             Image(systemName: symbol == "" ? "plus.circle.fill" : symbol)
                                 .shadow(radius: 3, x: 0, y: 0)
-                                .font(.system(size: 24))
+                                .font(.system(size: symbol == "" ? 24 : 32))
                                 .frame(width: 80, height: 80)
                                 .foregroundColor(.white)
-                                .background(symbol == "" ? .gray.opacity(0.20) : .accentColor.opacity(0.20))
+                                .background(symbol == "" ? .gray.opacity(0.20) : .theme)
                                 .cornerRadius(8.0)
                                 .padding(.trailing, 5)
                         }
@@ -41,54 +52,35 @@ struct NewPlace: View {
                             TextField("Place", text: $placeName)
                                 .font(.title)
                                 .bold()
-                            Text("\(vm.currentSongs.count) Song\(vm.currentSongs.count != 1 ? "s" : "")")
+                            Text("\(streams.count) Song\(streams.count != 1 ? "s" : "")")
                                 .font(.subheadline)
                                 .foregroundColor(.gray)
                         }
                     }
-                        .padding(.horizontal)
-                        
+                    .padding(.horizontal)
                     
                     regionView
                     songList
                 }
-                    .padding(.top, 5)
+                .padding(.top, 5)
             }
-                .navigationTitle("New Place")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") { dismiss() }
-                    }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Create") {
-                            vm.createPlace(name: placeName, radius: radius, symbol: symbol)
-                        }
-                            .disabled(placeName == "" || symbol == "" || vm.currentSongsCount < 1)
-                    }
+            .navigationTitle("New Place")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
                 }
-                .actionSheet(isPresented: $showingSheet) {
-                    ActionSheet(
-                        title: Text("Adorn Your Place"),
-                        buttons:[
-                            .default(Text("Choose Icon"), action: iconPicker),
-                            .default(Text("Upload Image"), action: imagePicker),
-                            .cancel()
-                        ]
-                    )}
-                .sheet(isPresented: $showingIconPicker) {
-                    IconPicker(symbol: $symbol)
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Create") {
+                        // TODO: create Place
+                    }
+                    .disabled(notReady)
                 }
+            }
+            .sheet(isPresented: $showingIconPicker) {
+                IconPicker(symbol: $symbol)
+            }
         }
-    }
-    
-    func iconPicker() {
-        showingSheet = false
-        showingIconPicker = true
-    }
-    
-    func imagePicker() {
-        // TODO
     }
     
     var regionView: some View {
@@ -100,12 +92,7 @@ struct NewPlace: View {
             Divider()
             
             HStack {
-                Map(coordinateRegion: $vm.newPlaceRegion, annotationItems: vm.currentSongs) { song in
-                    MapAnnotation(coordinate: song.coordinate, content: {
-                        Text("fix later")
-//                        MapPin(stream: song)
-                    })
-                }
+                Map(position: position)
                     .frame(height: 110)
                     .cornerRadius(5)
                     .overlay(
@@ -126,25 +113,21 @@ struct NewPlace: View {
                         .font(.system(size: 18))
                         .foregroundColor(.gray)
                         .padding(.bottom, 5)
-                    Stepper(value: $radius,
+                    Stepper(value: $radius.animation(),
                             in: range,
-                            step: step) {
+                            step: step)
+                    {
                         Text("Radius")
                             .foregroundColor(.gray)
-                    } onEditingChanged: { z in
-                        withAnimation {
-                            // TODO: make this math make sense
-                            vm.newPlaceRegion = MKCoordinateRegion(center: vm.newPlaceCoordinate, span: MKCoordinateSpan(latitudeDelta: 0.005 * radius, longitudeDelta: 0.005 * radius))
-                        }
                     }
-                        .foregroundColor(.gray)
-                        .labelsHidden()
+                    .foregroundColor(.gray)
+                    .labelsHidden()
                 }
                 .frame(maxWidth: .infinity)
             }
         }
-            .padding(.top)
-            .padding(.horizontal)
+        .padding(.top)
+        .padding(.horizontal)
     }
     
     var songList: some View {
@@ -156,33 +139,27 @@ struct NewPlace: View {
                     .foregroundColor(.gray)
                 Divider()
             }
-                .padding(.horizontal)
+            .padding(.horizontal)
             
             List {
-                ForEach(vm.currentSongs, id: \.timestamp) { stream in
-//                    SongRowMini(stream: stream)
-                    Text("fuck a type check")
+                ForEach(streams, id: \.timestamp) { stream in
+                    SongRowMini(stream: stream)
                 }
             }
             .listStyle(.plain)
         }
-            .padding(.top)
+        .padding(.top)
     }
 }
- */
 
-/*
 #Preview {
-    NavigationStack {
-        Map(coordinateRegion: .constant(MKCoordinateRegion(center: MapDefaults.coordinate, span: MapDefaults.span)))
-            .ignoresSafeArea(.all)
-            .sheet(isPresented: .constant(true)) {
-                NewPlace()
-                    .presentationDetents([.large])
-                    .interactiveDismissDisabled()
-                    .presentationDragIndicator(.hidden)
-                    .environmentObject(ViewModel())
-            }
-    }
+    Map(initialPosition: .automatic)
+        .ignoresSafeArea(.all)
+        .sheet(isPresented: .constant(true)) {
+            NewPlace(streams: [ShazamStream.preview], center: .init(latitude: 37.774722, longitude: -122.418231))
+                .presentationDetents([.large])
+                .interactiveDismissDisabled()
+                .presentationDragIndicator(.hidden)
+                .environmentObject(ViewModel())
+        }
 }
-*/
