@@ -18,7 +18,7 @@ struct ShazamStreamRepresentable: Identifiable, Hashable, CoordinateIdentifiable
     var wrappedArtworkURL: URL
 }
 
-struct ShazamClusterAnnotation: Identifiable {
+struct ShazamClusterAnnotation: Identifiable, Hashable {
     var id = UUID()
     var coordinate: CLLocationCoordinate2D
     var streamIds: [PersistentIdentifier]
@@ -27,32 +27,18 @@ struct ShazamClusterAnnotation: Identifiable {
     }
 }
 
-enum SelectionType {
-    case stream
-    case place
-    case cluster
-}
-
 @Observable class MapProvider {
-    var mapSize: CGSize = .zero
+    var mapSize: CGSize = .init(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
     var annotations: [ShazamStreamRepresentable] = []
     var clusters: [ShazamClusterAnnotation] = []
     var position: MapCameraPosition = .automatic
-    var selection: PersistentIdentifier?
+    var selection: [PersistentIdentifier]?
 
     let clusterConfig = ClusterManager<ShazamStreamRepresentable>.Configuration(
-        maxZoomLevel: 30, // default
-        cellSizeForZoomLevel: { zoom in
-            switch zoom {
-            case 13...15: return CGSize(width: 64, height: 64)
-            case 16...18: return CGSize(width: 32, height: 32)
-            case 19...: return CGSize(width: 16, height: 16)
-            default: return CGSize(width: 88, height: 88)
-            }
-        }
+        maxZoomLevel: 20, // default is 20
     )
 
-    var clusterManager: ClusterManager<ShazamStreamRepresentable> // ClusterManager<ShazamStreamRepresentable>()
+    var clusterManager: ClusterManager<ShazamStreamRepresentable>
 
     init() {
         clusterManager = ClusterManager<ShazamStreamRepresentable>(configuration: clusterConfig)

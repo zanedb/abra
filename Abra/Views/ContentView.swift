@@ -15,6 +15,7 @@ struct ContentView: View {
     
     @State var detent: PresentationDetent = .medium
     @State var selection: ShazamStream? = nil
+    @State var groupSelection: ShazamStreamGroup? = nil
     @State var searchText: String = ""
     
     @Query(sort: \ShazamStream.timestamp, order: .reverse)
@@ -32,6 +33,7 @@ struct ContentView: View {
                     .presentationDetents([.height(65), .fraction(0.50), .large], selection: $vm.selectedDetent)
                     .presentationBackgroundInteraction(.enabled)
                     .interactiveDismissDisabled()
+        MapView(detent: $detent, sheetSelection: $selection, groupSelection: $groupSelection, shazams: filtered)
                     .sheet(isPresented: $vm.isMatching) {
                         searching
                     }

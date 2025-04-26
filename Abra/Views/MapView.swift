@@ -3,7 +3,6 @@
 //  Abra
 //
 
-import Kingfisher
 import MapKit
 import SwiftData
 import SwiftUI
@@ -11,24 +10,31 @@ import SwiftUI
 struct MapView: View {
     @Environment(\.modelContext) private var context
     @EnvironmentObject private var vm: ViewModel
-    var shazams: [ShazamStream]
-    @Binding var position: MapCameraPosition
 
-    @State private var mapSelection: PersistentIdentifier?
+    @Binding var detent: PresentationDetent
+    @Binding var sheetSelection: ShazamStream?
+    @Binding var groupSelection: ShazamStreamGroup?
+
+    var shazams: [ShazamStream]
+
+    @State private var mapProvider = MapProvider()
+
     var body: some View {
-            ForEach(shazams, id: \.id) { shazam in
-        Map(position: $position, selection: $mapSelection) {
-                Annotation(shazam.title, coordinate: shazam.coordinate) {
-                    KFImage(shazam.artworkURL)
-                        .resizable()
-                        .placeholder { ProgressView() }
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 32, height: 32)
-                        .cornerRadius(2)
-                        .shadow(radius: 3, x: 2, y: 2)
+        Map(position: $mapProvider.position, selection: $mapProvider.selection) {
+            ForEach(mapProvider.annotations) { shazam in
+                Annotation(shazam.wrappedTitle, coordinate: shazam.coordinate) {
+                    ShazamAnnotationView(artworkURL: shazam.wrappedArtworkURL)
                 }
+                .tag([shazam.wrappedId])
                 .annotationTitles(.hidden)
-                .tag(shazam.id)
+            }
+
+            ForEach(mapProvider.clusters) { cluster in
+                Annotation("\(cluster.count)", coordinate: cluster.coordinate) {
+                    ClusterAnnotationView(cluster: cluster)
+                }
+                .tag(cluster.streamIds)
+                .annotationTitles(.hidden)
             }
 
             UserAnnotation() // User's location dot
@@ -36,46 +42,76 @@ struct MapView: View {
         .mapControls {
             MapUserLocationButton()
             MapCompass()
+            MapPitchToggle()
         }
-        // Handle ShazamStream selected from list
-        .onChange(of: mapSelection) {
-            // Handle ShazamStream tapped from map annotation
-            guard mapSelection != nil else { return }
-
-            if let sstream = context.model(for: mapSelection!) as? ShazamStream {
-                vm.selectedSS = sstream
-                mapSelection = nil // Clear so that repeat taps still trigger
-            }
+        .readSize(onChange: handleSizeChange)
+        .task {
+            await mapProvider.setup(shazams)
         }
-        .onChange(of: vm.selectedSS) {
-            // Handle ShazamStream selected, either from map or list
-            handleSelectionChange()
+        .onMapCameraChange(frequency: .onEnd, handleCameraChange)
+        .onChange(of: mapProvider.selection) {
+            // Handle map annotation selection
+            showSelectedAnnotation(mapProvider.selection)
         }
+        .onChange(of: sheetSelection) {
+            // ShazamStream selected from inspector
+            if let coordinate = sheetSelection?.coordinate {
+                showOnMap(coordinate)
             }
         }
     }
 
-    private func handleSelectionChange() {
-        guard vm.selectedSS != nil else { return }
+    /// Reads size for ClusterMap
+    private func handleSizeChange(_ newValue: CGSize) {
+        mapProvider.mapSize = newValue
+    }
 
+    /// Reloads clusters when map movement is finished
+    private func handleCameraChange(_ context: MapCameraUpdateContext) {
+        Task.detached {
+            await mapProvider.reloadClusters(region: context.region)
+        }
+    }
+
+    /// Opens the proper sheet when an annotation is tapped
+    private func showSelectedAnnotation(_ selection: [PersistentIdentifier]?) {
+        guard selection != nil else { return }
+
+        // Clear so that repeat taps still trigger
+        mapProvider.selection = nil
+
+        if selection!.count == 1 {
+            if let sstream = context.model(for: selection!.first!) as? ShazamStream {
+                showOnMap(sstream.coordinate)
+                sheetSelection = sstream // Open sheet
+            }
+        } else {
+            // Create ShazamStreamGroup, feed to groupSelection
+            let streams = context.fetchShazamStreams(fromIdentifiers: selection!)
+            groupSelection = ShazamStreamGroup(wrapped: streams)
+        }
+    }
+
+    /// Zooms and centers on a coordinate in the viewport
+    private func showOnMap(_ coord: CLLocationCoordinate2D) {
         // In case the keyboard is open & a SongRow was clicked, hide it
         // This is hacky, but works!
         hideKeyboard()
 
         // If the inspector is > than 0.50 of the screen, shrink it so it fits neatly behind our new sheet!
-        if vm.selectedDetent == .large { vm.selectedDetent = .fraction(0.50) }
+        if detent == .large { detent = .fraction(0.50) }
 
         // Center map
         // Offset latitude (move northward) by approximately 35% of the span
         // There's probably a better way to do this as this value is set based on my limited personal testing
         let span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-        let offsetLatitude = vm.selectedSS!.latitude + (span.latitudeDelta * -0.35)
+        let offsetLatitude = coord.latitude + (span.latitudeDelta * -0.35)
 
         withAnimation {
-            position = .region(MKCoordinateRegion(
+            mapProvider.position = .region(MKCoordinateRegion(
                 center: CLLocationCoordinate2D(
                     latitude: offsetLatitude,
-                    longitude: vm.selectedSS!.longitude
+                    longitude: coord.longitude
                 ),
                 span: span
             ))
@@ -84,7 +120,9 @@ struct MapView: View {
 }
 
 #Preview {
-    MapView(shazams: [.preview], position: .constant(.automatic))
+    @Previewable @State var position = MapCameraPosition.automatic
+
+    MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview, .preview, .preview])
         .environmentObject(ViewModel())
         .modelContainer(PreviewSampleData.container)
 }
