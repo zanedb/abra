@@ -28,20 +28,15 @@ struct ClusterAnnotationView: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color.accentColor)
+                .fill(Material.thick)
+                .shadow(color: .theme.opacity(0.8), radius: 1)
                 .frame(width: 32, height: 32)
-                .overlay(
-                    Circle()
-                        .stroke(.white, lineWidth: 2)
-                )
-                .shadow(color: .primary.opacity(0.2), radius: 2, x: 0, y: 1)
 
             Text("\(cluster.count)")
+                .foregroundStyle(Color.accentColor)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
-                .padding(.horizontal, 2)
         }
         .contentShape(Circle())
         .onLongPressGesture {
