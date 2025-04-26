@@ -15,32 +15,50 @@ enum ViewBy {
 struct SheetView: View {
     @EnvironmentObject private var vm: ViewModel
     
+    @Binding var detent: PresentationDetent
+    @Binding var selection: ShazamStream?
     @Binding var searchText: String
-    @Binding var viewBy: ViewBy
+    
+    @State var viewBy: ViewBy = .time
+    
     var filtered: [ShazamStream]
-    var sections: SectionedResults<String, ShazamStream>
+    
+    @SectionedQuery(\.timeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var timeSections: SectionedResults<String, ShazamStream>
+    
+    @SectionedQuery(\.placeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var placeSections: SectionedResults<String, ShazamStream>
     
     var body: some View {
         VStack {
             SearchBar(prompt: "Search Shazams", search: $searchText)
                 .padding(.horizontal)
-                .padding(.top, vm.selectedDetent != PresentationDetent.height(65) ? 14 : 0)
+                .padding(.top, detent != PresentationDetent.height(65) ? 14 : 0)
             
-            if vm.selectedDetent != PresentationDetent.height(65) {
+            if detent != PresentationDetent.height(65) {
                 VStack(spacing: 0) {
                     if searchText.isEmpty && filtered.isEmpty {
                         ContentUnavailableView {} description: { Text("Your library is empty.") }
                     } else if searchText.isEmpty {
-                        picker
+                        PlacesList(places: [Place.preview])
+//                        picker
                         
                         List {
-                            ForEach(sections) { section in
-                                Section(header: Text("\(section.id)")) {
+                            ForEach(viewBy == .time ? timeSections : placeSections) { section in
+                                Section {
                                     ForEach(section, id: \.self) { shazam in
-                                        Button(action: { vm.selectedSS = shazam }) {
+                                        Button(action: { selection = shazam }) {
                                             SongRow(stream: shazam)
                                         }
                                         .listRowBackground(Color.clear)
+                                    }
+                                } header: {
+                                    HStack {
+                                        Text("\(section.id)")
+                                        if viewBy == .place {
+                                            Spacer()
+                                            Button(action: {}) {
+                                                Label("New Place", systemImage: "plus")
+                                            }
+                                        }
                                     }
                                 }
                                 .listSectionSeparator(.hidden, edges: .bottom)
@@ -57,7 +75,7 @@ struct SheetView: View {
                     } else {
                         List {
                             ForEach(filtered, id: \.id) { shazam in
-                                Button(action: { vm.selectedSS = shazam }) {
+                                Button(action: { selection = shazam }) {
                                     SongRow(stream: shazam)
                                 }
                                 .listRowBackground(Color.clear)
@@ -90,5 +108,4 @@ struct SheetView: View {
     ContentView()
         .modelContainer(PreviewSampleData.container)
         .environmentObject(ViewModel())
-        .environmentObject(LibraryService())
 }
