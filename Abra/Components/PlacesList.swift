@@ -4,12 +4,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
-// we'll come back to this too
-/*
 struct PlacesList: View {
-    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var vm: ViewModel
+    
+//    @Query(sort: \Place.updatedAt, order: .reverse)
+    var places: [Place]
     
     var body: some View {
         VStack(spacing: 0) {
@@ -30,7 +32,7 @@ struct PlacesList: View {
             .padding(.bottom, 5)
             
             ScrollView(.horizontal) {
-                places
+                list
             }
             .frame(maxHeight: 96)
             .background(.gray.opacity(0.10))
@@ -39,25 +41,25 @@ struct PlacesList: View {
         }
     }
     
-    private var places: some View {
+    private var list: some View {
         LazyHStack {
-            ForEach(vm.places, id: \.id) { place in
+            ForEach(places, id: \.id) { place in
                 NavigationLink {
                     PlaceView(place: place)
-                        .navigationTitle(place.name ?? "Place")
+                        .navigationTitle(place.name)
                         .onAppear {
-                            vm.updateCenter(place.latitude, place.longitude)
+//                            vm.updateCenter(place.latitude, place.longitude)
                         }
                 } label: {
                     VStack(alignment: .center) {
-                        Image(systemName: place.iconName ?? "questionmark")
+                        Image(systemName: place.iconName)
                             .resizable()
                             .frame(width: 20, height: 20)
                             .padding(12)
                             .foregroundColor(.white)
                             .background(.indigo) // TODO: allow user color selection
                             .cornerRadius(500)
-                        Text(place.name ?? "Unknown")
+                        Text(place.name)
                             .font(.system(size: 12))
                             .foregroundColor(.primary)
                             .lineLimit(1)
@@ -84,10 +86,10 @@ struct PlacesList: View {
     
     private func deletePlaces(offsets: IndexSet) {
         withAnimation {
-            offsets.map { vm.places[$0] }.forEach(viewContext.delete)
+            offsets.map { places[$0] }.forEach(modelContext.delete)
 
             do {
-                try viewContext.save()
+                try modelContext.save()
             } catch {
                 // Replace this implementation with code to handle the error appropriately.
                 // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
@@ -99,10 +101,10 @@ struct PlacesList: View {
     
     private func deletePlace(_ place: Place) {
         withAnimation {
-            viewContext.delete(place)
+            modelContext.delete(place)
         
             do {
-                try viewContext.save()
+                try modelContext.save()
             } catch {
                 // TODO handle error
                 print(error.localizedDescription)
@@ -110,11 +112,8 @@ struct PlacesList: View {
         }
     }
 }
- */
 
-/*
 #Preview {
-    PlacesList()
+    PlacesList(places: [Place.preview])
         .environmentObject(ViewModel())
 }
-*/
