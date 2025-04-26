@@ -4,7 +4,6 @@
 //
 
 import MapKit
-import SectionedQuery
 import SwiftData
 import SwiftUI
 
@@ -14,9 +13,9 @@ struct ContentView: View {
     
     @AppStorage("hasCompletedOnboarding") var onboarded: Bool = false
     
+    @State var detent: PresentationDetent = .medium
+    @State var selection: ShazamStream? = nil
     @State var searchText: String = ""
-    @State var viewBy: ViewBy = .time
-    @State var position: MapCameraPosition = .automatic
     
     @Query(sort: \ShazamStream.timestamp, order: .reverse)
     var shazams: [ShazamStream]
@@ -27,12 +26,7 @@ struct ContentView: View {
         return shazams.filter { $0.title.lowercased().contains(searchText.lowercased()) }
     }
     
-    @SectionedQuery(\.timeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var timeSections: SectionedResults<String, ShazamStream>
-    
-    @SectionedQuery(\.placeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var placeSections: SectionedResults<String, ShazamStream>
-    
     var body: some View {
-        MapView(shazams: filtered, position: $position)
             .inspector(isPresented: .constant(true)) {
                 SheetView(searchText: $searchText, viewBy: $viewBy, filtered: filtered, sections: viewBy == .time ? timeSections : placeSections)
                     .presentationDetents([.height(65), .fraction(0.50), .large], selection: $vm.selectedDetent)
