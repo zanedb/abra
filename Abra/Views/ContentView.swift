@@ -28,24 +28,29 @@ struct ContentView: View {
     }
     
     var body: some View {
-            .inspector(isPresented: .constant(true)) {
-                SheetView(searchText: $searchText, viewBy: $viewBy, filtered: filtered, sections: viewBy == .time ? timeSections : placeSections)
-                    .presentationDetents([.height(65), .fraction(0.50), .large], selection: $vm.selectedDetent)
-                    .presentationBackgroundInteraction(.enabled)
-                    .interactiveDismissDisabled()
         MapView(detent: $detent, sheetSelection: $selection, groupSelection: $groupSelection, shazams: filtered)
+            .inspector(isPresented: Binding(
+                get: { onboarded },
+                set: { _ in }
+            )) {
+                sheet
                     .sheet(isPresented: $vm.isMatching) {
                         searching
                     }
-                    .sheet(item: $vm.selectedSS) { selection in
-                        SongView(stream: selection)
-                            .presentationDetents([.fraction(0.50), .large])
-                            .presentationBackgroundInteraction(.enabled)
-                            .edgesIgnoringSafeArea(.bottom)
+                    .sheet(item: $selection) { selection in
+                        song(selection)
                     }
                     .sheet(item: $groupSelection) { group in
                         list(group)
                     }
+            }
+            .overlay(alignment: .top) {
+                // Variable blur at the top of map, makes time/battery legible
+                GeometryReader { geom in
+                    VariableBlurView(maxBlurRadius: 5, direction: .blurredTopClearBottom)
+                        .frame(height: geom.safeAreaInsets.top)
+                        .ignoresSafeArea()
+                }
             }
             .overlay {
                 if !onboarded {
@@ -57,19 +62,19 @@ struct ContentView: View {
                         .transition(.blurReplace.animation(.easeInOut(duration: 0.25)))
                 }
             }
-            .overlay(alignment: .top) {
-                GeometryReader { geom in
-                    VariableBlurView(maxBlurRadius: 5, direction: .blurredTopClearBottom)
-                        .frame(height: geom.safeAreaInsets.top)
-                        .ignoresSafeArea()
-                }
-            }
             .onAppear {
                 // MARK: Obtain modelContext in ViewModel through .onAppear modifier
-                // There's probably a better solution.
 
+                // There's probably a better solution.
                 vm.modelContext = modelContext
             }
+    }
+    
+    private var sheet: some View {
+        SheetView(detent: $detent, selection: $selection, searchText: $searchText, filtered: filtered)
+            .presentationDetents([.height(65), .fraction(0.50), .large], selection: $detent)
+            .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.50)))
+            .interactiveDismissDisabled()
     }
     
     private var searching: some View {
@@ -90,6 +95,13 @@ struct ContentView: View {
             )
     }
     
+    private func song(_ stream: ShazamStream) -> some View {
+        SongView(stream: stream)
+            .presentationDetents([.fraction(0.50), .large])
+            .presentationBackgroundInteraction(.enabled)
+            .edgesIgnoringSafeArea(.bottom)
+    }
+    
     private func list(_ group: ShazamStreamGroup) -> some View {
         SongList(streams: group.wrapped, selection: $selection)
             .presentationDetents([.fraction(0.50), .large])
@@ -101,5 +113,4 @@ struct ContentView: View {
     ContentView()
         .environmentObject(ViewModel())
         .modelContainer(PreviewSampleData.container)
-        .environmentObject(LibraryService())
 }
