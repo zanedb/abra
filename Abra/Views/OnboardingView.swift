@@ -7,7 +7,7 @@ import Combine
 import SwiftUI
 
 struct OnboardingView: View {
-    @EnvironmentObject private var vm: ViewModel
+    @Environment(ShazamProvider.self) private var shazam
     @StateObject var location = LocationService.shared
 
     // Control animation properties
@@ -78,7 +78,7 @@ struct OnboardingView: View {
                 systemImage: micAuth ? "checkmark" : "microphone.fill",
                 color: micAuth ? .green : .orange,
                 action: {
-                    Task { micAuth = await vm.isMicAuthorized }
+                    Task { micAuth = await shazam.checkMicrophoneAuthorization() }
                 }
             )
         }
@@ -178,14 +178,12 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), shazams: [.preview])
-        .environmentObject(ViewModel())
+    MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview])
         .modelContainer(PreviewSampleData.container)
         .overlay {
             VisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
                 .edgesIgnoringSafeArea(.all)
 
             OnboardingView()
-                .environmentObject(ViewModel())
         }
 }

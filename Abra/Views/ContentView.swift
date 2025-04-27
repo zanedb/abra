@@ -9,14 +9,15 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var vm: ViewModel
     
-    @AppStorage("hasCompletedOnboarding") var onboarded: Bool = false
+    @AppStorage("hasCompletedOnboarding") var onboarded: Bool = true // MARK: FOR PREVIEW
     
     @State var detent: PresentationDetent = .medium
     @State var selection: ShazamStream? = nil
     @State var groupSelection: ShazamStreamGroup? = nil
     @State var searchText: String = ""
+    
+    @State private var shazam = ShazamProvider()
     
     @Query(sort: \ShazamStream.timestamp, order: .reverse)
     var shazams: [ShazamStream]
@@ -34,7 +35,10 @@ struct ContentView: View {
                 set: { _ in }
             )) {
                 sheet
-                    .sheet(isPresented: $vm.isMatching) {
+                    .sheet(isPresented: Binding(
+                        get: { shazam.isMatching },
+                        set: { _ in }
+                    )) {
                         searching
                     }
                     .sheet(item: $selection) { selection in
@@ -59,6 +63,7 @@ struct ContentView: View {
                         .transition(.opacity.animation(.easeInOut(duration: 0.25)))
                     
                     OnboardingView()
+                        .environment(shazam)
                         .transition(.blurReplace.animation(.easeInOut(duration: 0.25)))
                 }
             }
@@ -66,12 +71,13 @@ struct ContentView: View {
                 // MARK: Obtain modelContext in ViewModel through .onAppear modifier
 
                 // There's probably a better solution.
-                vm.modelContext = modelContext
+//                vm.modelContext = modelContext
             }
     }
     
     private var sheet: some View {
         SheetView(detent: $detent, selection: $selection, searchText: $searchText, filtered: filtered)
+            .environment(shazam)
             .presentationDetents([.height(65), .fraction(0.50), .large], selection: $detent)
             .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.50)))
             .interactiveDismissDisabled()
@@ -83,7 +89,7 @@ struct ContentView: View {
             .interactiveDismissDisabled()
             .presentationDragIndicator(.hidden)
             .overlay(
-                Button { vm.stopRecording() } label: {
+                Button { shazam.stopMatching() } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.gray)
                         .font(.system(size: 36))
@@ -111,6 +117,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .environmentObject(ViewModel())
         .modelContainer(PreviewSampleData.container)
 }

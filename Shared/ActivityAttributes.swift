@@ -7,7 +7,7 @@
 import ActivityKit
 import AppIntents
 
-///  Defines shared attributes between the Widget and Abra bundles, used in the ViewModel and Widget components.
+///  Defines shared attributes between the Widget and Abra bundles, used in the ShazamProvider and Widget components.
 struct WidgetAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         var takingTooLong: Bool
@@ -24,7 +24,7 @@ struct StartShazamSessionIntent: AppIntent {
     
     @MainActor
     func perform() async throws -> some IntentResult {
-        // Tell ViewModel to start the recording session
+        // Tell ShazamProvider to start the recording session
         NotificationCenter.default.post(
             name: Notification.Name("StartShazamRecordingIntent"),
             object: nil
@@ -53,7 +53,7 @@ struct EndShazamSessionIntent: AppIntent {
     
     @MainActor
     func perform() async throws -> some IntentResult {
-        // Tell ViewModel to end the recording session
+        // Tell ShazamProvider to end the recording session
         NotificationCenter.default.post(
             name: Notification.Name("StopShazamRecordingIntent"),
             object: nil,

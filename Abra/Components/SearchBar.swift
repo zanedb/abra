@@ -7,11 +7,11 @@ import SwiftUI
 
 struct SearchBar: View {
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(ShazamProvider.self) private var shazam
     
     var prompt: String = "Search…"
     @Binding var search: String
     @FocusState var focused: Bool
-    @EnvironmentObject private var vm: ViewModel
     
     var body: some View {
         HStack(alignment: .center) {
@@ -56,7 +56,7 @@ struct SearchBar: View {
                         removal: .opacity.animation(.easeInOut(duration: 0.01))
                     ))
             } else {
-                Button(action: { Task { await vm.match() } }) {
+                Button(action: { Task { await shazam.startMatching() } }) {
                     Image(systemName: "shazam.logo.fill")
                         .symbolRenderingMode(.multicolor)
                         .tint(.blue)
@@ -75,7 +75,6 @@ struct SearchBar: View {
     NavigationStack {
         SearchBar(search: .constant(""), focused: FocusState())
             .padding()
-            .environmentObject(ViewModel())
         List {
             
         }

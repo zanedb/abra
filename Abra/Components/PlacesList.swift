@@ -8,7 +8,6 @@ import SwiftData
 
 struct PlacesList: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var vm: ViewModel
     
 //    @Query(sort: \Place.updatedAt, order: .reverse)
     var places: [Place]
@@ -115,5 +114,4 @@ struct PlacesList: View {
 
 #Preview {
     PlacesList(places: [Place.preview])
-        .environmentObject(ViewModel())
 }

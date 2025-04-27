@@ -13,7 +13,7 @@ enum ViewBy {
 }
 
 struct SheetView: View {
-    @EnvironmentObject private var vm: ViewModel
+    @Environment(ShazamProvider.self) private var shazam
     
     @Binding var detent: PresentationDetent
     @Binding var selection: ShazamStream?
@@ -30,6 +30,7 @@ struct SheetView: View {
     var body: some View {
         VStack {
             SearchBar(prompt: "Search Shazams", search: $searchText)
+                .environment(shazam)
                 .padding(.horizontal)
                 .padding(.top, detent != PresentationDetent.height(65) ? 14 : 0)
             
@@ -47,6 +48,7 @@ struct SheetView: View {
                                     ForEach(section, id: \.self) { shazam in
                                         Button(action: { selection = shazam }) {
                                             SongRow(stream: shazam)
+                                                .environment(shazam)
                                         }
                                         .listRowBackground(Color.clear)
                                     }
@@ -107,5 +109,4 @@ struct SheetView: View {
 #Preview {
     ContentView()
         .modelContainer(PreviewSampleData.container)
-        .environmentObject(ViewModel())
 }

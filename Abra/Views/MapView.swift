@@ -9,7 +9,6 @@ import SwiftUI
 
 struct MapView: View {
     @Environment(\.modelContext) private var context
-    @EnvironmentObject private var vm: ViewModel
 
     @Binding var detent: PresentationDetent
     @Binding var sheetSelection: ShazamStream?
@@ -123,6 +122,5 @@ struct MapView: View {
     @Previewable @State var position = MapCameraPosition.automatic
 
     MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview, .preview, .preview])
-        .environmentObject(ViewModel())
         .modelContainer(PreviewSampleData.container)
 }

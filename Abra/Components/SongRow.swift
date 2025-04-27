@@ -9,7 +9,7 @@ import SwiftUI
 struct SongRow: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var vm: ViewModel
+    @Environment(ShazamProvider.self) private var shazam
     
     var stream: ShazamStream
     
@@ -74,7 +74,7 @@ struct SongRow: View {
             try? modelContext.save()
         }
         Task {
-            try? await vm.deleteFromShazamLibrary(stream)
+            try? await shazam.removeFromLibrary(stream: stream)
         }
     }
 }

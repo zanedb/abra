@@ -10,7 +10,6 @@ import SwiftUI
 struct SongView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var vm: ViewModel
     @EnvironmentObject private var library: LibraryService
     
     var stream: ShazamStream
@@ -84,7 +83,6 @@ struct SongView: View {
             EmptyView()
                 .inspector(isPresented: $showSheet) {
                     SongView(stream: stream)
-                        .environmentObject(ViewModel())
                         .environmentObject(LibraryService())
                 }
         }

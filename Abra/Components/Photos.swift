@@ -7,7 +7,6 @@ import SwiftData
 import SwiftUI
 
 struct Photos: View {
-    @EnvironmentObject private var vm: ViewModel
     @EnvironmentObject private var library: LibraryService
     @Environment(\.openURL) private var openURL
 
@@ -131,6 +130,5 @@ struct Photos: View {
     return Photos(stream: s)
         .padding()
         .modelContainer(container)
-        .environmentObject(ViewModel())
         .environmentObject(LibraryService())
 }

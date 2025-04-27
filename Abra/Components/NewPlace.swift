@@ -8,7 +8,6 @@ import SwiftUI
 
 struct NewPlace: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var vm: ViewModel
     
     @State private var placeName: String = ""
     @State private var symbol: String = ""
@@ -160,6 +159,5 @@ struct NewPlace: View {
                 .presentationDetents([.large])
                 .interactiveDismissDisabled()
                 .presentationDragIndicator(.hidden)
-                .environmentObject(ViewModel())
         }
 }

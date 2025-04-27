@@ -8,7 +8,6 @@ import SwiftUI
 
 struct SongList: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var vm: ViewModel
     
     var streams: [ShazamStream]
     @Binding var selection: ShazamStream?
@@ -38,6 +37,5 @@ struct SongList: View {
             SongList(streams: [ShazamStream.preview], selection: .constant(nil))
                 .presentationDetents([.medium, .large])
                 .presentationBackgroundInteraction(.enabled)
-                .environmentObject(ViewModel())
         }
 }

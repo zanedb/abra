@@ -94,6 +94,5 @@ struct ClusterCalloutView: View {
     @Previewable @State var position = MapCameraPosition.automatic
 
     MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview, .preview, .preview])
-        .environmentObject(ViewModel())
         .modelContainer(PreviewSampleData.container)
 }
