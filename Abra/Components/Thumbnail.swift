@@ -7,7 +7,7 @@ import SwiftUI
 import Photos
 
 struct Thumbnail: View {
-    @EnvironmentObject var library: LibraryService
+    @Environment(LibraryProvider.self) private var library
     @State private var image: Image?
     
     private var assetLocalId: String

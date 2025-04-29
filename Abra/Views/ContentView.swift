@@ -20,6 +20,7 @@ struct ContentView: View {
     @State private var toast = ToastProvider()
     @State private var shazam = ShazamProvider()
     @State private var location = LocationProvider()
+    @State private var library = LibraryProvider()
     
     @Query(sort: \ShazamStream.timestamp, order: .reverse)
     var shazams: [ShazamStream]
@@ -118,6 +119,7 @@ struct ContentView: View {
     
     private func song(_ stream: ShazamStream) -> some View {
         SongView(stream: stream)
+            .environment(library)
             .presentationDetents([.fraction(0.50), .large])
             .presentationBackgroundInteraction(.enabled)
             .edgesIgnoringSafeArea(.bottom)

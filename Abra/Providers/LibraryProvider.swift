@@ -1,5 +1,5 @@
 //
-//  Library.swift
+//  LibraryProvider.swift
 //  Abra
 //
 
@@ -21,8 +21,8 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
     }
 }
 
-class LibraryService: ObservableObject {
-    @Published var hasIgnoredPhotosRequest: Bool = false
+@Observable final class LibraryProvider {
+    var hasIgnoredPhotosRequest: Bool = false
     
     typealias PHAssetLocalIdentifier = String
     
@@ -42,7 +42,7 @@ class LibraryService: ObservableObject {
     var authorizationStatus: PHAuthorizationStatus = .notDetermined
     
     // Collection that stores photo asset IDs
-    @Published var results = PHFetchResultCollection(fetchResult: .init())
+    var results = PHFetchResultCollection(fetchResult: .init())
     
     // The manager that will fetch and cache photos for us
     var imageCachingManager = PHCachingImageManager()
