@@ -8,7 +8,7 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     
     @AppStorage("hasCompletedOnboarding") var onboarded: Bool = true // MARK: FOR PREVIEW
     
@@ -69,11 +69,16 @@ struct ContentView: View {
                         .transition(.blurReplace.animation(.easeInOut(duration: 0.25)))
                 }
             }
-            .onAppear {
-                // MARK: Obtain modelContext in ViewModel through .onAppear modifier
-
-                // There's probably a better solution.
-//                vm.modelContext = modelContext
+            .onChange(of: scenePhase) {
+                // If app is minimized and no session is active, stop recording
+                if scenePhase == .inactive && shazam.status != .matching {
+                    shazam.stopMatching()
+                }
+                
+                // Now do the opposite
+                if scenePhase == .active && shazam.status == .idle {
+                    shazam.prepare()
+                }
             }
     }
     
