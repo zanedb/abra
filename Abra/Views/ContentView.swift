@@ -18,6 +18,7 @@ struct ContentView: View {
     @State var searchText: String = ""
     
     @State private var shazam = ShazamProvider()
+    @State private var location = LocationProvider()
     
     @Query(sort: \ShazamStream.timestamp, order: .reverse)
     var shazams: [ShazamStream]
@@ -64,6 +65,7 @@ struct ContentView: View {
                     
                     OnboardingView()
                         .environment(shazam)
+                        .environment(location)
                         .transition(.blurReplace.animation(.easeInOut(duration: 0.25)))
                 }
             }
@@ -78,6 +80,7 @@ struct ContentView: View {
     private var sheet: some View {
         SheetView(detent: $detent, selection: $selection, searchText: $searchText, filtered: filtered)
             .environment(shazam)
+            .environment(location)
             .presentationDetents([.height(65), .fraction(0.50), .large], selection: $detent)
             .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.50)))
             .interactiveDismissDisabled()
@@ -99,6 +102,10 @@ struct ContentView: View {
                 },
                 alignment: .topTrailing
             )
+            .onAppear {
+                // We‘ll need this soon
+                location.requestLocation()
+            }
     }
     
     private func song(_ stream: ShazamStream) -> some View {

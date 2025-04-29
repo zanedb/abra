@@ -7,6 +7,7 @@ import ActivityKit
 import os
 import ShazamKit
 import SwiftUI
+import SwiftData
 
 enum ShazamError: Error {
     case sessionNotPrepared
@@ -44,7 +45,6 @@ enum ShazamStatus: Equatable {
     var status: ShazamStatus = .idle
 
     private let session = SHManagedSession()
-    private let locationService = LocationService.shared
     private let logger = Logger(subsystem: "app.zane.abra", category: "ShazamProvider")
     private var matchingTask: Task<Void, Never>?
     private var timeoutTask: Task<Void, Never>?
@@ -78,7 +78,6 @@ enum ShazamStatus: Equatable {
     func prepare() {
         Task {
             await session.prepare()
-            locationService.requestLocation()
             logger.info("Shazam session prepared successfully")
         }
     }
@@ -104,7 +103,6 @@ enum ShazamStatus: Equatable {
     /// Starts a Shazam match session
     @MainActor func startMatching() async {
         status = .matching
-        locationService.requestLocation()
         startActivity()
         
         // Set a timeout for taking too long

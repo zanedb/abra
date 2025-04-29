@@ -8,7 +8,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @Environment(ShazamProvider.self) private var shazam
-    @StateObject var location = LocationService.shared
+    @Environment(LocationProvider.self) private var location
 
     // Control animation properties
     @State private var phase = -1

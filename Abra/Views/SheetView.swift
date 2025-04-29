@@ -4,6 +4,7 @@
 //
 
 import SectionedQuery
+import ShazamKit
 import SwiftData
 import SwiftUI
 
@@ -13,7 +14,9 @@ enum ViewBy {
 }
 
 struct SheetView: View {
+    @Environment(\.modelContext) private var modelContext
     @Environment(ShazamProvider.self) private var shazam
+    @Environment(LocationProvider.self) private var location
     
     @Binding var detent: PresentationDetent
     @Binding var selection: ShazamStream?
@@ -89,8 +92,13 @@ struct SheetView: View {
                 }
                 .transition(.asymmetric(
                     insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
-                    removal: .opacity.animation(.easeInOut(duration: 0.15)))
-                )
+                    removal: .opacity.animation(.easeInOut(duration: 0.15))
+                ))
+            }
+        }
+        .onChange(of: shazam.status) {
+            if case .matched(let song) = shazam.status {
+                createShazamStream(song)
             }
         }
     }
@@ -103,6 +111,53 @@ struct SheetView: View {
         .pickerStyle(.segmented)
         .padding(.horizontal)
         .padding(.top, 8)
+    }
+    
+    private func createShazamStream(_ mediaItem: SHMediaItem) {
+        print("matched: \(mediaItem.title!)")
+        
+        // Add item to Shazam library
+        Task {
+            try? await shazam.addToLibrary(mediaItems: [mediaItem])
+        }
+        
+        // Handle lack of available location
+        guard location.currentLocation != nil else {
+            // TODO: Send toast here
+            print("NO LOCATION.")
+            return
+        }
+        
+        // Create object
+        let stream = ShazamStream(
+            title: mediaItem.title ?? "Unknown Title",
+            artist: mediaItem.artist ?? "Unknown Artist",
+            isExplicit: mediaItem.explicitContent,
+            artworkURL: mediaItem.artworkURL ?? URL(string: "https://zane.link/abra-unavailable")!,
+            latitude: location.currentLocation!.coordinate.latitude,
+            longitude: location.currentLocation!.coordinate.longitude
+        )
+        
+        // Fill optional properties
+        stream.isrc = mediaItem.isrc
+        stream.shazamID = mediaItem.shazamID
+        stream.shazamLibraryID = mediaItem.id
+        stream.appleMusicID = mediaItem.appleMusicID
+        stream.appleMusicURL = mediaItem.appleMusicURL
+        stream.altitude = location.currentLocation?.altitude
+        stream.speed = location.currentLocation?.speed
+        stream.thoroughfare = location.currentPlacemark?.thoroughfare
+        stream.city = location.currentPlacemark?.locality
+        stream.state = location.currentPlacemark?.administrativeArea
+        stream.country = location.currentPlacemark?.country
+        stream.countryCode = location.currentPlacemark?.isoCountryCode
+        
+        // Save in ModelContext
+        modelContext.insert(stream)
+        try? modelContext.save()
+        
+        // Set selection to newly created item
+        selection = stream
     }
 }
 
