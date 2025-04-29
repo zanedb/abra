@@ -249,7 +249,7 @@
 				2FC1E0962A622B9500EF92D4 /* Resources */,
 				2FD8448B2A2F089000B67301 /* Abra.entitlements */,
 				2F60936F2A2EDFB30092A6DD /* AbraApp.swift */,
-				2F6093A72A2EF2290092A6DD /* Models */,
+				2F6093A72A2EF2290092A6DD /* Providers */,
 				2F3DAB752DA89C54001004B9 /* Views */,
 				2FE766D02A30512400952513 /* Components */,
 				2F6093732A2EDFB50092A6DD /* Assets.xcassets */,
@@ -284,7 +284,7 @@
 			path = AbraUITests;
 			sourceTree = "<group>";
 		};
-		2F6093A72A2EF2290092A6DD /* Models */ = {
+		2F6093A72A2EF2290092A6DD /* Providers */ = {
 			isa = PBXGroup;
 			children = (
 				2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */,
@@ -293,7 +293,7 @@
 				2FB9AEFE2A30A383003C7A21 /* Music.swift */,
 				2FEACDF62C7317AF00F79E2D /* Library.swift */,
 			);
-			path = Models;
+			path = Providers;
 			sourceTree = "<group>";
 		};
 		2FA7D8182AC0E56D0039AD5C /* Shared */ = {
