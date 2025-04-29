@@ -11,9 +11,11 @@
 		2F1727442C719B2700EEA500 /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1727432C719B2700EEA500 /* Place.swift */; };
 		2F30A7C72DA77EB500DFE607 /* VariableBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */; };
 		2F3DAB722DA785CB001004B9 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F3DAB712DA785CB001004B9 /* Kingfisher */; };
+		2F3DAB742DA79C63001004B9 /* SongInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB732DA79C61001004B9 /* SongInfo.swift */; };
 		2F3DAB772DA89C69001004B9 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB762DA89C67001004B9 /* OnboardingView.swift */; };
 		2F3DAB792DA8C361001004B9 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB782DA8C360001004B9 /* Utils.swift */; };
 		2F3DAB7F2DA9CEF1001004B9 /* RoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB7E2DA9CEEF001004B9 /* RoundedButton.swift */; };
+		2F3DAB822DAA0E95001004B9 /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 2F3DAB812DAA0E95001004B9 /* SwiftUIIntrospect */; };
 		2F4BE1D22D7FA059006AFFC2 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 2F4BE1D12D7FA056006AFFC2 /* .gitignore */; };
 		2F4BE1DA2D7FEE1C006AFFC2 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F4BE1D92D7FEE1C006AFFC2 /* WidgetKit.framework */; };
 		2F4BE1DC2D7FEE1C006AFFC2 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F4BE1DB2D7FEE1C006AFFC2 /* SwiftUI.framework */; };
@@ -33,6 +35,7 @@
 		2F736BB92DBD8D030078F1BB /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BB82DBD8D020078F1BB /* Toast.swift */; };
 		2F736BBB2DBD9E120078F1BB /* ShazamProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */; };
 		2F736BBD2DC04ED20078F1BB /* LocationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */; };
+		2F736BBF2DC05A6C0078F1BB /* ToastProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBE2DC05A6C0078F1BB /* ToastProvider.swift */; };
 		2F8908882C73106D0002850C /* Photos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8908872C73106D0002850C /* Photos.swift */; };
 		2F8919F02A4442BA0012DFF6 /* PlacesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8919EF2A4442BA0012DFF6 /* PlacesList.swift */; };
 		2F9BCC162DB09BF700DF0146 /* ClusterMap in Frameworks */ = {isa = PBXBuildFile; productRef = 2F9BCC152DB09BF700DF0146 /* ClusterMap */; };
@@ -41,6 +44,7 @@
 		2FA7D81A2AC0E60F0039AD5C /* ShazamStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA7D8192AC0E60F0039AD5C /* ShazamStream.swift */; };
 		2FA7D81C2AC0E9780039AD5C /* ModelContainerPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA7D81B2AC0E9780039AD5C /* ModelContainerPreview.swift */; };
 		2FA7D81E2AC0EA240039AD5C /* PreviewSampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA7D81D2AC0EA240039AD5C /* PreviewSampleData.swift */; };
+		2FB5FA2B2DB4854E00EFD901 /* DatabaseProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB5FA2A2DB4854C00EFD901 /* DatabaseProvider.swift */; };
 		2FB5FA2D2DB877F300EFD901 /* MapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB5FA2C2DB877E800EFD901 /* MapProvider.swift */; };
 		2FB5FA2F2DB8840100EFD901 /* Annotations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB5FA2E2DB883FF00EFD901 /* Annotations.swift */; };
 		2FB9AEFF2A30A383003C7A21 /* Music.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB9AEFE2A30A383003C7A21 /* Music.swift */; };
@@ -50,6 +54,7 @@
 		2FC1E0982A622BA800EF92D4 /* sfsymbols.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2FC1E0972A622BA800EF92D4 /* sfsymbols.txt */; };
 		2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC675622A3FACD200FD7638 /* SearchBar.swift */; };
 		2FC8CCEF2AC399B600523478 /* SectionedQuery in Frameworks */ = {isa = PBXBuildFile; productRef = 2FC8CCEE2AC399B600523478 /* SectionedQuery */; };
+		2FCB20F02DBC8EF000373B73 /* SongList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FCB20EF2DBC8EED00373B73 /* SongList.swift */; };
 		2FE766D22A30515E00952513 /* SongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE766D12A30515E00952513 /* SongRow.swift */; };
 		2FEACDF72C7317AF00F79E2D /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEACDF62C7317AF00F79E2D /* Library.swift */; };
 		2FEACDFB2C7320B000F79E2D /* Thumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */; };
@@ -98,6 +103,7 @@
 		2F0547382A5217B0002177D4 /* NewPlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPlace.swift; sourceTree = "<group>"; };
 		2F1727432C719B2700EEA500 /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
 		2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableBlur.swift; sourceTree = "<group>"; };
+		2F3DAB732DA79C61001004B9 /* SongInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongInfo.swift; sourceTree = "<group>"; };
 		2F3DAB762DA89C67001004B9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		2F3DAB782DA8C360001004B9 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		2F3DAB7E2DA9CEEF001004B9 /* RoundedButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedButton.swift; sourceTree = "<group>"; };
@@ -123,12 +129,14 @@
 		2F736BB82DBD8D020078F1BB /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
 		2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamProvider.swift; sourceTree = "<group>"; };
 		2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationProvider.swift; sourceTree = "<group>"; };
+		2F736BBE2DC05A6C0078F1BB /* ToastProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastProvider.swift; sourceTree = "<group>"; };
 		2F8908872C73106D0002850C /* Photos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photos.swift; sourceTree = "<group>"; };
 		2F8919EF2A4442BA0012DFF6 /* PlacesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlacesList.swift; sourceTree = "<group>"; };
 		2F9D49522A79CECE002CB9E5 /* PlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceView.swift; sourceTree = "<group>"; };
 		2FA7D8192AC0E60F0039AD5C /* ShazamStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamStream.swift; sourceTree = "<group>"; };
 		2FA7D81B2AC0E9780039AD5C /* ModelContainerPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerPreview.swift; sourceTree = "<group>"; };
 		2FA7D81D2AC0EA240039AD5C /* PreviewSampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewSampleData.swift; sourceTree = "<group>"; };
+		2FB5FA2A2DB4854C00EFD901 /* DatabaseProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseProvider.swift; sourceTree = "<group>"; };
 		2FB5FA2C2DB877E800EFD901 /* MapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapProvider.swift; sourceTree = "<group>"; };
 		2FB5FA2E2DB883FF00EFD901 /* Annotations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Annotations.swift; sourceTree = "<group>"; };
 		2FB9AEFE2A30A383003C7A21 /* Music.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Music.swift; sourceTree = "<group>"; };
@@ -137,6 +145,7 @@
 		2FC1E0942A622A7B00EF92D4 /* IconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPicker.swift; sourceTree = "<group>"; };
 		2FC1E0972A622BA800EF92D4 /* sfsymbols.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = sfsymbols.txt; sourceTree = "<group>"; };
 		2FC675622A3FACD200FD7638 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
+		2FCB20EF2DBC8EED00373B73 /* SongList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongList.swift; sourceTree = "<group>"; };
 		2FD8448B2A2F089000B67301 /* Abra.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Abra.entitlements; sourceTree = "<group>"; };
 		2FE766D12A30515E00952513 /* SongRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongRow.swift; sourceTree = "<group>"; };
 		2FEACDF62C7317AF00F79E2D /* Library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Library.swift; sourceTree = "<group>"; };
@@ -172,6 +181,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F3DAB822DAA0E95001004B9 /* SwiftUIIntrospect in Frameworks */,
 				2F9BCC182DB09BF700DF0146 /* ClusterMapSwiftUI in Frameworks */,
 				2F3DAB722DA785CB001004B9 /* Kingfisher in Frameworks */,
 				2F9BCC162DB09BF700DF0146 /* ClusterMap in Frameworks */,
@@ -290,6 +300,8 @@
 				2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */,
 				2FB5FA2C2DB877E800EFD901 /* MapProvider.swift */,
 				2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */,
+				2FB5FA2A2DB4854C00EFD901 /* DatabaseProvider.swift */,
+				2F736BBE2DC05A6C0078F1BB /* ToastProvider.swift */,
 				2FB9AEFE2A30A383003C7A21 /* Music.swift */,
 				2FEACDF62C7317AF00F79E2D /* Library.swift */,
 			);
@@ -320,7 +332,6 @@
 		2FE766D02A30512400952513 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				2F3DAB732DA79C61001004B9 /* SongInfo.swift */,
 				2F736BB82DBD8D020078F1BB /* Toast.swift */,
 				2FB5FA2E2DB883FF00EFD901 /* Annotations.swift */,
 				2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */,
@@ -329,6 +340,7 @@
 				2FC675622A3FACD200FD7638 /* SearchBar.swift */,
 				2FE766D12A30515E00952513 /* SongRow.swift */,
 				2FB9AF002A3193F5003C7A21 /* SongSheet.swift */,
+				2F3DAB732DA79C61001004B9 /* SongInfo.swift */,
 				2FCB20EF2DBC8EED00373B73 /* SongList.swift */,
 				2F659BC32A40426300EA43F9 /* PlayButton.swift */,
 				2F8919EF2A4442BA0012DFF6 /* PlacesList.swift */,
@@ -383,6 +395,7 @@
 			packageProductDependencies = (
 				2FC8CCEE2AC399B600523478 /* SectionedQuery */,
 				2F3DAB712DA785CB001004B9 /* Kingfisher */,
+				2F3DAB812DAA0E95001004B9 /* SwiftUIIntrospect */,
 				2F9BCC152DB09BF700DF0146 /* ClusterMap */,
 				2F9BCC172DB09BF700DF0146 /* ClusterMapSwiftUI */,
 			);
@@ -464,6 +477,7 @@
 			packageReferences = (
 				2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */,
 				2F3DAB702DA785CB001004B9 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				2F3DAB802DAA0E95001004B9 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */,
 				2F9BCC142DB09BF700DF0146 /* XCRemoteSwiftPackageReference "ClusterMap" */,
 			);
 			productRefGroup = 2F60936D2A2EDFB30092A6DD /* Products */;
@@ -530,6 +544,7 @@
 				2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */,
 				2F3DAB7F2DA9CEF1001004B9 /* RoundedButton.swift in Sources */,
 				2F6093A22A2EEC960092A6DD /* ContentView.swift in Sources */,
+				2F736BBF2DC05A6C0078F1BB /* ToastProvider.swift in Sources */,
 				2F736BBB2DBD9E120078F1BB /* ShazamProvider.swift in Sources */,
 				2FC1E0952A622A7B00EF92D4 /* IconPicker.swift in Sources */,
 				2F3DAB792DA8C361001004B9 /* Utils.swift in Sources */,
@@ -544,6 +559,7 @@
 				2FE766D22A30515E00952513 /* SongRow.swift in Sources */,
 				2FA7D81C2AC0E9780039AD5C /* ModelContainerPreview.swift in Sources */,
 				2F8919F02A4442BA0012DFF6 /* PlacesList.swift in Sources */,
+				2F3DAB742DA79C63001004B9 /* SongInfo.swift in Sources */,
 				2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */,
 				2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */,
 				2F736BBD2DC04ED20078F1BB /* LocationProvider.swift in Sources */,
@@ -558,6 +574,7 @@
 				2FCB20F02DBC8EF000373B73 /* SongList.swift in Sources */,
 				2F3DAB772DA89C69001004B9 /* OnboardingView.swift in Sources */,
 				2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */,
+				2FB5FA2B2DB4854E00EFD901 /* DatabaseProvider.swift in Sources */,
 				2FB9AEFF2A30A383003C7A21 /* Music.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -982,6 +999,14 @@
 				minimumVersion = 8.3.1;
 			};
 		};
+		2F3DAB802DAA0E95001004B9 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/siteline/SwiftUI-Introspect";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.0;
+			};
+		};
 		2F9BCC142DB09BF700DF0146 /* XCRemoteSwiftPackageReference "ClusterMap" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vospennikov/ClusterMap.git";
@@ -1005,6 +1030,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2F3DAB702DA785CB001004B9 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		2F3DAB812DAA0E95001004B9 /* SwiftUIIntrospect */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2F3DAB802DAA0E95001004B9 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */;
+			productName = SwiftUIIntrospect;
 		};
 		2F9BCC152DB09BF700DF0146 /* ClusterMap */ = {
 			isa = XCSwiftPackageProductDependency;
