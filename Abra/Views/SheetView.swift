@@ -42,7 +42,7 @@ struct SheetView: View {
                     if searchText.isEmpty && filtered.isEmpty {
                         ContentUnavailableView {} description: { Text("Your library is empty.") }
                     } else if searchText.isEmpty {
-                        PlacesList(places: [Place.preview])
+//                        PlacesList(places: [Place.preview])
 //                        picker
                         
                         List {
