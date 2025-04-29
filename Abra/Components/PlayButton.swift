@@ -8,9 +8,9 @@ import SwiftUI
 
 struct PlayButton: View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.toastProvider) private var toast
     
     @State private var music = MusicService()
-    @State private var alertShown = false
     
     var appleMusicID: String
     
@@ -25,21 +25,19 @@ struct PlayButton: View {
         .task {
             await music.authorize()
         }
-        .alert(music.errorMessage ?? "Something went wrong.", isPresented: $alertShown) {
-            // If it's a permissions issue, include a handy button to jump right there!
-            if (music.errorMessage != nil) && music.errorMessage!.contains("Not authorized") {
-                Button("Grant Access") {
-                    openURL(URL(string: UIApplication.openSettingsURLString)!)
-                }
-            }
-            
-            Button("Close", role: .cancel) {}
-        }
     }
     
     private func button() {
         if music.errorMessage != nil {
-            return alertShown = true
+            return toast.show(
+                message: "Music unauthorized",
+                type: .error,
+                symbol: "ear.trianglebadge.exclamationmark",
+                action: {
+                    // On permissions issue, tapping takes you right to app settings!
+                    openURL(URL(string: UIApplication.openSettingsURLString)!)
+                }
+            )
         }
         
         if music.isPlaying {
