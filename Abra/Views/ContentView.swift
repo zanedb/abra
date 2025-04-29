@@ -17,6 +17,7 @@ struct ContentView: View {
     @State var groupSelection: ShazamStreamGroup? = nil
     @State var searchText: String = ""
     
+    @State private var toast = ToastProvider()
     @State private var shazam = ShazamProvider()
     @State private var location = LocationProvider()
     
@@ -80,6 +81,8 @@ struct ContentView: View {
                     shazam.prepare()
                 }
             }
+            .withToastProvider(toast)
+            .withToastOverlay(using: toast)
     }
     
     private var sheet: some View {
