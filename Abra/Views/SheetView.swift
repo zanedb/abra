@@ -16,6 +16,7 @@ enum ViewBy {
 struct SheetView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.toastProvider) private var toast
+    @Environment(\.openURL) private var openURL
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
     
@@ -121,7 +122,15 @@ struct SheetView: View {
     private func createShazamStream(_ mediaItem: SHMediaItem) {
         // Handle lack of available location
         guard location.currentLocation != nil else {
-            toast.show(message: "Location unavailable", type: .error, symbol: "location.slash.fill")
+            toast.show(
+                message: "Location unavailable",
+                type: .error,
+                symbol: "location.slash.fill",
+                action: {
+                    // On permissions issue, tapping takes you right to app settings!
+                    openURL(URL(string: UIApplication.openSettingsURLString)!)
+                }
+            )
             return
         }
         
