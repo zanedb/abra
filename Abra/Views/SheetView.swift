@@ -15,6 +15,7 @@ enum ViewBy {
 
 struct SheetView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.toastProvider) private var toast
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
     
@@ -100,6 +101,10 @@ struct SheetView: View {
             if case .matched(let song) = shazam.status {
                 createShazamStream(song)
             }
+            
+            if case .error = shazam.status {
+                toast.show(message: "Shazam unavailable", type: .error, symbol: "shazam.logo.fill")
+            }
         }
     }
     
@@ -116,8 +121,7 @@ struct SheetView: View {
     private func createShazamStream(_ mediaItem: SHMediaItem) {
         // Handle lack of available location
         guard location.currentLocation != nil else {
-            // TODO: Send toast here
-            print("NO LOCATION.")
+            toast.show(message: "Location unavailable", type: .error, symbol: "location.slash.fill")
             return
         }
         
