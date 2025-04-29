@@ -36,6 +36,13 @@ struct ShazamClusterAnnotation: Identifiable, Hashable {
 
     let clusterConfig = ClusterManager<ShazamStreamRepresentable>.Configuration(
         maxZoomLevel: 20, // default is 20
+        cellSizeForZoomLevel: { zoom in
+            switch zoom {
+            case 13...18: return CGSize(width: 32, height: 32)
+            case 19...: return CGSize(width: 16, height: 16)
+            default: return CGSize(width: 88, height: 88)
+            }
+        }
     )
 
     var clusterManager: ClusterManager<ShazamStreamRepresentable>
