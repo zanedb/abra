@@ -114,13 +114,6 @@ struct SheetView: View {
     }
     
     private func createShazamStream(_ mediaItem: SHMediaItem) {
-        print("matched: \(mediaItem.title!)")
-        
-        // Add item to Shazam library
-        Task {
-            try? await shazam.addToLibrary(mediaItems: [mediaItem])
-        }
-        
         // Handle lack of available location
         guard location.currentLocation != nil else {
             // TODO: Send toast here
