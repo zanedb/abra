@@ -40,7 +40,6 @@ import StoreKit
         }
     }
     
-    func play(id: String) {
     func play(id: String) async {
         if currentTrackID == id {
             // Resume if currently playing song is requested
