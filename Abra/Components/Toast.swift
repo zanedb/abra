@@ -67,13 +67,28 @@ struct Toast: View {
             
             .padding(.horizontal, 14)
         }
-        .frame(width: 200, height: 43)
+        .frame(width: 200, height: 45)
         .position(x: UIScreen.main.bounds.width / 2, y: 26)
-        .transition(.push(from: .top).animation(.easeInOut(duration: 0.25)))
+        .transition(.asymmetric(
+            insertion: .push(from: .top).animation(.easeInOut(duration: 0.5)),
+            removal: .push(from: .bottom).animation(.easeInOut(duration: 0.5))
+        ))
     }
 }
 
-#Preview {
+#Preview("Animated") {
+    @Previewable @State var toast = ToastProvider()
+    
+    MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview])
+        .modelContainer(PreviewSampleData.container)
+        .withToastProvider(toast)
+        .withToastOverlay(using: toast)
+        .onAppear {
+            toast.show(message: "Location unavailable", type: .error, symbol: "location.slash.fill")
+        }
+}
+
+#Preview("Non-Animated") {
     MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview])
         .modelContainer(PreviewSampleData.container)
         .overlay {
