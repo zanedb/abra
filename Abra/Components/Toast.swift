@@ -16,6 +16,7 @@ struct Toast: View {
     var message: String
     var type: ToastType = .info
     var sfSymbol: String?
+    var action: (() -> Void)?
     
     var systemImage: String {
         guard sfSymbol == nil else { return sfSymbol! }
@@ -67,12 +68,17 @@ struct Toast: View {
             
             .padding(.horizontal, 14)
         }
-        .frame(width: 200, height: 45)
+        .frame(width: 200, height: 44)
         .position(x: UIScreen.main.bounds.width / 2, y: 26)
         .transition(.asymmetric(
             insertion: .push(from: .top).animation(.easeInOut(duration: 0.5)),
             removal: .push(from: .bottom).animation(.easeInOut(duration: 0.5))
         ))
+        .onTapGesture {
+            if let action = action {
+                action()
+            }
+        }
     }
 }
 
@@ -84,7 +90,7 @@ struct Toast: View {
         .withToastProvider(toast)
         .withToastOverlay(using: toast)
         .onAppear {
-            toast.show(message: "Location unavailable", type: .error, symbol: "location.slash.fill")
+            toast.show(message: "Location unavailable", type: .error, symbol: "location.slash.fill", action: { toast.dismiss() })
         }
 }
 

@@ -9,6 +9,7 @@ import SwiftUI
     private(set) var message: String = ""
     private(set) var type: ToastType = .info
     private(set) var symbolName: String?
+    private(set) var action: (() -> Void)?
     private(set) var isVisible: Bool = false
 
     // Auto-dismiss timer
@@ -19,14 +20,16 @@ import SwiftUI
     ///   - message: The message to display
     ///   - type: The type of toast (default: .info)
     ///   - symbol: Optional SF Symbol name to override the default for the type
+    ///   - action: Optional function that runs on tap gesture
     ///   - duration: How long to show the toast (default: 3 seconds)
-    func show(message: String, type: ToastType = .info, symbol: String? = nil, duration: Double = 3.0) {
+    func show(message: String, type: ToastType = .info, symbol: String? = nil, action: (() -> Void)? = nil, duration: Double = 3.0) {
         // Cancel any existing dismiss task
         dismissTask?.cancel()
 
         // Update properties for the new toast
         self.message = message
         self.type = type
+        self.action = action
         symbolName = symbol
 
         // Show the toast
@@ -92,7 +95,8 @@ extension View {
                 Toast(
                     message: provider.message,
                     type: provider.type,
-                    sfSymbol: provider.symbolName
+                    sfSymbol: provider.symbolName,
+                    action: provider.action
                 )
             }
         }
