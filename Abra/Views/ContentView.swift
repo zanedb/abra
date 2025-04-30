@@ -12,7 +12,7 @@ struct ContentView: View {
     
     @AppStorage("hasCompletedOnboarding") var onboarded: Bool = true // MARK: FOR PREVIEW
     
-    @State var detent: PresentationDetent = .medium
+    @State var detent: PresentationDetent = .fraction(0.50)
     @State var selection: ShazamStream? = nil
     @State var groupSelection: ShazamStreamGroup? = nil
     @State var searchText: String = ""
