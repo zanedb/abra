@@ -21,6 +21,7 @@ struct ShazamStreamRepresentable: Identifiable, Hashable, CoordinateIdentifiable
 struct ShazamClusterAnnotation: Identifiable, Hashable {
     var id = UUID()
     var coordinate: CLLocationCoordinate2D
+    var artworkURL: URL?
     var streamIds: [PersistentIdentifier]
     var count: Int {
         streamIds.count
@@ -88,6 +89,7 @@ struct ShazamClusterAnnotation: Identifiable, Hashable {
                     ShazamClusterAnnotation(
                         id: newItem.id,
                         coordinate: newItem.coordinate,
+                        artworkURL: newItem.memberAnnotations.last?.wrappedArtworkURL,
                         streamIds: newItem.memberAnnotations.compactMap(\.wrappedId)
                     )
                 )

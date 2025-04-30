@@ -23,13 +23,17 @@ struct ShazamAnnotationView: View {
 
 struct ClusterAnnotationView: View {
     var cluster: ShazamClusterAnnotation
-    @State var callout: Bool = false
+//    @State var callout: Bool = false
 
     var body: some View {
         ZStack {
-            Circle()
-                .fill(Material.thick)
-                .shadow(color: .theme.opacity(0.8), radius: 1)
+            KFImage(cluster.artworkURL ?? ShazamStream.preview.artworkURL)
+                .resizable()
+                .frame(width: 32, height: 32)
+                .blur(radius: 6)
+            
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Material.regular)
                 .frame(width: 32, height: 32)
 
             Text("\(cluster.count)")
@@ -38,17 +42,16 @@ struct ClusterAnnotationView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
-        .contentShape(Circle())
-        .onLongPressGesture {
-            callout.toggle()
-        }
-        .overlay {
-            if callout {
-                ClusterCalloutView(action: { print("do it!") }, count: cluster.count)
-                    .padding(.bottom, 8)
-                    .offset(y: -75)
-            }
-        }
+//        .onLongPressGesture {
+//            callout.toggle()
+//        }
+//        .overlay {
+//            if callout {
+//                ClusterCalloutView(action: { print("do it!") }, count: cluster.count)
+//                    .padding(.bottom, 8)
+//                    .offset(y: -75)
+//            }
+//        }
     }
 }
 
