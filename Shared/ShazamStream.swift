@@ -5,10 +5,10 @@
 //  The model class of ShazamStream (formerly SStream).
 //
 
+import ClusterMap
 import Foundation
 import MapKit
 import SwiftData
-import ClusterMap
 
 @Model final class ShazamStream {
     var title: String = ""
@@ -90,6 +90,23 @@ extension ShazamStream {
     
     public var placeGroupedString: String {
         thoroughfare ?? "Unknown"
+    }
+    
+    // TODO: guess transport modality by speed
+    // Need to do more testing
+    public var modality: String {
+        guard let speed = speed else {
+            return "existing"
+        }
+        
+        switch speed {
+        case 1..<10:
+            return "walking"
+        case 10..<20:
+            return "driving"
+        default:
+            return "chilling"
+        }
     }
     
     static var preview: ShazamStream {

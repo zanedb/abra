@@ -6,33 +6,55 @@
 import SwiftUI
 
 struct SongInfo: View {
+    @Environment(\.openURL) private var openURL
+    @Environment(\.toastProvider) private var toast
+    @Environment(MusicProvider.self) private var music
+    
     var stream: ShazamStream
+    
+    @State private var albumTitle: String = "Apple vs. 7G"
+    @State private var released: String = "2021"
+    @State private var loadedMetadata: Bool = false
     
     var body: some View {
         VStack(alignment: .leading) {
             Divider()
             
             HStack(alignment: .center) {
-                stat("Speed", Text("\(stream.speed ?? 0)"))
-                
-                Divider()
-                    .frame(height: 30)
-                    .padding(.horizontal, 6)
-                
-                stat("Altitude", Text("\(stream.altitude ?? 0)"))
+                stat(
+                    "Album",
+                    Button(action: openAppleMusic) {
+                        Image(systemName: "arrow.up.right.square")
+                        Text(albumTitle)
+                            .lineLimit(1)
+                            .redacted(reason: loadedMetadata ? [] : .placeholder)
+                            .padding(.leading, -5)
+                        Spacer()
+                    }
+                    .frame(width: 110)
+                    .disabled(stream.appleMusicURL == nil)
+                    .accessibilityLabel("Open album in Music")
+                )
                 
                 Divider()
                     .frame(height: 30)
                     .padding(.horizontal, 6)
                 
                 stat(
-                    "Place",
-                    Button(action: {}) {
-                        Image(systemName: "mappin.and.ellipse")
-                        Text("Choose")
-                            .padding(.leading, -5)
-                    }
-                    .accessibilityLabel("Choose Place")
+                    "Released",
+                    Text(released)
+                        .redacted(reason: loadedMetadata ? [] : .placeholder)
+                        .foregroundStyle(.secondary)
+                )
+                
+                Divider()
+                    .frame(height: 30)
+                    .padding(.horizontal, 6)
+                
+                stat(
+                    "Discovered",
+                    Text("While \(stream.modality)")
+                        .foregroundStyle(.secondary)
                 )
             }
             .padding(.bottom, 4)
@@ -41,9 +63,10 @@ struct SongInfo: View {
             Divider()
         }
         .padding(.top)
+        .onAppear(perform: getMusicMetadata)
     }
     
-    func stat(_ label: String, _ value: some View) -> some View {
+    private func stat(_ label: String, _ value: some View) -> some View {
         VStack(alignment: .leading) {
             Text(label)
                 .font(Font.system(.body).smallCaps())
@@ -53,11 +76,45 @@ struct SongInfo: View {
             value
         }
     }
+    
+    private func openAppleMusic() {
+        if let url = stream.appleMusicURL {
+            openURL(url)
+        }
+    }
+    
+    private func getMusicMetadata() {
+        if let id = stream.appleMusicID {
+            Task {
+                do {
+                    let song = try await music.fetchTrackInfo(id)
+                    
+                    if let albumName = song?.albumTitle, let releaseDate = song?.releaseDate?.year {
+                        albumTitle = albumName
+                        released = releaseDate
+                        
+                        loadedMetadata = true
+                    }
+                } catch {
+                    toast.show(
+                        message: "Music unauthorized",
+                        type: .error,
+                        symbol: "ear.trianglebadge.exclamationmark",
+                        action: {
+                            // On permissions issue, tapping takes you right to app settings!
+                            openURL(URL(string: UIApplication.openSettingsURLString)!)
+                        }
+                    )
+                }
+            }
+        }
+    }
 }
 
 #Preview {
     ModelContainerPreview(PreviewSampleData.inMemoryContainer) {
         SongInfo(stream: .preview)
             .padding()
+            .environment(MusicProvider())
     }
 }
