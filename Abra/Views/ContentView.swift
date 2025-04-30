@@ -21,6 +21,7 @@ struct ContentView: View {
     @State private var shazam = ShazamProvider()
     @State private var location = LocationProvider()
     @State private var library = LibraryProvider()
+    @State private var music = MusicProvider()
     
     @Query(sort: \ShazamStream.timestamp, order: .reverse)
     var shazams: [ShazamStream]
@@ -47,8 +48,8 @@ struct ContentView: View {
                     .sheet(item: $selection) { selection in
                         song(selection)
                     }
-                    .sheet(item: $groupSelection) { group in
-                        list(group)
+                    .sheet(item: $groupSelection) { _ in
+                        list
                     }
             }
             .overlay(alignment: .top) {
@@ -73,13 +74,10 @@ struct ContentView: View {
             }
             .onChange(of: scenePhase) {
                 // If app is minimized and no session is active, stop recording
-                if scenePhase == .inactive && shazam.status != .matching {
+                // Note: scenePhase is pretty inconsistent & should probably be handled with a better mechanism in the future
+                if scenePhase == .inactive && shazam.status != .matching && onboarded {
+                    print("Scene phase changed to inactive, stopping matching")
                     shazam.stopMatching()
-                }
-                
-                // Now do the opposite
-                if scenePhase == .active && shazam.status == .idle {
-                    shazam.prepare()
                 }
             }
             .withToastProvider(toast)
@@ -117,18 +115,26 @@ struct ContentView: View {
             }
     }
     
+    private var list: some View {
+        SongList(
+            streams: Binding(
+                get: { groupSelection?.wrapped ?? [] },
+                set: { update in groupSelection?.wrapped = update }
+            ),
+            selection: $selection
+        )
+        .environment(music)
+        .presentationDetents([.fraction(0.50), .large])
+        .presentationBackgroundInteraction(.enabled)
+    }
+    
     private func song(_ stream: ShazamStream) -> some View {
         SongView(stream: stream)
             .environment(library)
+            .environment(music)
             .presentationDetents([.fraction(0.50), .large])
             .presentationBackgroundInteraction(.enabled)
             .edgesIgnoringSafeArea(.bottom)
-    }
-    
-    private func list(_ group: ShazamStreamGroup) -> some View {
-        SongList(streams: group.wrapped, selection: $selection)
-            .presentationDetents([.fraction(0.50), .large])
-            .presentationBackgroundInteraction(.enabled)
     }
 }
 

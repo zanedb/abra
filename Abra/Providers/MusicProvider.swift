@@ -113,4 +113,52 @@ import StoreKit
             throw error
         }
     }
+    
+    /// Creates a playlist in Apple Music from a collection of ShazamStreams and returns the link to the playlist
+    /// - Parameters:
+    ///   - streams: Collection of ShazamStreams to add to the playlist
+    ///   - name: Name for the playlist
+    ///   - description: Optional description for the playlist
+    /// - Returns: URL to the created playlist, or nil if creation fails
+    func createPlaylist(from streams: [ShazamStream], name: String, description: String? = nil) async throws -> URL? {
+        // Ensure user has authorized access to Apple Music
+        if authorizationStatus != .authorized {
+            await authorize()
+            guard authorizationStatus == .authorized else {
+                throw MusicError.notAuthorized
+            }
+        }
+            
+        // Extract track IDs from ShazamStreams
+        let trackIDs = streams.compactMap { $0.appleMusicID }
+        guard !trackIDs.isEmpty else {
+            throw MusicError.noTracksAvailable
+        }
+            
+        // Create a new playlist
+        do {
+            let creationMetadata = MPMediaPlaylistCreationMetadata(name: name)
+            creationMetadata.descriptionText = description ?? ""
+
+            let playlist = try await MPMediaLibrary.default().getPlaylist(with: UUID(), creationMetadata: creationMetadata)
+
+            for id in trackIDs {
+                try await playlist.addItem(withProductID: id)
+            }
+            
+            // Generate and return the URL to the playlist
+            return URL(string: "music://playlist/\(playlist.persistentID)")
+        } catch {
+            Task { @MainActor in
+                self.errorMessage = "Failed to create playlist: \(error.localizedDescription)"
+            }
+            throw MusicError.playlistCreationFailed(error)
+        }
+    }
+    
+    enum MusicError: Error {
+        case notAuthorized
+        case noTracksAvailable
+        case playlistCreationFailed(Error)
+    }
 }
