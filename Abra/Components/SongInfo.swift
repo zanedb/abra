@@ -22,16 +22,14 @@ struct SongInfo: View {
             
             HStack(alignment: .center) {
                 stat(
-                    "Album",
+                    "From",
                     Button(action: openAppleMusic) {
                         Image(systemName: "arrow.up.right.square")
                         Text(albumTitle)
                             .lineLimit(1)
                             .redacted(reason: loadedMetadata ? [] : .placeholder)
                             .padding(.leading, -5)
-                        Spacer()
                     }
-                    .frame(width: 110)
                     .disabled(stream.appleMusicURL == nil)
                     .accessibilityLabel("Open album in Music")
                 )
@@ -42,9 +40,11 @@ struct SongInfo: View {
                 
                 stat(
                     "Released",
+    
                     Text(released)
-                        .redacted(reason: loadedMetadata ? [] : .placeholder)
+                        .lineLimit(1)
                         .foregroundStyle(.secondary)
+                        .redacted(reason: loadedMetadata ? [] : .placeholder)
                 )
                 
                 Divider()
@@ -53,8 +53,11 @@ struct SongInfo: View {
                 
                 stat(
                     "Discovered",
+                    
                     Text("While \(stream.modality)")
+                        .lineLimit(1)
                         .foregroundStyle(.secondary)
+                        .redacted(reason: .placeholder)
                 )
             }
             .padding(.bottom, 4)
@@ -67,14 +70,19 @@ struct SongInfo: View {
     }
     
     private func stat(_ label: String, _ value: some View) -> some View {
-        VStack(alignment: .leading) {
-            Text(label)
-                .font(Font.system(.body).smallCaps())
-                .fontWeight(.medium)
-                .foregroundStyle(.secondary)
+        HStack {
+            VStack(alignment: .leading) {
+                Text(label)
+                    .font(Font.system(.body).smallCaps())
+                    .fontWeight(.medium)
+                    .foregroundStyle(.secondary)
+                
+                value
+            }
             
-            value
+            Spacer()
         }
+        .frame(maxWidth: .infinity)
     }
     
     private func openAppleMusic() {
@@ -90,7 +98,8 @@ struct SongInfo: View {
                     let song = try await music.fetchTrackInfo(id)
                     
                     if let albumName = song?.albumTitle, let releaseDate = song?.releaseDate?.year {
-                        albumTitle = albumName
+                        // Trim "Single" declaration
+                        albumTitle = albumName.replacingOccurrences(of: " - Single", with: "")
                         released = releaseDate
                         
                         loadedMetadata = true
