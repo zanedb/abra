@@ -9,25 +9,21 @@ import SwiftUI
 struct PlayButton: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.toastProvider) private var toast
-    
-    @State private var music = MusicService()
+    @Environment(MusicProvider.self) private var music
     
     var appleMusicID: String
     
     var body: some View {
-        Button(action: button) {
+        Button(action: playPause) {
             if (music.currentTrackID == appleMusicID) && music.isPlaying {
                 Label("Pause", systemImage: "pause.fill")
             } else {
                 Label("Play", systemImage: "play.fill")
             }
         }
-        .task {
-            await music.authorize()
-        }
     }
     
-    private func button() {
+    private func playPause() {
         if music.errorMessage != nil {
             return toast.show(
                 message: "Music unauthorized",
@@ -61,4 +57,5 @@ struct PlayButton: View {
 
 #Preview {
     PlayButton(appleMusicID: ShazamStream.preview.appleMusicID ?? "1486262969")
+        .environment(MusicProvider())
 }

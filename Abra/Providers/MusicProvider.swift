@@ -1,5 +1,5 @@
 //
-//  Music.swift
+//  MusicProvider.swift
 //  Abra
 //
 
@@ -8,8 +8,10 @@ import MediaPlayer
 import MusicKit
 import StoreKit
 
-@Observable class MusicService {
+@Observable class MusicProvider {
     let musicPlayer = MPMusicPlayerController.systemMusicPlayer
+    
+    var authorizationStatus: MusicAuthorization.Status?
     
     private(set) var isPlaying = false
     private(set) var currentTrackID: String?
@@ -83,6 +85,7 @@ import StoreKit
     
     func authorize() async {
         let status = await MusicAuthorization.request()
+        authorizationStatus = status
         if status != .authorized {
             Task { @MainActor in
                 errorMessage = "Music playback is not authorized."

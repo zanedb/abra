@@ -34,8 +34,8 @@ struct SongSheet: View {
                 
                 Spacer()
                 
-                if stream.appleMusicID != nil {
-                    PlayButton(appleMusicID: stream.appleMusicID!)
+                if let id = stream.appleMusicID {
+                    PlayButton(appleMusicID: id)
                 }
             }
             
