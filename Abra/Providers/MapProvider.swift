@@ -32,7 +32,7 @@ struct ShazamClusterAnnotation: Identifiable, Hashable {
     var mapSize: CGSize = .init(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
     var annotations: [ShazamStreamRepresentable] = []
     var clusters: [ShazamClusterAnnotation] = []
-    var position: MapCameraPosition = .automatic
+    var position: MapCameraPosition = .userLocation(fallback: .automatic)
     var selection: [PersistentIdentifier]?
 
     let clusterConfig = ClusterManager<ShazamStreamRepresentable>.Configuration(
