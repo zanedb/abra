@@ -14,9 +14,20 @@ struct Photos: View {
 
     var stream: ShazamStream
 
+    func requestForAuthorizationIfNecessary() {
+        // Make sure photo library access is granted
+        // If not, we'll show the permission grant view
+        guard library.authorizationStatus != .authorized || library.authorizationStatus != .limited else { return }
+        library.requestAuthorization(date: stream.timestamp,
+                                     handleError: { error in
+                                         guard error != nil else { return }
+                                         showError = true
+                                     })
+    }
+
     var body: some View {
         VStack {
-            if library.authorizationStatus != .authorized {
+            if showError {
                 permissionView
             } else {
                 if library.results.isEmpty {
@@ -25,6 +36,9 @@ struct Photos: View {
                     libraryView
                 }
             }
+        }
+        .onAppear {
+            requestForAuthorizationIfNecessary()
         }
     }
 
@@ -38,7 +52,6 @@ struct Photos: View {
                 ))
 
             // MARK: this creates an X button that closes the card permanently
-
             // I'm disabling this for now because it is annoying to reset
             // Also, there's no settings UI yet so no it's irreversible
             // And I want people to use it! Sorry!
