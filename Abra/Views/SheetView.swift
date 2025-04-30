@@ -53,7 +53,6 @@ struct SheetView: View {
                                     ForEach(section, id: \.self) { shazam in
                                         Button(action: { selection = shazam }) {
                                             SongRow(stream: shazam)
-                                                .environment(shazam)
                                         }
                                         .listRowBackground(Color.clear)
                                     }
@@ -103,7 +102,8 @@ struct SheetView: View {
                 createShazamStream(song)
             }
             
-            if case .error = shazam.status {
+            if case .error(let error) = shazam.status {
+                print(error.localizedDescription)
                 toast.show(message: "Shazam unavailable", type: .error, symbol: "shazam.logo.fill")
             }
         }
