@@ -49,7 +49,7 @@ struct Toast: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 14)
-                .fill(.background)
+                .fill(Material.thick)
                 .shadow(color: color.opacity(0.3), radius: 2, x: 0, y: 1.5)
             
             HStack {
