@@ -70,7 +70,7 @@ struct OnboardingView: View {
                 label: locAuth ? "" : "Location",
                 systemImage: locAuth ? "checkmark" : "location.fill",
                 color: locAuth ? .green : .blue,
-                action: { location.requestLocation() }
+                action: { location.requestPermission() }
             )
 
             RoundedButton(
