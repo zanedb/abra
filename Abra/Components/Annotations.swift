@@ -93,7 +93,23 @@ struct ClusterCalloutView: View {
     }
 }
 
-#Preview {
+#Preview("Annotations Only") {
+    @Previewable @State var cluster = ShazamClusterAnnotation(coordinate: .init(latitude: 32.6514, longitude: -161.4333), streamIds: [ShazamStream.preview.id, ShazamStream.preview.id])
+
+    HStack {
+        Spacer()
+
+        ShazamAnnotationView(artworkURL: ShazamStream.preview.artworkURL)
+
+        Spacer()
+
+        ClusterAnnotationView(cluster: cluster)
+
+        Spacer()
+    }
+}
+
+#Preview("Real Thing") {
     @Previewable @State var position = MapCameraPosition.automatic
 
     MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview, .preview, .preview])
