@@ -11,8 +11,7 @@ struct SongView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
     @Environment(LibraryProvider.self) private var library
-    
-    @State private var music = MusicProvider()
+    @Environment(MusicProvider.self) private var music
     
     var stream: ShazamStream
     
@@ -22,10 +21,8 @@ struct SongView: View {
             
             ScrollView {
                 SongSheet(stream: stream)
-                    .environment(music)
                 
                 SongInfo(stream: stream)
-                    .environment(music)
                 
                 if !library.hasIgnoredPhotosRequest {
                     HStack {

@@ -92,4 +92,25 @@ import StoreKit
             }
         }
     }
+    
+    /// Fetches track information from Apple Music using the track ID
+    /// - Parameter trackId: The Apple Music ID for the track
+    /// - Returns: MusicItemCollection<Song> Element with a bunch of metadata
+    @discardableResult
+    func fetchTrackInfo(_ trackId: String) async throws -> MusicItemCollection<Song>.Element? {
+        do {
+            let request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: MusicItemID(rawValue: trackId))
+            let response = try await request.response()
+            
+            if let song = response.items.first {
+                return song
+            } else {
+                print("No song found for track ID: \(trackId)")
+                return nil
+            }
+        } catch {
+            print("Error fetching track info: \(error)")
+            throw error
+        }
+    }
 }
