@@ -58,6 +58,13 @@ struct MapView: View {
                 showOnMap(coordinate)
             }
         }
+        .onChange(of: shazams) {
+            // Recalculate all clusters on change of ShazamStream db
+            // Need to re-do data flow here because there's no way this is performant!
+            Task {
+                await mapProvider.setup(shazams)
+            }
+        }
     }
 
     /// Reads size for ClusterMap

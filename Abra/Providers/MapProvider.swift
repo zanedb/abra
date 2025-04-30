@@ -56,6 +56,7 @@ struct ShazamClusterAnnotation: Identifiable, Hashable {
         _ shazams: [ShazamStream]
     ) async {
         let shazamRepresentables: [ShazamStreamRepresentable] = shazams.map { ShazamStreamRepresentable(coordinate: $0.coordinate, wrappedId: $0.id, wrappedTitle: $0.title, wrappedArtworkURL: $0.artworkURL) }
+        await clusterManager.removeAll()
         await clusterManager.add(shazamRepresentables)
         if let currentRegion = position.region {
             await reloadClusters(region: currentRegion)
