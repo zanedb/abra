@@ -10,7 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     
-    @AppStorage("hasCompletedOnboarding") var onboarded: Bool = true // MARK: FOR PREVIEW
+    @AppStorage("hasCompletedOnboarding") var onboarded: Bool = false
     
     @State var detent: PresentationDetent = .fraction(0.50)
     @State var selection: ShazamStream? = nil
