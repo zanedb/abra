@@ -41,7 +41,7 @@ enum ShazamStatus: Equatable {
 }
 
 /// Shazam API wrapper
-@Observable final class ShazamProvider {
+@Observable final class ShazamProvider {    
     var status: ShazamStatus = .idle
 
     private let session = SHManagedSession()
@@ -57,7 +57,10 @@ enum ShazamStatus: Equatable {
     }
     
     init() {
-        prepare()
+        if UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+            // If this runs during onboarding, it‘ll ruin the permission request flow
+            prepare()
+        }
         
         NotificationCenter.default.addObserver(
             self,
