@@ -127,3 +127,11 @@ struct EditableList<
     }
 }
 
+/// Extract error code from localizedDescription with some goofy regex
+func extractShazamErrorCode(from text: String) -> String {
+    guard let range = text.range(of: "com.apple.ShazamKit error \\d+", options: .regularExpression),
+          let codeRange = text[range].range(of: "\\d+$", options: .regularExpression) else {
+        return ""
+    }
+    return String(text[codeRange])
+}

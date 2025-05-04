@@ -103,8 +103,7 @@ struct SheetView: View {
             }
             
             if case .error(let error) = shazam.status {
-                print(error.localizedDescription)
-                toast.show(message: "Shazam unavailable", type: .error, symbol: "shazam.logo.fill")
+                handleShazamAPIError(error)
             }
         }
     }
@@ -164,6 +163,17 @@ struct SheetView: View {
         
         // Set selection to newly created item
         selection = stream
+    }
+    
+    private func handleShazamAPIError(_ error: ShazamError) {
+        switch error {
+        case .noMatch:
+            toast.show(message: "No match found", type: .info, symbol: "shazam.logo.fill")
+        case .matchFailed(let error):
+            toast.show(message: "Shazam error \(extractShazamErrorCode(from: error.localizedDescription))", type: .error, symbol: "shazam.logo.fill")
+        default:
+            break
+        }
     }
 }
 
