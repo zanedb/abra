@@ -15,8 +15,8 @@ struct ShazamAnnotationView: View {
             .resizable()
             .placeholder { ProgressView() }
             .aspectRatio(contentMode: .fit)
-            .frame(width: 32, height: 32)
-            .cornerRadius(2)
+            .frame(width: 36, height: 36)
+            .clipShape(Circle())
             .shadow(radius: 3, x: 2, y: 2)
     }
 }
@@ -29,16 +29,18 @@ struct ClusterAnnotationView: View {
         ZStack {
             KFImage(cluster.artworkURL ?? ShazamStream.preview.artworkURL)
                 .resizable()
-                .frame(width: 32, height: 32)
-                .blur(radius: 6)
-            
+                .frame(width: 36, height: 36)
+                .clipShape(Circle())
+                .blur(radius: 4)
+
             RoundedRectangle(cornerRadius: 4)
                 .fill(Material.regular)
-                .frame(width: 32, height: 32)
+                .frame(width: 36, height: 36)
+                .clipShape(Circle())
 
             Text("\(cluster.count)")
                 .foregroundStyle(Color.accentColor)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: cluster.count > 1000 ? 11 : 14, weight: .semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
