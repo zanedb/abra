@@ -20,81 +20,68 @@ struct SheetView: View {
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
     
-    @Binding var detent: PresentationDetent
     @Binding var selection: ShazamStream?
     @Binding var searchText: String
-    
-    @State var viewBy: ViewBy = .time
     
     var filtered: [ShazamStream]
     
     @SectionedQuery(\.timeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var timeSections: SectionedResults<String, ShazamStream>
     
-    @SectionedQuery(\.placeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var placeSections: SectionedResults<String, ShazamStream>
-    
     var body: some View {
         VStack {
-            SearchBar(prompt: "Search Shazams", search: $searchText)
-                .environment(shazam)
-                .padding(.horizontal)
-                .padding(.top, detent != PresentationDetent.height(65) ? 14 : 0)
+            if !(filtered.isEmpty && searchText.isEmpty) {
+                HStack(alignment: .center) {
+                    SearchBar(text: $searchText, placeholder: "Search Shazams")
+                    
+                    Button(action: { Task { await shazam.startMatching() } }) {
+                        Image(systemName: "shazam.logo.fill")
+                            .symbolRenderingMode(.multicolor)
+                            .tint(.blue)
+                            .fontWeight(.medium)
+                            .font(.system(size: 36))
+                    }
+                    .padding(.leading, -3)
+                    .padding(.trailing, 12)
+                }
+                .padding(.horizontal, 8)
+                .padding(.top, 12)
+            }
             
-            if detent != PresentationDetent.height(65) {
-                VStack(spacing: 0) {
-                    if searchText.isEmpty && filtered.isEmpty {
-                        ContentUnavailableView {} description: { Text("Your library is empty.") }
-                    } else if searchText.isEmpty {
-//                        PlacesList(places: [Place.preview])
-//                        picker
-                        
-                        List {
-                            ForEach(viewBy == .time ? timeSections : placeSections) { section in
-                                Section {
-                                    ForEach(section, id: \.self) { shazam in
-                                        Button(action: { selection = shazam }) {
-                                            SongRow(stream: shazam)
-                                        }
-                                        .listRowBackground(Color.clear)
-                                    }
-                                } header: {
-                                    HStack {
-                                        Text("\(section.id)")
-                                        if viewBy == .place {
-                                            Spacer()
-                                            Button(action: {}) {
-                                                Label("New Place", systemImage: "plus")
-                                            }
-                                        }
-                                    }
-                                }
-                                .listSectionSeparator(.hidden, edges: .bottom)
-                            }
-                        }
-                        .listStyle(.inset)
-                        .scrollContentBackground(.hidden)
-                    } else if !searchText.isEmpty && filtered.isEmpty {
-                        ContentUnavailableView {
-                            Label("No Results", systemImage: "moon.stars")
-                        } description: {
-                            Text("Try a new search.")
-                        }
-                    } else {
-                        List {
-                            ForEach(filtered, id: \.id) { shazam in
+            if searchText.isEmpty && filtered.isEmpty {
+                ContentUnavailableView {} description: { Text("Your library is empty.") }
+            } else if searchText.isEmpty {
+                List {
+                    ForEach(timeSections) { section in
+                        Section(header: Text("\(section.id)")) {
+                            ForEach(section, id: \.self) { shazam in
                                 Button(action: { selection = shazam }) {
                                     SongRow(stream: shazam)
                                 }
                                 .listRowBackground(Color.clear)
                             }
                         }
-                        .listStyle(.inset)
-                        .scrollContentBackground(.hidden)
+                        .listSectionSeparator(.hidden, edges: .bottom)
                     }
                 }
-                .transition(.asymmetric(
-                    insertion: .push(from: .bottom).animation(.easeInOut(duration: 0.25)),
-                    removal: .opacity.animation(.easeInOut(duration: 0.15))
-                ))
+                .listStyle(.inset)
+                .scrollContentBackground(.hidden)
+            } else if !searchText.isEmpty && filtered.isEmpty {
+                ContentUnavailableView {
+                    Label("No Results", systemImage: "moon.stars")
+                } description: {
+                    Text("Try a new search.")
+                }
+            } else {
+                List {
+                    ForEach(filtered, id: \.id) { shazam in
+                        Button(action: { selection = shazam }) {
+                            SongRow(stream: shazam)
+                        }
+                        .listRowBackground(Color.clear)
+                    }
+                }
+                .listStyle(.inset)
+                .scrollContentBackground(.hidden)
             }
         }
         .onChange(of: shazam.status) {
@@ -106,16 +93,6 @@ struct SheetView: View {
                 handleShazamAPIError(error)
             }
         }
-    }
-    
-    var picker: some View {
-        Picker("", selection: $viewBy) {
-            Text("Recents").tag(ViewBy.time)
-            Text("Locations").tag(ViewBy.place)
-        }
-        .pickerStyle(.segmented)
-        .padding(.horizontal)
-        .padding(.top, 8)
     }
     
     private func createShazamStream(_ mediaItem: SHMediaItem) {

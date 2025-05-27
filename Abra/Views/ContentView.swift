@@ -85,7 +85,7 @@ struct ContentView: View {
     }
     
     private var sheet: some View {
-        SheetView(detent: $detent, selection: $selection, searchText: $searchText, filtered: filtered)
+        SheetView(selection: $selection, searchText: $searchText, filtered: filtered)
             .environment(shazam)
             .environment(location)
             .presentationDetents([.height(65), .fraction(0.50), .large], selection: $detent)
