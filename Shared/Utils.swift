@@ -73,9 +73,17 @@ extension Date {
     }
     
     var timeSince: String {
+        let now = Date.now
+        let timeDifference = abs(now.timeIntervalSince(self))
+        
+        // Return "now" if < 1 min
+        if timeDifference < 60 {
+            return "now"
+        }
+        
         let rDF = RelativeDateTimeFormatter()
         rDF.unitsStyle = .abbreviated
-        return rDF.localizedString(for: self, relativeTo: Date.now)
+        return rDF.localizedString(for: self, relativeTo: now)
     }
     
     var relativeGroupString: String {
