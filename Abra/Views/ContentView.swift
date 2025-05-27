@@ -29,7 +29,7 @@ struct ContentView: View {
     var filtered: [ShazamStream] {
         guard searchText.isEmpty == false else { return shazams }
         
-        return shazams.filter { $0.title.lowercased().contains(searchText.lowercased()) }
+        return shazams.filter { $0.title.lowercased().contains(searchText.lowercased()) || $0.artist.lowercased().contains(searchText.lowercased()) }
     }
     
     var body: some View {
