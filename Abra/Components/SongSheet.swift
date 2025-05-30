@@ -27,6 +27,7 @@ struct SongSheet: View {
                     .font(.system(size: 18))
                     .padding(.bottom, 2)
                     .lineLimit(2)
+                    .frame(maxWidth: 180, alignment: .leading)
                 Text(stream.artist)
                     .foregroundColor(.gray)
                     .font(.system(size: 15))
