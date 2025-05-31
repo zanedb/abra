@@ -141,6 +141,7 @@ struct SheetView: View {
             toast.show(message: "No match found", type: .info, symbol: "shazam.logo.fill")
         case .matchFailed(let error):
             toast.show(message: "Shazam error \(extractShazamErrorCode(from: error.localizedDescription))", type: .error, symbol: "shazam.logo.fill")
+            Task { await shazam.startMatching() } // retry
         default:
             break
         }
