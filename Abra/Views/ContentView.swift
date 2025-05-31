@@ -88,7 +88,7 @@ struct ContentView: View {
         SheetView(selection: $selection, searchText: $searchText, filtered: filtered)
             .environment(shazam)
             .environment(location)
-            .presentationDetents([.height(65), .fraction(0.50), .large], selection: $detent)
+            .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $detent)
             .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.50)))
             .interactiveDismissDisabled()
     }
@@ -124,7 +124,7 @@ struct ContentView: View {
             selection: $selection
         )
         .environment(music)
-        .presentationDetents([.fraction(0.50), .large])
+        .presentationDetents([.fraction(0.50), .fraction(0.999)])
         .presentationBackgroundInteraction(.enabled)
     }
     
@@ -132,7 +132,7 @@ struct ContentView: View {
         SongView(stream: stream)
             .environment(library)
             .environment(music)
-            .presentationDetents([.fraction(0.50), .large])
+            .presentationDetents([.fraction(0.50), .fraction(0.999)])
             .presentationBackgroundInteraction(.enabled)
             .edgesIgnoringSafeArea(.bottom)
     }
