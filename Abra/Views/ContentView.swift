@@ -34,8 +34,8 @@ struct ContentView: View {
     
     var body: some View {
         MapView(detent: $detent, sheetSelection: $selection, groupSelection: $groupSelection, shazams: filtered)
-            .inspector(isPresented: Binding(
-                get: { onboarded },
+            .sheet(isPresented: Binding(
+                get: { onboarded || isPreview },
                 set: { _ in }
             )) {
                 sheet
@@ -61,7 +61,7 @@ struct ContentView: View {
                 }
             }
             .overlay {
-                if !onboarded {
+                if !onboarded && !isPreview {
                     VisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
                         .edgesIgnoringSafeArea(.all)
                         .transition(.opacity.animation(.easeInOut(duration: 0.25)))
@@ -92,6 +92,9 @@ struct ContentView: View {
             .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.50)))
             .presentationBackground(.thickMaterial)
             .interactiveDismissDisabled()
+            .introspect(.sheet, on: .iOS(.v18)) { sheetView in
+                sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
+            }
     }
     
     private var searching: some View {
@@ -129,6 +132,9 @@ struct ContentView: View {
         .presentationDetents([.fraction(0.50), .fraction(0.999)])
         .presentationBackgroundInteraction(.enabled)
         .presentationBackground(.thickMaterial)
+        .introspect(.sheet, on: .iOS(.v18)) { sheetView in
+            sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
+        }
     }
     
     private func song(_ stream: ShazamStream) -> some View {
@@ -139,6 +145,9 @@ struct ContentView: View {
             .presentationBackgroundInteraction(.enabled)
             .presentationBackground(.thickMaterial)
             .edgesIgnoringSafeArea(.bottom)
+            .introspect(.sheet, on: .iOS(.v18)) { sheetView in
+                sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
+            }
     }
 }
 

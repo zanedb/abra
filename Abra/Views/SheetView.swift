@@ -8,11 +8,6 @@ import ShazamKit
 import SwiftData
 import SwiftUI
 
-enum ViewBy {
-    case time
-    case place
-}
-
 struct SheetView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.toastProvider) private var toast
@@ -29,23 +24,21 @@ struct SheetView: View {
     
     var body: some View {
         VStack {
-            if !(filtered.isEmpty && searchText.isEmpty) {
-                HStack(alignment: .center) {
-                    SearchBar(text: $searchText, placeholder: "Search Shazams")
+            HStack(alignment: .center) {
+                SearchBar(text: $searchText, placeholder: "Search Shazams")
                     
-                    Button(action: { Task { await shazam.startMatching() } }) {
-                        Image(systemName: "shazam.logo.fill")
-                            .symbolRenderingMode(.multicolor)
-                            .tint(.blue)
-                            .fontWeight(.medium)
-                            .font(.system(size: 36))
-                    }
-                    .padding(.leading, -3)
-                    .padding(.trailing, 12)
+                Button(action: { Task { await shazam.startMatching() } }) {
+                    Image(systemName: "shazam.logo.fill")
+                        .symbolRenderingMode(.multicolor)
+                        .tint(.blue)
+                        .fontWeight(.medium)
+                        .font(.system(size: 36))
                 }
-                .padding(.horizontal, 8)
-                .padding(.top, 12)
+                .padding(.leading, -3)
+                .padding(.trailing, 12)
             }
+            .padding(.horizontal, 8)
+            .padding(.top, 12)
             
             if searchText.isEmpty && filtered.isEmpty {
                 ContentUnavailableView {} description: { Text("Your library is empty.") }

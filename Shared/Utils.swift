@@ -143,3 +143,9 @@ func extractShazamErrorCode(from text: String) -> String {
     }
     return String(text[codeRange])
 }
+
+/// Determine if app is running in Preview environment
+/// https://sarunw.com/posts/detecting-xcode-previews/
+var isPreview: Bool {
+    return ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+}
