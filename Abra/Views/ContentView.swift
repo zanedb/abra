@@ -90,6 +90,7 @@ struct ContentView: View {
             .environment(location)
             .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $detent)
             .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.50)))
+            .presentationBackground(.thickMaterial)
             .interactiveDismissDisabled()
     }
     
@@ -98,6 +99,7 @@ struct ContentView: View {
             .presentationDetents([.fraction(0.50)])
             .interactiveDismissDisabled()
             .presentationDragIndicator(.hidden)
+            .presentationBackground(.thickMaterial)
             .overlay(
                 Button { shazam.stopMatching() } label: {
                     Image(systemName: "xmark.circle.fill")
@@ -126,6 +128,7 @@ struct ContentView: View {
         .environment(music)
         .presentationDetents([.fraction(0.50), .fraction(0.999)])
         .presentationBackgroundInteraction(.enabled)
+        .presentationBackground(.thickMaterial)
     }
     
     private func song(_ stream: ShazamStream) -> some View {
@@ -134,6 +137,7 @@ struct ContentView: View {
             .environment(music)
             .presentationDetents([.fraction(0.50), .fraction(0.999)])
             .presentationBackgroundInteraction(.enabled)
+            .presentationBackground(.thickMaterial)
             .edgesIgnoringSafeArea(.bottom)
     }
 }
