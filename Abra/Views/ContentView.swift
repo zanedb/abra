@@ -6,6 +6,7 @@
 import MapKit
 import SwiftData
 import SwiftUI
+import SwiftUIIntrospect
 
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
