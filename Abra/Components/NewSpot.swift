@@ -1,15 +1,15 @@
 //
-//  NewPlace.swift
+//  NewSpot.swift
 //  Abra
 //
 
 import MapKit
 import SwiftUI
 
-struct NewPlace: View {
+struct NewSpot: View {
     @Environment(\.dismiss) private var dismiss
     
-    @State private var placeName: String = ""
+    @State private var spotName: String = ""
     @State private var symbol: String = ""
     @State private var showingIconPicker: Bool = false
     @State private var radius: Double = 0.25
@@ -18,7 +18,7 @@ struct NewPlace: View {
     let range = 0.25 ... 1
     
     private var notReady: Bool {
-        placeName == "" || symbol == ""
+        spotName == "" || symbol == ""
     }
     
     private var position: Binding<MapCameraPosition> {
@@ -48,7 +48,7 @@ struct NewPlace: View {
                                 .padding(.trailing, 5)
                         }
                         VStack(alignment: .leading, spacing: 0) {
-                            TextField("Place", text: $placeName)
+                            TextField("Spot", text: $spotName)
                                 .font(.title)
                                 .bold()
                             Text("\(streams.count) Song\(streams.count != 1 ? "s" : "")")
@@ -63,7 +63,7 @@ struct NewPlace: View {
                 }
                 .padding(.top, 5)
             }
-            .navigationTitle("New Place")
+            .navigationTitle("New Spot")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -71,7 +71,7 @@ struct NewPlace: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create") {
-                        // TODO: create Place
+                        // TODO: create Spot
                     }
                     .disabled(notReady)
                 }
@@ -132,7 +132,7 @@ struct NewPlace: View {
     var songList: some View {
         VStack(alignment: .leading) {
             VStack(alignment: .leading) {
-                Text("In This Place")
+                Text("At This Spot")
                     .font(.subheadline)
                     .bold()
                     .foregroundColor(.gray)
@@ -146,6 +146,7 @@ struct NewPlace: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
         }
         .padding(.top)
     }
@@ -155,7 +156,7 @@ struct NewPlace: View {
     Map(initialPosition: .automatic)
         .ignoresSafeArea(.all)
         .sheet(isPresented: .constant(true)) {
-            NewPlace(streams: [ShazamStream.preview], center: .init(latitude: 37.774722, longitude: -122.418231))
+            NewSpot(streams: [ShazamStream.preview], center: .init(latitude: 37.774722, longitude: -122.418231))
                 .presentationDetents([.large])
                 .interactiveDismissDisabled()
                 .presentationDragIndicator(.hidden)

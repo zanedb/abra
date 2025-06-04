@@ -1,5 +1,5 @@
 //
-//  Place.swift
+//  Spot.swift
 //  Abra
 //
 
@@ -7,7 +7,7 @@ import Foundation
 import SwiftData
 import MapKit
 
-@Model final class Place {
+@Model final class Spot {
     var name: String
     var iconName: String
     var colorName: String
@@ -35,12 +35,12 @@ import MapKit
     }
 }
 
-extension Place {
+extension Spot {
     public var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: self.latitude, longitude: self.longitude)
     }
     
-    static var preview: Place {
-        Place(name: "Sioux Falls", iconName: "magnifyingglass", colorName: "blue", latitude: 37.3316876, longitude: -122.0327261, radius: 10)
+    static var preview: Spot {
+        Spot(name: "Sioux Falls", iconName: "magnifyingglass", colorName: "blue", latitude: 37.3316876, longitude: -122.0327261, radius: 10)
     }
 }

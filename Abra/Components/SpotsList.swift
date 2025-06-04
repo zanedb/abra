@@ -1,21 +1,21 @@
 //
-//  PlacesList.swift
+//  SpotsList.swift
 //  Abra
 //
 
 import SwiftUI
 import SwiftData
 
-struct PlacesList: View {
+struct SpotsList: View {
     @Environment(\.modelContext) private var modelContext
     
-//    @Query(sort: \Place.updatedAt, order: .reverse)
-    var places: [Place]
+//    @Query(sort: \Spot.updatedAt, order: .reverse)
+    var spots: [Spot]
     
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                Text("Places")
+                Text("Spots")
                     .foregroundColor(.gray)
                     .bold()
                     .font(.system(size: 14))
@@ -42,23 +42,23 @@ struct PlacesList: View {
     
     private var list: some View {
         LazyHStack {
-            ForEach(places, id: \.id) { place in
+            ForEach(spots, id: \.id) { spot in
                 NavigationLink {
-                    PlaceView(place: place)
-                        .navigationTitle(place.name)
+                    SpotView(spot: spot)
+                        .navigationTitle(spot.name)
                         .onAppear {
-//                            vm.updateCenter(place.latitude, place.longitude)
+//                            vm.updateCenter(spot.latitude, spot.longitude)
                         }
                 } label: {
                     VStack(alignment: .center) {
-                        Image(systemName: place.iconName)
+                        Image(systemName: spot.iconName)
                             .resizable()
                             .frame(width: 20, height: 20)
                             .padding(12)
                             .foregroundColor(.white)
                             .background(.indigo) // TODO: allow user color selection
                             .cornerRadius(500)
-                        Text(place.name)
+                        Text(spot.name)
                             .font(.system(size: 12))
                             .foregroundColor(.primary)
                             .lineLimit(1)
@@ -72,7 +72,7 @@ struct PlacesList: View {
                                 Label("Share", systemImage: "square.and.arrow.up")
                             }
                             Divider()
-                            Button(role: .destructive, action: { deletePlace(place) }, label: {
+                            Button(role: .destructive, action: { deleteSpot(spot) }, label: {
                                 Label("Remove", systemImage: "trash")
                             })
                         }
@@ -83,9 +83,9 @@ struct PlacesList: View {
         .padding(.horizontal, 10)
     }
     
-    private func deletePlaces(offsets: IndexSet) {
+    private func deleteSpots(offsets: IndexSet) {
         withAnimation {
-            offsets.map { places[$0] }.forEach(modelContext.delete)
+            offsets.map { spots[$0] }.forEach(modelContext.delete)
 
             do {
                 try modelContext.save()
@@ -98,9 +98,9 @@ struct PlacesList: View {
         }
     }
     
-    private func deletePlace(_ place: Place) {
+    private func deleteSpot(_ spot: Spot) {
         withAnimation {
-            modelContext.delete(place)
+            modelContext.delete(spot)
         
             do {
                 try modelContext.save()
@@ -113,5 +113,5 @@ struct PlacesList: View {
 }
 
 #Preview {
-    PlacesList(places: [Place.preview])
+    SpotsList(spots: [Spot.preview])
 }

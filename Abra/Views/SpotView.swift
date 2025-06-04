@@ -1,12 +1,12 @@
 //
-//  PlaceView.swift
+//  SpotView.swift
 //  Abra
 //
 
 import SwiftUI
 
-struct PlaceView: View {
-    var place: Place
+struct SpotView: View {
+    var spot: Spot
     
     var body: some View {
         Text("hw")
@@ -14,8 +14,8 @@ struct PlaceView: View {
     }
 }
 
-struct PlaceView_Previews: PreviewProvider {
+struct SpotView_Previews: PreviewProvider {
     static var previews: some View {
-        PlaceView(place: Place.preview)
+        SpotView(spot: Spot.preview)
     }
 }
