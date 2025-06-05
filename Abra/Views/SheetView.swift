@@ -40,6 +40,8 @@ struct SheetView: View {
             .padding(.horizontal, 8)
             .padding(.top, 12)
             
+            SpotsList()
+            
             if searchText.isEmpty && filtered.isEmpty {
                 ContentUnavailableView {} description: { Text("Your library is empty.") }
             } else if searchText.isEmpty {

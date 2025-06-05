@@ -6,6 +6,7 @@
 import SwiftUI
 
 // MARK: - View.fillFrame()
+
 // https://github.com/sindresorhus/Blear/blob/5326e9b891e609c23641d43b966501afe21019ca/Blear/Utilities.swift#L1891
 extension View {
     /**
@@ -30,6 +31,7 @@ extension View {
 }
 
 // MARK: - VisualEffectView()
+
 // Borrowing from UIKit...
 struct VisualEffectView: UIViewRepresentable {
     var effect: UIVisualEffect?
@@ -37,55 +39,55 @@ struct VisualEffectView: UIViewRepresentable {
     func updateUIView(_ uiView: UIVisualEffectView, context: UIViewRepresentableContext<Self>) { uiView.effect = effect }
 }
 
-
 // MARK: - Date Helpers
+
 extension Date {
     var isInLastSevenDays: Bool {
         let now = Date()
         guard let aWeekAgo = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: now) else { return false }
         return self <= now && self > aWeekAgo
     }
-    
+
     var isInLastThirtyDays: Bool {
         let now = Date()
         guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: now) else { return false }
         return self <= now && self > thirtyDaysAgo
     }
-    
+
     var isThisYear: Bool {
         let calendar = Calendar.current
         let dateComponents = calendar.dateComponents([.year], from: self)
         let currentYearComponents = calendar.dateComponents([.year], from: Date())
-        
+
         return dateComponents.year == currentYearComponents.year
     }
-    
+
     var month: String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMMM"
         return dateFormatter.string(from: self)
     }
-    
+
     var year: String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy"
         return dateFormatter.string(from: self)
     }
-    
+
     var timeSince: String {
         let now = Date.now
         let timeDifference = abs(now.timeIntervalSince(self))
-        
+
         // Return "now" if < 1 min
         if timeDifference < 60 {
             return "now"
         }
-        
+
         let rDF = RelativeDateTimeFormatter()
         rDF.unitsStyle = .abbreviated
         return rDF.localizedString(for: self, relativeTo: now)
     }
-    
+
     var relativeGroupString: String {
         if Calendar.current.isDateInToday(self) {
             return "Today"
@@ -110,9 +112,10 @@ struct EditableList<
     @Binding var data: Data
     var content: (Binding<Data.Element>) -> Content
 
-    init(_ data: Binding<Data>,
-         content: @escaping (Binding<Data.Element>) -> Content)
-    {
+    init(
+        _ data: Binding<Data>,
+        content: @escaping (Binding<Data.Element>) -> Content
+    ) {
         self._data = data
         self.content = content
     }
@@ -126,6 +129,7 @@ struct EditableList<
                 .onDelete { indexSet in
                     data.remove(atOffsets: indexSet)
                 }
+                .listRowBackground(Color.clear)
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -138,7 +142,8 @@ struct EditableList<
 /// Extract error code from localizedDescription with some goofy regex
 func extractShazamErrorCode(from text: String) -> String {
     guard let range = text.range(of: "com.apple.ShazamKit error \\d+", options: .regularExpression),
-          let codeRange = text[range].range(of: "\\d+$", options: .regularExpression) else {
+          let codeRange = text[range].range(of: "\\d+$", options: .regularExpression)
+    else {
         return ""
     }
     return String(text[codeRange])

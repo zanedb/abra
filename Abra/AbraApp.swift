@@ -28,5 +28,6 @@ struct abraApp: App {
 //                .environment(\.database, database)
         }
             .modelContainer(for: ShazamStream.self)
+            .modelContainer(for: Spot.self)
     }
 }

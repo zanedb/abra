@@ -3,52 +3,50 @@
 //  Abra
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct SpotsList: View {
     @Environment(\.modelContext) private var modelContext
     
-//    @Query(sort: \Spot.updatedAt, order: .reverse)
-    var spots: [Spot]
+    @Query(sort: \Spot.updatedAt, order: .reverse)
+    private var spots: [Spot]
     
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                Text("Spots")
-                    .foregroundColor(.gray)
-                    .bold()
-                    .font(.system(size: 14))
-                Spacer()
+        if spots == [] {
+            EmptyView()
+        } else {
+            VStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    Text("Library")
+                        .foregroundColor(.gray)
+                        .bold()
+                        .font(.system(size: 14))
+                    Spacer()
+                    
+                    //                Button("More") { }
+                    //                .font(.system(size: 14))
+                }
+                .padding(.horizontal)
+                .padding(.top, 15)
+                .padding(.bottom, 5)
                 
-//                Button("More") {
-//                    print("me")
-//                }
-//                    .font(.system(size: 14))
+                ScrollView(.horizontal) {
+                    list
+                }
+                .frame(maxHeight: 96)
+                .background(.background)
+                .cornerRadius(5)
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
-            .padding(.top, 15)
-            .padding(.bottom, 5)
-            
-            ScrollView(.horizontal) {
-                list
-            }
-            .frame(maxHeight: 96)
-            .background(.gray.opacity(0.10))
-            .cornerRadius(5)
-            .padding(.horizontal)
         }
     }
     
     private var list: some View {
         LazyHStack {
             ForEach(spots, id: \.id) { spot in
-                NavigationLink {
-                    SpotView(spot: spot)
-                        .navigationTitle(spot.name)
-                        .onAppear {
-//                            vm.updateCenter(spot.latitude, spot.longitude)
-                        }
+                Button {
+                    print("clicked")
                 } label: {
                     VStack(alignment: .center) {
                         Image(systemName: spot.iconName)
@@ -56,26 +54,26 @@ struct SpotsList: View {
                             .frame(width: 20, height: 20)
                             .padding(12)
                             .foregroundColor(.white)
-                            .background(.indigo) // TODO: allow user color selection
+                            .background(.indigo)
                             .cornerRadius(500)
                         Text(spot.name)
                             .font(.system(size: 12))
                             .foregroundColor(.primary)
                             .lineLimit(1)
                     }
-                        .frame(width: 54)
-                        .contextMenu {
-                            Button(action: { }) { // TODO: make these work
-                                Label("Open Playlist", systemImage: "arrow.up.forward.app.fill")
-                            }
-                            Button(action: { }) {
-                                Label("Share", systemImage: "square.and.arrow.up")
-                            }
-                            Divider()
-                            Button(role: .destructive, action: { deleteSpot(spot) }, label: {
-                                Label("Remove", systemImage: "trash")
-                            })
+                    .frame(width: 54)
+                    .contextMenu {
+                        Button(action: {}) { // TODO: make these work
+                            Label("Open Playlist", systemImage: "arrow.up.forward.app.fill")
                         }
+                        Button(action: {}) {
+                            Label("Share", systemImage: "square.and.arrow.up")
+                        }
+                        Divider()
+                        Button(role: .destructive, action: { deleteSpot(spot) }, label: {
+                            Label("Remove", systemImage: "trash")
+                        })
+                    }
                 }
             }
         }
@@ -105,7 +103,7 @@ struct SpotsList: View {
             do {
                 try modelContext.save()
             } catch {
-                // TODO handle error
+                // TODO: handle error
                 print(error.localizedDescription)
             }
         }
@@ -113,5 +111,5 @@ struct SpotsList: View {
 }
 
 #Preview {
-    SpotsList(spots: [Spot.preview])
+    SpotsList()
 }

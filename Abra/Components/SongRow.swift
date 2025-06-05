@@ -130,5 +130,6 @@ struct SongRowMini: View {
             SongRowMini(stream: .preview)
                 .padding()
         }
+        .environment(ShazamProvider())
     }
 }

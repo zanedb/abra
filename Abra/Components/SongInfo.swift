@@ -3,6 +3,7 @@
 //  Abra
 //
 
+import SwiftData
 import SwiftUI
 
 struct SongInfo: View {
@@ -16,13 +17,29 @@ struct SongInfo: View {
     @State private var released: String = "2021"
     @State private var loadedMetadata: Bool = false
     
+    @Query(sort: \Spot.updatedAt, order: .reverse)
+    private var spots: [Spot]
+    
     var body: some View {
         VStack(alignment: .leading) {
             Divider()
             
-            HStack(alignment: .center) {
+            HStack {
                 stat(
-                    "From",
+                    "Released",
+    
+                    Text(released)
+                        .lineLimit(1)
+                        .foregroundStyle(.secondary)
+                        .redacted(reason: loadedMetadata ? [] : .placeholder)
+                )
+                
+                Divider()
+                    .frame(height: 30)
+                    .padding(.horizontal, 8)
+                
+                stat(
+                    "Album",
                     Button(action: openAppleMusic) {
                         Image(systemName: "arrow.up.right.square")
                         Text(albumTitle)
@@ -36,32 +53,35 @@ struct SongInfo: View {
                 
                 Divider()
                     .frame(height: 30)
-                    .padding(.horizontal, 6)
-                
-                stat(
-                    "Released",
-    
-                    Text(released)
-                        .lineLimit(1)
-                        .foregroundStyle(.secondary)
-                        .redacted(reason: loadedMetadata ? [] : .placeholder)
-                )
-                
-                Divider()
-                    .frame(height: 30)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 8)
                 
                 stat(
                     "Discovered",
-                    
-                    Text("While \(stream.modality)")
-                        .lineLimit(1)
-                        .foregroundStyle(.secondary)
-                        .redacted(reason: .placeholder)
+                    Menu {
+                        Button("New \(stream.modality == .driving ? "Vehicle" : "Spot")", systemImage: "plus", action: {})
+                        Divider()
+                        
+                        ForEach(spots) { spot in
+                            Button(
+                                spot.name,
+                                systemImage: spot.iconName,
+                                action: { addToSpot(spot) }
+                            )
+                        }
+                    } label: {
+                        Image(
+                            systemName: stream.spot == nil
+                                ? (stream.modality == .driving ? "car.fill" : "mappin.circle")
+                                : stream.spot!.iconName
+                        )
+                        Text(stream.spot == nil ? "Select" : stream.spot!.name)
+                            .lineLimit(1)
+                            .padding(.leading, -3)
+                    }
+                    .padding(.top, -8)
                 )
+                .padding(.trailing, 8)
             }
-            .padding(.bottom, 4)
-            .padding(.top, 2)
             
             Divider()
         }
@@ -79,10 +99,7 @@ struct SongInfo: View {
                 
                 value
             }
-            
-            Spacer()
         }
-        .frame(maxWidth: .infinity)
     }
     
     private func openAppleMusic() {
@@ -117,6 +134,12 @@ struct SongInfo: View {
                 }
             }
         }
+    }
+    
+    private func addToSpot(_ spot: Spot) {
+        // TODO: ensure it can't be applied to multiple, clicking again removes, etc
+        // Replace Menu with Picker?
+        stream.spot = spot
     }
 }
 

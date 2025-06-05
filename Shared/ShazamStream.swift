@@ -33,6 +33,8 @@ import SwiftData
     var country: String?
     var countryCode: String?
     
+    var spot: Spot?
+    
     init(title: String = "", artist: String = "", isExplicit: Bool = false, artworkURL: URL = URL(string: "https://upload.wikimedia.org/wikipedia/en/c/cf/Denzel_Curry_-_Melt_My_Eyez_See_Your_Future.png")!, latitude: Double = 37.721941, longitude: Double = -122.4739084) {
         self.title = title
         self.artist = artist
@@ -94,18 +96,18 @@ extension ShazamStream {
     
     // TODO: guess transport modality by speed
     // Need to do more testing
-    public var modality: String {
+    public var modality: Modality {
         guard let speed = speed else {
-            return "existing"
+            return .still
         }
         
         switch speed {
-        case 1..<10:
-            return "walking"
-        case 10..<20:
-            return "driving"
+        case 3..<5:
+            return .walking
+        case 5...:
+            return .driving
         default:
-            return "chilling"
+            return .still
         }
     }
     
@@ -119,4 +121,10 @@ extension ShazamStream {
 struct ShazamStreamGroup: Identifiable {
     var id = UUID()
     var wrapped: [ShazamStream]
+}
+
+enum Modality {
+    case still
+    case walking
+    case driving
 }

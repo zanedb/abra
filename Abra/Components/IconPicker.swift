@@ -7,11 +7,14 @@ import Foundation
 import SwiftUI
 
 struct IconPicker: View {
+    @Environment(\.dismiss) private var dismiss
+    
     private var symbols: [String] = ["bag", "house", "lightbulb", "lamp.desk"]
     
     private func fetchSymbols() -> [String] {
         guard let path = Bundle.main.path(forResource: "sfsymbols", ofType: "txt"),
-              let content = try? String(contentsOfFile: path) else {
+              let content = try? String(contentsOfFile: path, encoding: .utf8)
+        else {
             #if DEBUG
             assertionFailure("[SymbolPicker] Failed to load bundle resource file.")
             #endif
@@ -21,60 +24,9 @@ struct IconPicker: View {
             .split(separator: "\n")
             .map { String($0) }
     }
-
-    private static var gridDimension: CGFloat {
-        #if os(iOS)
-        return 64
-        #elseif os(tvOS)
-        return 128
-        #elseif os(macOS)
-        return 48
-        #else
-        return 48
-        #endif
-    }
-
-    private static var symbolSize: CGFloat {
-        #if os(iOS)
-        return 24
-        #elseif os(tvOS)
-        return 48
-        #elseif os(macOS)
-        return 24
-        #else
-        return 24
-        #endif
-    }
-
-    private static var symbolCornerRadius: CGFloat {
-        #if os(iOS)
-        return 8
-        #elseif os(tvOS)
-        return 12
-        #elseif os(macOS)
-        return 8
-        #else
-        return 8
-        #endif
-    }
-    
-    // TODO: write background color picker
-    private static var selectedItemBackgroundColor: Color {
-        return Color.accentColor
-    }
-    
-    private static var unselectedItemBackgroundColor: Color {
-        #if os(iOS)
-        return Color(UIColor.systemBackground)
-        #else
-        return .clear
-        #endif
-    }
     
     @Binding public var symbol: String
     @State private var searchText = ""
-    
-    @Environment(\.presentationMode) private var presentationMode
     
     public init(symbol: Binding<String>) {
         _symbol = symbol
@@ -93,31 +45,13 @@ struct IconPicker: View {
     
     private var symbolGrid: some View {
         ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.gridDimension, maximum: Self.gridDimension))]) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 64, maximum: 64))]) {
                 ForEach(symbols.filter { searchText.isEmpty ? true : $0.localizedCaseInsensitiveContains(searchText) }, id: \.self) { thisSymbol in
-                    Button {//[penis]
+                    Button {
                         symbol = thisSymbol
-                        presentationMode.wrappedValue.dismiss()
+                        dismiss()
                     } label: {
-                        if thisSymbol == symbol {
-                            Image(systemName: thisSymbol)
-                                .font(.system(size: Self.symbolSize))
-                                #if os(tvOS)
-                                .frame(minWidth: Self.gridDimension, minHeight: Self.gridDimension)
-                                #else
-                                .frame(maxWidth: .infinity, minHeight: Self.gridDimension)
-                                #endif
-                                .background(Self.selectedItemBackgroundColor)
-                                .cornerRadius(Self.symbolCornerRadius)
-                                .foregroundColor(.white)
-                        } else {
-                            Image(systemName: thisSymbol)
-                                .font(.system(size: Self.symbolSize))
-                                .frame(maxWidth: .infinity, minHeight: Self.gridDimension)
-                                .background(Self.unselectedItemBackgroundColor)
-                                .cornerRadius(Self.symbolCornerRadius)
-                                .foregroundColor(.primary)
-                        }
+                        icon(thisSymbol, selected: thisSymbol == symbol)
                     }
                     .buttonStyle(.plain)
                     .hoverEffect(.lift)
@@ -132,6 +66,13 @@ struct IconPicker: View {
                 }
             }
         }
+    }
+    
+    private func icon(_ name: String, selected: Bool) -> some View {
+        Image(systemName: name)
+            .font(.system(size: 24))
+            .frame(maxWidth: .infinity, minHeight: 64)
+            .cornerRadius(8)
     }
 }
 

@@ -50,7 +50,7 @@ struct ContentView: View {
                         song(selection)
                     }
                     .sheet(item: $groupSelection) { _ in
-                        list
+                        newSpot
                     }
             }
             .overlay(alignment: .top) {
@@ -90,7 +90,7 @@ struct ContentView: View {
             .environment(shazam)
             .environment(location)
             .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $detent)
-            .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.50)))
+            .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.999)))
             .presentationBackground(.thickMaterial)
             .interactiveDismissDisabled()
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
@@ -119,6 +119,12 @@ struct ContentView: View {
                 // We‘ll need this soon
                 location.requestLocation()
             }
+    }
+    
+    private var newSpot: some View {
+        NewSpot(streams: groupSelection?.wrapped ?? [])
+            .presentationDetents([.fraction(0.999)])
+            .presentationBackground(.thickMaterial)
     }
     
     private var list: some View {
