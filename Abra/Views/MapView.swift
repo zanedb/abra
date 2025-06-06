@@ -105,7 +105,7 @@ struct MapView: View {
         hideKeyboard()
 
         // If the inspector is > than 0.50 of the screen, shrink it so it fits neatly behind our new sheet!
-        if detent == .large { detent = .fraction(0.50) }
+        if detent == .fraction(0.999) { detent = .fraction(0.50) }
 
         // Center map
         // Offset latitude (move northward) by approximately 35% of the span
