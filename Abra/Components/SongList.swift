@@ -12,12 +12,17 @@ struct SongList: View {
     @Environment(\.toastProvider) private var toast
     @Environment(MusicProvider.self) private var music
 
-    @Binding var streams: [ShazamStream]
+    @State var streams: [ShazamStream]
     @Binding var selection: ShazamStream?
 
     @State private var configuringPlaylist: Bool = false
     @State private var playlistTitle: String = ""
     @State private var playlistDesc: String = ""
+
+    init(group: ShazamStreamGroup, selection: Binding<ShazamStream?>) {
+        self.streams = group.wrapped
+        self._selection = selection
+    }
 
     var body: some View {
         NavigationStack {
@@ -33,19 +38,7 @@ struct SongList: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button(action: configurePlaylist) {
-                            Label("New Playlist", systemImage: "music.note.list")
-                            Text("Create a new playlist from these Shazams.")
-                        }
-
-                        Button(action: addToPlaylist) {
-                            Label("Add to Playlist", systemImage: "list.bullet.indent")
-                            Text("Add Shazams to an existing playlist.")
-                        }
-                    } label: {
-                        Label("Create", systemImage: "plus")
-                    }
+                    toolbar
                 }
             }
             .alert("Playlist Title", isPresented: $configuringPlaylist) {
@@ -60,6 +53,22 @@ struct SongList: View {
                     dismiss()
                 }
             }
+        }
+    }
+
+    private var toolbar: some View {
+        Menu {
+            Button(action: configurePlaylist) {
+                Label("New Playlist", systemImage: "music.note.list")
+                Text("Create a new playlist from these Shazams.")
+            }
+
+            Button(action: addToPlaylist) {
+                Label("Add to Playlist", systemImage: "list.bullet.indent")
+                Text("Add Shazams to an existing playlist.")
+            }
+        } label: {
+            Label("Create", systemImage: "plus")
         }
     }
 
@@ -92,12 +101,10 @@ struct SongList: View {
 }
 
 #Preview {
-    @Previewable @State var streams: [ShazamStream] = [.preview, .preview]
-
     Map(initialPosition: .automatic)
         .ignoresSafeArea(.all)
         .sheet(isPresented: .constant(true)) {
-            SongList(streams: $streams, selection: .constant(nil))
+            SongList(group: ShazamStreamGroup(wrapped: [.preview, .preview]), selection: .constant(nil))
                 .environment(MusicProvider())
                 .presentationDetents([.fraction(0.50), .large])
                 .presentationBackgroundInteraction(.enabled)

@@ -127,21 +127,15 @@ struct ContentView: View {
             .presentationBackground(.thickMaterial)
     }
     
-    private var list: some View {
-        SongList(
-            streams: Binding(
-                get: { groupSelection?.wrapped ?? [] },
-                set: { update in groupSelection?.wrapped = update }
-            ),
-            selection: $selection
-        )
-        .environment(music)
-        .presentationDetents([.fraction(0.50), .fraction(0.999)])
-        .presentationBackgroundInteraction(.enabled)
-        .presentationBackground(.thickMaterial)
-        .introspect(.sheet, on: .iOS(.v18)) { sheetView in
-            sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
-        }
+    private func list(_ group: ShazamStreamGroup) -> some View {
+        SongList(group: group, selection: $selection)
+            .environment(music)
+            .presentationDetents([.fraction(0.50), .fraction(0.999)])
+            .presentationBackgroundInteraction(.enabled)
+            .presentationBackground(.thickMaterial)
+            .introspect(.sheet, on: .iOS(.v18)) { sheetView in
+                sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
+            }
     }
     
     private func song(_ stream: ShazamStream) -> some View {
