@@ -14,6 +14,7 @@ struct ContentView: View {
     @AppStorage("hasCompletedOnboarding") var onboarded: Bool = false
     
     @State var detent: PresentationDetent = .fraction(0.50)
+    @State var listDetent: PresentationDetent = .fraction(0.50)
     @State var selection: ShazamStream? = nil
     @State var groupSelection: ShazamStreamGroup? = nil
     @State var searchText: String = ""
@@ -49,8 +50,8 @@ struct ContentView: View {
                     .sheet(item: $selection) { selection in
                         song(selection)
                     }
-                    .sheet(item: $groupSelection) { _ in
-                        newSpot
+                    .sheet(item: $groupSelection) { group in
+                        list(group)
                     }
             }
             .overlay(alignment: .top) {
@@ -121,16 +122,10 @@ struct ContentView: View {
             }
     }
     
-    private var newSpot: some View {
-        NewSpot(streams: groupSelection?.wrapped ?? [])
-            .presentationDetents([.fraction(0.999)])
-            .presentationBackground(.thickMaterial)
-    }
-    
     private func list(_ group: ShazamStreamGroup) -> some View {
-        SongList(group: group, selection: $selection)
+        SongList(group: group, selection: $selection, detent: $listDetent)
             .environment(music)
-            .presentationDetents([.fraction(0.50), .fraction(0.999)])
+            .presentationDetents([.fraction(0.50), .fraction(0.999)], selection: $listDetent)
             .presentationBackgroundInteraction(.enabled)
             .presentationBackground(.thickMaterial)
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
