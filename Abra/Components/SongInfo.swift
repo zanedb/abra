@@ -71,7 +71,7 @@ struct SongInfo: View {
                     } label: {
                         Image(
                             systemName: stream.spot == nil
-                                ? (stream.modality == .driving ? "car.fill" : "mappin.circle")
+                                ? (stream.modality == .driving ? "car.fill" : "mappin.and.ellipse")
                                 : stream.spot!.iconName
                         )
                         Text(stream.spot == nil ? "Select" : stream.spot!.name)

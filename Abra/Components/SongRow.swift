@@ -36,7 +36,7 @@ struct SongRow: View {
                     
                     Text(stream.relativeDateTime)
                         .foregroundColor(Color.gray)
-                        .font(.system(size: 14))
+                        .font(.system(size: 13))
                 }
                 Text(stream.artist)
                     .foregroundColor(.gray)
