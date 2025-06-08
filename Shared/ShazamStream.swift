@@ -121,6 +121,8 @@ extension ShazamStream {
 struct ShazamStreamGroup: Identifiable {
     var id = UUID()
     var wrapped: [ShazamStream]
+    var type: SpotType = .place
+    var expanded: Bool = false
 }
 
 enum Modality {

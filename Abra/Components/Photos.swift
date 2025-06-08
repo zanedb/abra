@@ -45,7 +45,7 @@ struct Photos: View {
     var permissionView: some View {
         ZStack {
             Rectangle()
-                .fill(.gray.opacity(0.15))
+                .fill(.background)
                 .frame(height: 172)
                 .clipShape(RoundedRectangle(
                     cornerRadius: 8

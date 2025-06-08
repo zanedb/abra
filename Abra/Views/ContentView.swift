@@ -67,7 +67,7 @@ struct ContentView: View {
                     VisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
                         .edgesIgnoringSafeArea(.all)
                         .transition(.opacity.animation(.easeInOut(duration: 0.25)))
-                    
+                        
                     OnboardingView()
                         .environment(shazam)
                         .environment(location)
@@ -134,7 +134,7 @@ struct ContentView: View {
     }
     
     private func song(_ stream: ShazamStream) -> some View {
-        SongView(stream: stream)
+        SongView(stream: stream, newSpotCallback: newSpotCallback)
             .environment(library)
             .environment(music)
             .presentationDetents([.fraction(0.50), .fraction(0.999)])
@@ -144,6 +144,16 @@ struct ContentView: View {
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
                 sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
             }
+    }
+    
+    private func newSpotCallback(_ type: SpotType) {
+        // Dismiss song sheet
+        let selected = selection
+        selection = nil
+        
+        // Obtain groupSelection with relevant Shazams to then create a spot
+        // TODO: fetch ShazamStreams by radius and include them here
+        groupSelection = ShazamStreamGroup(wrapped: [selected!], type: type, expanded: true)
     }
 }
 

@@ -12,6 +12,7 @@ struct SongInfo: View {
     @Environment(MusicProvider.self) private var music
     
     var stream: ShazamStream
+    var newSpotCallback: ((SpotType) -> Void)?
     
     @State private var albumTitle: String = "Apple vs. 7G"
     @State private var released: String = "2021"
@@ -19,6 +20,9 @@ struct SongInfo: View {
     
     @Query(sort: \Spot.updatedAt, order: .reverse)
     private var spots: [Spot]
+    private var type: SpotType {
+        stream.modality == .driving ? .vehicle : .place
+    }
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -30,7 +34,7 @@ struct SongInfo: View {
     
                     Text(released)
                         .lineLimit(1)
-                        .foregroundStyle(.secondary)
+                        .fontWeight(.medium)
                         .redacted(reason: loadedMetadata ? [] : .placeholder)
                 )
                 
@@ -44,6 +48,7 @@ struct SongInfo: View {
                         Image(systemName: "arrow.up.right.square")
                         Text(albumTitle)
                             .lineLimit(1)
+                            .fontWeight(.medium)
                             .redacted(reason: loadedMetadata ? [] : .placeholder)
                             .padding(.leading, -5)
                     }
@@ -58,7 +63,11 @@ struct SongInfo: View {
                 stat(
                     "Discovered",
                     Menu {
-                        Button("New \(stream.modality == .driving ? "Vehicle" : "Spot")", systemImage: "plus", action: {})
+                        Button(
+                            "New \(type == .place ? "Spot" : "Vehicle")",
+                            systemImage: "plus",
+                            action: { newSpotCallback?(type) }
+                        )
                         Divider()
                         
                         ForEach(spots) { spot in
@@ -71,11 +80,12 @@ struct SongInfo: View {
                     } label: {
                         Image(
                             systemName: stream.spot == nil
-                                ? (stream.modality == .driving ? "car.fill" : "mappin.and.ellipse")
+                                ? (type == .place ? "mappin.and.ellipse" : "car.fill")
                                 : stream.spot!.iconName
                         )
                         Text(stream.spot == nil ? "Select" : stream.spot!.name)
                             .lineLimit(1)
+                            .fontWeight(.medium)
                             .padding(.leading, -3)
                     }
                     .padding(.top, -8)
@@ -93,9 +103,9 @@ struct SongInfo: View {
         HStack {
             VStack(alignment: .leading) {
                 Text(label)
-                    .font(Font.system(.body).smallCaps())
-                    .fontWeight(.medium)
+                    .font(.system(size: 15).smallCaps())
                     .foregroundStyle(.secondary)
+                    .padding(.top, 1)
                 
                 value
             }

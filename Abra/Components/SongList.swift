@@ -13,6 +13,8 @@ struct SongList: View {
     @Environment(\.toastProvider) private var toast
     @Environment(MusicProvider.self) private var music
 
+    var type: SpotType = .place
+
     @State var streams: [ShazamStream]
     @Binding var selection: ShazamStream?
     @Binding var detent: PresentationDetent
@@ -28,6 +30,8 @@ struct SongList: View {
 
     init(group: ShazamStreamGroup, selection: Binding<ShazamStream?>, detent: Binding<PresentationDetent>) {
         self.streams = group.wrapped
+        self.expanded = group.expanded
+        self.type = group.type
         self._selection = selection
         self._detent = detent
     }
@@ -48,7 +52,7 @@ struct SongList: View {
                                 .padding(.trailing, 5)
                         }
                         VStack(alignment: .leading, spacing: 0) {
-                            TextField("Spot", text: $spotName)
+                            TextField(type == .place ? "Spot" : "Vehicle", text: $spotName)
                                 .font(.title)
                                 .frame(maxWidth: .infinity)
                                 .bold()
@@ -77,7 +81,7 @@ struct SongList: View {
             }
             .navigationTitle(
                 expanded
-                    ? "New Spot"
+                    ? "New \(type == .place ? "Spot" : "Vehicle")"
                     : "\(streams.count) Shazam\(streams.count != 1 ? "s" : "") Selected"
             )
             .navigationBarTitleDisplayMode(.inline)
@@ -117,7 +121,7 @@ struct SongList: View {
     private func createSpot() {
         let spot = Spot(
             name: spotName,
-            type: .place,
+            type: type,
             iconName: symbol,
             latitude: streams.first?.latitude ?? 0,
             longitude: streams.first?.longitude ?? 0,

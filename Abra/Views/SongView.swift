@@ -14,6 +14,7 @@ struct SongView: View {
     @Environment(MusicProvider.self) private var music
     
     var stream: ShazamStream
+    var newSpotCallback: ((SpotType) -> Void)?
     
     @State private var scrollOffset: CGFloat = 0
     private let transitionThreshold: CGFloat = 5
@@ -52,7 +53,7 @@ struct SongView: View {
                             .animation(.easeInOut(duration: 0.3), value: scrollOffset)
                     }
                 
-                SongInfo(stream: stream)
+                SongInfo(stream: stream, newSpotCallback: newSpotCallback)
                 
                 if !library.hasIgnoredPhotosRequest {
                     HStack {
@@ -100,7 +101,7 @@ struct SongView: View {
         return (1 - progress) * -30
     }
     
-    func toolbar(showTitle: Bool) -> some View {
+    private func toolbar(showTitle: Bool) -> some View {
         HStack(alignment: .firstTextBaseline) {
             if showTitle {
                 Text(stream.title)
