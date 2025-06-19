@@ -97,6 +97,11 @@ struct ContentView: View {
             .interactiveDismissDisabled()
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
                 sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
+                sheetView.widthFollowsPreferredContentSizeWhenEdgeAttached = true // use landscape width
+                sheetView.prefersScrollingExpandsWhenScrolledToEdge = false // allow scrolling in .medium
+                sheetView.setValue(1, forKey: "horizontalAlignment") // leading-aligned sheet in landscape/iPad (width-dependent)
+                sheetView.setValue(true, forKey: "wantsBottomAttached")
+                sheetView.setValue(10, forKey: "marginInRegularWidthRegularHeight")
             }
     }
     
