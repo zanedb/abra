@@ -57,7 +57,7 @@ struct ContentView: View {
             .overlay(alignment: .top) {
                 // Variable blur at the top of map, makes time/battery legible
                 GeometryReader { geom in
-                    VariableBlurView(maxBlurRadius: 5, direction: .blurredTopClearBottom)
+                    VariableBlurView(maxBlurRadius: 2, direction: .blurredTopClearBottom)
                         .frame(height: geom.safeAreaInsets.top)
                         .ignoresSafeArea()
                 }
@@ -93,6 +93,7 @@ struct ContentView: View {
             .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $detent)
             .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.999)))
             .presentationBackground(.thickMaterial)
+            .presentationCornerRadius(18)
             .interactiveDismissDisabled()
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
                 sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape

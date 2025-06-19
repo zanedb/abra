@@ -34,11 +34,10 @@ struct SheetView: View {
                         .fontWeight(.medium)
                         .font(.system(size: 36))
                 }
-                .padding(.leading, -3)
-                .padding(.trailing, 12)
             }
-            .padding(.horizontal, 8)
-            .padding(.top, 12)
+            .padding(.trailing)
+            .padding(.leading, 8)
+            .padding(.top, 8)
             
             SpotsList()
             
