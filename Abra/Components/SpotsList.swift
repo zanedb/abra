@@ -18,7 +18,7 @@ struct SpotsList: View {
         } else {
             VStack(spacing: 0) {
                 HStack(spacing: 0) {
-                    Text("Library")
+                    Text("Spots")
                         .foregroundColor(.gray)
                         .bold()
                         .font(.system(size: 14))
@@ -27,17 +27,14 @@ struct SpotsList: View {
                     //                Button("More") { }
                     //                .font(.system(size: 14))
                 }
-                .padding(.horizontal)
-                .padding(.top, 15)
-                .padding(.bottom, 5)
+                .padding(.bottom, 8)
                 
                 ScrollView(.horizontal) {
                     list
                 }
                 .frame(maxHeight: 96)
                 .background(.background)
-                .cornerRadius(5)
-                .padding(.horizontal)
+                .cornerRadius(14)
             }
         }
     }
@@ -111,5 +108,12 @@ struct SpotsList: View {
 }
 
 #Preview {
-    SpotsList()
+    NavigationStack {
+        ScrollView {
+            SpotsList()
+                .modelContainer(PreviewSampleData.container)
+                .padding()
+        }
+        .background(.ultraThickMaterial)
+    }
 }

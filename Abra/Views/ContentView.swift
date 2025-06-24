@@ -41,7 +41,7 @@ struct ContentView: View {
                 set: { _ in }
             )) {
                 sheet
-                    .sheet(isPresented: Binding(
+                    .popover(isPresented: Binding(
                         get: { shazam.isMatching },
                         set: { _ in }
                     )) {
@@ -118,7 +118,7 @@ struct ContentView: View {
                         .font(.system(size: 36))
                         .symbolRenderingMode(.hierarchical)
                         .padding(.vertical)
-                        .padding(.trailing, -5)
+                        .padding(.trailing, -10)
                 },
                 alignment: .topTrailing
             )

@@ -117,18 +117,26 @@ struct SongRowMini: View {
             
             Spacer()
         }
-        .frame(maxHeight: 52)
+        .frame(maxHeight: 44)
     }
 }
 
 #Preview {
     ModelContainerPreview(PreviewSampleData.inMemoryContainer) {
-        VStack {
+        VStack(alignment: .leading) {
             SongRow(stream: .preview)
                 .padding()
             
-            SongRowMini(stream: .preview)
-                .padding()
+            Text("Discovered")
+                .font(.subheadline)
+                .bold()
+                .foregroundColor(.gray)
+                .padding(.horizontal)
+                .padding(.top, 12)
+            EditableList(Binding(get: { [ShazamStream.preview, ShazamStream.preview] }, set: { _ in })) { $stream in
+                SongRowMini(stream: stream)
+            }
+            .listStyle(.plain)
         }
         .environment(ShazamProvider())
     }

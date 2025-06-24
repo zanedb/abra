@@ -17,10 +17,10 @@ struct Toast: View {
     var type: ToastType = .info
     var sfSymbol: String?
     var action: (() -> Void)?
-    
+
     var systemImage: String {
         guard sfSymbol == nil else { return sfSymbol! }
-        
+
         switch type {
         case .error:
             return "exclamationmark.circle"
@@ -32,7 +32,7 @@ struct Toast: View {
             return "hand.wave"
         }
     }
-    
+
     var color: Color {
         switch type {
         case .error:
@@ -45,14 +45,14 @@ struct Toast: View {
             return .blue
         }
     }
-    
+
     var body: some View {
         HStack {
             Image(systemName: systemImage)
                 .font(.system(size: 15))
                 .foregroundStyle(color.opacity(0.8))
                 .shadow(color: .gray, radius: 0.1)
-                
+
             Text(message)
                 .font(.system(size: 14, weight: .medium))
                 .lineLimit(1)
@@ -80,7 +80,7 @@ struct Toast: View {
 
 #Preview("Animated") {
     @Previewable @State var toast = ToastProvider()
-    
+
     MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview])
         .modelContainer(PreviewSampleData.container)
         .withToastProvider(toast)

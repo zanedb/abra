@@ -52,7 +52,7 @@ struct SongList: View {
                                 .padding(.trailing, 5)
                         }
                         VStack(alignment: .leading, spacing: 0) {
-                            TextField(type == .place ? "Spot" : "Vehicle", text: $spotName)
+                            TextField("Name", text: $spotName)
                                 .font(.title)
                                 .frame(maxWidth: .infinity)
                                 .bold()
@@ -73,29 +73,25 @@ struct SongList: View {
                 }
 
                 EditableList($streams) { $stream in
-                    Button(action: { selection = stream }) {
-                        SongRowMini(stream: stream)
-                    }
+                    SongRowMini(stream: stream)
                 }
                 .listStyle(.plain)
             }
             .navigationTitle(
                 expanded
-                    ? "New \(type == .place ? "Spot" : "Vehicle")"
-                    : "\(streams.count) Shazam\(streams.count != 1 ? "s" : "") Selected"
+                    ? "Add \(type == .place ? "Spot" : "Vehicle")"
+                    : "\(streams.count) Shazam\(streams.count != 1 ? "s" : "")"
             )
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if expanded {
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("Create", action: createSpot)
+                        Button("Save", action: createSpot)
                             .disabled(notReady)
                     }
                 } else {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button(action: expand) {
-                            Label("Create", systemImage: expanded ? "xmark.circle" : "plus")
-                        }
+                        Button("+ Save Spot", action: expand)
                     }
                 }
             }
