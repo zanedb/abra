@@ -23,7 +23,8 @@ actor PreviewSampleData {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try! ModelContainer(for: schema, configurations: [configuration])
         let sampleData: [any PersistentModel] = [
-            ShazamStream.preview
+            ShazamStream.preview,
+            Spot.preview
         ]
         Task { @MainActor in
             sampleData.forEach {

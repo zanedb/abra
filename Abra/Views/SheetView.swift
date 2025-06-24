@@ -39,12 +39,17 @@ struct SheetView: View {
             .padding(.leading, 8)
             .padding(.top, 8)
             
-            SpotsList()
-            
-            if searchText.isEmpty && filtered.isEmpty {
-                ContentUnavailableView {} description: { Text("Your library is empty.") }
-            } else if searchText.isEmpty {
-                List {
+            List {
+                if searchText.isEmpty && filtered.isEmpty {
+                    ContentUnavailableView {} description: { Text("Your library is empty.") }
+                        .padding()
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                } else if searchText.isEmpty {
+                    SpotsList()
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    
                     ForEach(timeSections) { section in
                         Section(header: Text("\(section.id)")) {
                             ForEach(section, id: \.self) { shazam in
@@ -56,17 +61,11 @@ struct SheetView: View {
                         }
                         .listSectionSeparator(.hidden, edges: .bottom)
                     }
-                }
-                .listStyle(.inset)
-                .scrollContentBackground(.hidden)
-            } else if !searchText.isEmpty && filtered.isEmpty {
-                ContentUnavailableView {
-                    Label("No Results", systemImage: "moon.stars")
-                } description: {
-                    Text("Try a new search.")
-                }
-            } else {
-                List {
+                } else if !searchText.isEmpty && filtered.isEmpty {
+                    ContentUnavailableView.search(text: searchText)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                } else {
                     ForEach(filtered, id: \.id) { shazam in
                         Button(action: { selection = shazam }) {
                             SongRow(stream: shazam)
@@ -74,9 +73,9 @@ struct SheetView: View {
                         .listRowBackground(Color.clear)
                     }
                 }
-                .listStyle(.inset)
-                .scrollContentBackground(.hidden)
             }
+            .listStyle(.inset)
+            .scrollContentBackground(.hidden)
         }
         .onChange(of: shazam.status) {
             if case .matched(let song) = shazam.status {

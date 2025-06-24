@@ -7,7 +7,7 @@ import Foundation
 import MapKit
 import SwiftData
 
-enum SpotType: Hashable, Codable {
+enum SpotType: Codable {
     case place
     case vehicle
 }
