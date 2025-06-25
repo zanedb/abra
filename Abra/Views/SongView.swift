@@ -54,6 +54,26 @@ struct SongView: View {
                     }
                 
                 SongInfo(stream: stream, newSpotCallback: newSpotCallback)
+                    .padding(.top)
+                    .padding(.bottom, 4)
+                
+                ZStack(alignment: .leading) {
+                    Rectangle()
+                        .fill(.background)
+                        .clipShape(RoundedRectangle(
+                            cornerRadius: 14
+                        ))
+                    
+                    VStack(alignment: .leading) {
+                        Text("You’ve discovered this song before.")
+                            .font(.system(size: 17, weight: .medium))
+                        
+                        Text("August 14 in San Francisco")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding()
+                }
                 
                 if !library.hasIgnoredPhotosRequest {
                     HStack {
