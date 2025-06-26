@@ -10,14 +10,19 @@ struct SongSheet: View {
     @Environment(\.colorScheme) var colorScheme
     
     var stream: ShazamStream
+    var height: CGFloat
+    
+    var imageSize: CGFloat {
+        height > 100 ? 96 : 48
+    }
     
     var body: some View {
-        HStack {
+        HStack(alignment: .top) {
             KFImage(stream.artworkURL)
                 .resizable()
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 96, height: 96)
+                .frame(width: imageSize, height: imageSize)
                 .cornerRadius(3.0)
                 .padding(.trailing, 5)
             
@@ -48,7 +53,7 @@ struct SongSheet: View {
 
 #Preview {
     ModelContainerPreview(PreviewSampleData.inMemoryContainer) {
-        SongSheet(stream: .preview)
+        SongSheet(stream: .preview, height: 100)
             .padding()
     }
 }
