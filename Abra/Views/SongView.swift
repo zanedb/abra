@@ -16,12 +16,12 @@ struct SongView: View {
     var stream: ShazamStream
     var newSpotCallback: ((SpotType) -> Void)?
     
-    @State private var frameHeight: CGFloat = 0
+    @State private var minimized: Bool = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ScrollView {
-                SongSheet(stream: stream, height: frameHeight)
+                SongSheet(stream: stream, mini: minimized)
                     .padding(.top, 8)
                     .overlay(alignment: .top) {
                         toolbar
@@ -55,7 +55,7 @@ struct SongView: View {
         }
         .onGeometryChange(for: CGRect.self) { proxy in
             proxy.frame(in: .global)
-        } action: { frameHeight = $0.height }
+        } action: { minimized = ($0.height < 100) ? true : false }
         .padding()
         .task {
             await music.authorize()

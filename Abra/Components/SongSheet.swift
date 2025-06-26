@@ -10,10 +10,10 @@ struct SongSheet: View {
     @Environment(\.colorScheme) var colorScheme
     
     var stream: ShazamStream
-    var height: CGFloat
+    var mini: Bool? = false
     
-    var imageSize: CGFloat {
-        height > 100 ? 96 : 48
+    private var imageSize: CGFloat {
+        mini ?? false ? 48 : 96
     }
     
     var body: some View {
@@ -53,7 +53,7 @@ struct SongSheet: View {
 
 #Preview {
     ModelContainerPreview(PreviewSampleData.inMemoryContainer) {
-        SongSheet(stream: .preview, height: 100)
+        SongSheet(stream: .preview)
             .padding()
     }
 }
