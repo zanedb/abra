@@ -106,7 +106,7 @@ struct SongView: View {
     }
     
     private func toolbar(showTitle: Bool) -> some View {
-        HStack(alignment: .firstTextBaseline) {
+        HStack(alignment: .firstTextBaseline, spacing: 4) {
             if showTitle {
                 Text(stream.title)
                     .fontWeight(.bold)
