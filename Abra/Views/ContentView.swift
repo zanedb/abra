@@ -15,6 +15,7 @@ struct ContentView: View {
     
     @State var detent: PresentationDetent = .fraction(0.50)
     @State var listDetent: PresentationDetent = .fraction(0.50)
+    @State var songDetent: PresentationDetent = .fraction(0.50)
     @State var selection: ShazamStream? = nil
     @State var groupSelection: ShazamStreamGroup? = nil
     @State var searchText: String = ""
@@ -145,11 +146,14 @@ struct ContentView: View {
             .environment(music)
             .presentationDetents([.fraction(0.50), .fraction(0.999)])
             .onPreferenceChange(SongSelectionKey.self) { if ($0 != nil) { selection = $0 } }
+            .onDisappear { songDetent = .fraction(0.50) } // Reset height
+            .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $songDetent)
             .presentationBackgroundInteraction(.enabled)
             .presentationBackground(.thickMaterial)
             .edgesIgnoringSafeArea(.bottom)
+            .interactiveDismissDisabled()
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
-                sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
+                sheetView.prefersEdgeAttachedInCompactHeight = true // Disable full-width in landscape
             }
     }
     
