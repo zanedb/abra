@@ -16,7 +16,6 @@ struct SongList: View {
     var type: SpotType = .place
 
     @State var streams: [ShazamStream]
-    @Binding var selection: ShazamStream?
     @Binding var detent: PresentationDetent
 
     @State private var expanded: Bool = false
@@ -28,11 +27,10 @@ struct SongList: View {
         spotName == "" || symbol == ""
     }
 
-    init(group: ShazamStreamGroup, selection: Binding<ShazamStream?>, detent: Binding<PresentationDetent>) {
+    init(group: ShazamStreamGroup, detent: Binding<PresentationDetent>) {
         self.streams = group.wrapped
         self.expanded = group.expanded
         self.type = group.type
-        self._selection = selection
         self._detent = detent
     }
 
@@ -137,7 +135,7 @@ struct SongList: View {
     Map(initialPosition: .automatic)
         .ignoresSafeArea(.all)
         .sheet(isPresented: .constant(true)) {
-            SongList(group: ShazamStreamGroup(wrapped: [.preview, .preview]), selection: .constant(nil), detent: $detent)
+            SongList(group: ShazamStreamGroup(wrapped: [.preview, .preview]), detent: $detent)
                 .environment(MusicProvider())
                 .presentationDetents([.fraction(0.50), .large])
                 .presentationBackgroundInteraction(.enabled)

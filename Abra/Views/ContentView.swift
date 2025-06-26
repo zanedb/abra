@@ -129,7 +129,7 @@ struct ContentView: View {
     }
     
     private func list(_ group: ShazamStreamGroup) -> some View {
-        SongList(group: group, selection: $selection, detent: $listDetent)
+        SongList(group: group, detent: $listDetent)
             .environment(music)
             .presentationDetents([.fraction(0.50), .fraction(0.999)], selection: $listDetent)
             .presentationBackgroundInteraction(.enabled)
