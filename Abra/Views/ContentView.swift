@@ -144,6 +144,7 @@ struct ContentView: View {
             .environment(library)
             .environment(music)
             .presentationDetents([.fraction(0.50), .fraction(0.999)])
+            .onPreferenceChange(SongSelectionKey.self) { if ($0 != nil) { selection = $0 } }
             .presentationBackgroundInteraction(.enabled)
             .presentationBackground(.thickMaterial)
             .edgesIgnoringSafeArea(.bottom)

@@ -79,7 +79,7 @@ extension ShazamStream {
     }
     
     public var date: String {
-        timestamp.formatted(.dateTime.day().month())
+        timestamp.formatted(.dateTime.day().month(.wide))
     }
     
     public var time: String {
@@ -92,6 +92,14 @@ extension ShazamStream {
     
     public var placeGroupedString: String {
         thoroughfare ?? "Unknown"
+    }
+    
+    // i.e. "August 11 in San Francisco", "July 4 at 1015"
+    public var description: String {
+        let date = self.date
+        let place = self.spot?.name ?? self.city ?? "Unknown"
+        
+        return "\(date) \(self.spot?.name != nil ? "at" : "in") \(place)"
     }
     
     // TODO: guess transport modality by speed

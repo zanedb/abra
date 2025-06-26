@@ -45,7 +45,7 @@ struct SongView: View {
                 .frame(height: 1)
                 
                 SongSheet(stream: stream)
-                    .padding(.top)
+                    .padding(.top, 8)
                     .overlay(alignment: .top) {
                         // Overlay toolbar - visible when not scrolled
                         toolbar(showTitle: false)
@@ -57,23 +57,7 @@ struct SongView: View {
                     .padding(.top)
                     .padding(.bottom, 4)
                 
-                ZStack(alignment: .leading) {
-                    Rectangle()
-                        .fill(.background)
-                        .clipShape(RoundedRectangle(
-                            cornerRadius: 14
-                        ))
-                    
-                    VStack(alignment: .leading) {
-                        Text("You’ve discovered this song before.")
-                            .font(.system(size: 17, weight: .medium))
-                        
-                        Text("August 14 in San Francisco")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding()
-                }
+                SongDetail(stream: stream)
                 
                 if !library.hasIgnoredPhotosRequest {
                     HStack {
