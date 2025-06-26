@@ -97,10 +97,10 @@ struct ContentView: View {
             .presentationCornerRadius(18)
             .interactiveDismissDisabled()
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
-                sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
-                sheetView.widthFollowsPreferredContentSizeWhenEdgeAttached = true // use landscape width
-                sheetView.prefersScrollingExpandsWhenScrolledToEdge = false // allow scrolling in .medium
-                sheetView.setValue(1, forKey: "horizontalAlignment") // leading-aligned sheet in landscape/iPad (width-dependent)
+                sheetView.prefersEdgeAttachedInCompactHeight = true // Disable full-width in landscape
+                sheetView.widthFollowsPreferredContentSizeWhenEdgeAttached = true // Use landscape width
+                sheetView.prefersScrollingExpandsWhenScrolledToEdge = false // Allow scrolling in .medium
+                sheetView.setValue(1, forKey: "horizontalAlignment") // Leading-aligned sheet in landscape/iPad (width-dependent)
                 sheetView.setValue(true, forKey: "wantsBottomAttached")
                 sheetView.setValue(10, forKey: "marginInRegularWidthRegularHeight")
             }
@@ -112,6 +112,7 @@ struct ContentView: View {
             .interactiveDismissDisabled()
             .presentationDragIndicator(.hidden)
             .presentationBackground(.thickMaterial)
+            .presentationCornerRadius(18)
             .overlay(
                 Button { shazam.stopMatching() } label: {
                     Image(systemName: "xmark.circle.fill")
@@ -135,6 +136,7 @@ struct ContentView: View {
             .presentationDetents([.fraction(0.50), .fraction(0.999)], selection: $listDetent)
             .presentationBackgroundInteraction(.enabled)
             .presentationBackground(.thickMaterial)
+            .presentationCornerRadius(18)
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
                 sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
             }
@@ -144,12 +146,12 @@ struct ContentView: View {
         SongView(stream: stream, newSpotCallback: newSpotCallback)
             .environment(library)
             .environment(music)
-            .presentationDetents([.fraction(0.50), .fraction(0.999)])
             .onPreferenceChange(SongSelectionKey.self) { if ($0 != nil) { selection = $0 } }
             .onDisappear { songDetent = .fraction(0.50) } // Reset height
             .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $songDetent)
             .presentationBackgroundInteraction(.enabled)
             .presentationBackground(.thickMaterial)
+            .presentationCornerRadius(18)
             .edgesIgnoringSafeArea(.bottom)
             .interactiveDismissDisabled()
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
