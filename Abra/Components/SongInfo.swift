@@ -9,21 +9,21 @@ import SwiftUI
 struct SongInfo: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.toastProvider) private var toast
+    @Environment(SheetProvider.self) private var view
     @Environment(MusicProvider.self) private var music
     
     var stream: ShazamStream
-    var newSpotCallback: ((SpotType) -> Void)?
     
     @State private var albumTitle: String = "Apple vs. 7G"
     @State private var released: String = "2021"
     @State private var loadedMetadata: Bool = false
     
-    @Query(sort: \Spot.updatedAt, order: .reverse)
-    private var spots: [Spot]
     private var type: SpotType {
         stream.modality == .driving ? .vehicle : .place
     }
     
+    @Query(sort: \Spot.updatedAt, order: .reverse)
+    private var spots: [Spot]
     var body: some View {
         VStack(alignment: .leading) {
             Divider()
@@ -38,9 +38,7 @@ struct SongInfo: View {
                         .redacted(reason: loadedMetadata ? [] : .placeholder)
                 )
                 
-                Divider()
-                    .frame(height: 30)
-                    .padding(.horizontal, 8)
+                column
                 
                 stat(
                     "Album",
@@ -56,9 +54,7 @@ struct SongInfo: View {
                     .accessibilityLabel("Open album in Music")
                 )
                 
-                Divider()
-                    .frame(height: 30)
-                    .padding(.horizontal, 8)
+                column
                 
                 stat(
                     "Discovered",
@@ -66,7 +62,7 @@ struct SongInfo: View {
                         Button(
                             "New \(type == .place ? "Spot" : "Vehicle")",
                             systemImage: "plus",
-                            action: { newSpotCallback?(type) }
+                            action: { newSpot(type) }
                         )
                         Divider()
                         
@@ -95,8 +91,31 @@ struct SongInfo: View {
             
             Divider()
         }
-        .padding(.top)
-        .onAppear(perform: getMusicMetadata)
+        .task(id: stream.persistentModelID) {
+            guard let id = stream.appleMusicID else { return }
+            
+            do {
+                let song = try await music.fetchTrackInfo(id)
+                    
+                if let albumName = song?.albumTitle, let releaseDate = song?.releaseDate?.year {
+                    // Trim "Single" declaration
+                    albumTitle = albumName.replacingOccurrences(of: " - Single", with: "")
+                    released = releaseDate
+                        
+                    loadedMetadata = true
+                }
+            } catch {
+                toast.show(
+                    message: "Music error",
+                    type: .error,
+                    symbol: "ear.trianglebadge.exclamationmark",
+                    action: {
+                        // On permissions issue, tapping takes you right to app settings!
+                        openURL(URL(string: UIApplication.openSettingsURLString)!)
+                    }
+                )
+            }
+        }
     }
     
     private func stat(_ label: String, _ value: some View) -> some View {
@@ -105,11 +124,17 @@ struct SongInfo: View {
                 Text(label)
                     .font(.system(size: 15).smallCaps())
                     .foregroundStyle(.secondary)
-                    .padding(.top, 1)
-                
+                    
                 value
             }
+            .padding(.vertical, 1)
         }
+    }
+    
+    private var column: some View {
+        Divider()
+            .frame(height: 30)
+            .padding(.horizontal, 8)
     }
     
     private func openAppleMusic() {
@@ -118,32 +143,14 @@ struct SongInfo: View {
         }
     }
     
-    private func getMusicMetadata() {
-        if let id = stream.appleMusicID {
-            Task {
-                do {
-                    let song = try await music.fetchTrackInfo(id)
-                    
-                    if let albumName = song?.albumTitle, let releaseDate = song?.releaseDate?.year {
-                        // Trim "Single" declaration
-                        albumTitle = albumName.replacingOccurrences(of: " - Single", with: "")
-                        released = releaseDate
-                        
-                        loadedMetadata = true
-                    }
-                } catch {
-                    toast.show(
-                        message: "Music unauthorized",
-                        type: .error,
-                        symbol: "ear.trianglebadge.exclamationmark",
-                        action: {
-                            // On permissions issue, tapping takes you right to app settings!
-                            openURL(URL(string: UIApplication.openSettingsURLString)!)
-                        }
-                    )
-                }
-            }
-        }
+    private func newSpot(_ type: SpotType) {
+        // Dismiss song sheet
+        let selected = view.stream
+        view.stream = nil
+            
+        // Obtain groupSelection with relevant Shazams to then create a spot
+        // TODO: fetch ShazamStreams by radius and include them here
+        view.group = ShazamStreamGroup(wrapped: [selected!], type: type, expanded: true)
     }
     
     private func addToSpot(_ spot: Spot) {

@@ -12,10 +12,10 @@ struct SheetView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.toastProvider) private var toast
     @Environment(\.openURL) private var openURL
+    @Environment(SheetProvider.self) private var view
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
     
-    @Binding var selection: ShazamStream?
     @Binding var searchText: String
     
     var filtered: [ShazamStream]
@@ -60,7 +60,7 @@ struct SheetView: View {
                     ForEach(timeSections) { section in
                         Section(header: Text("\(section.id)")) {
                             ForEach(section, id: \.self) { shazam in
-                                Button(action: { selection = shazam }) {
+                                Button(action: { view.stream = shazam }) {
                                     SongRow(stream: shazam)
                                 }
                                 .listRowBackground(Color.clear)
@@ -74,7 +74,7 @@ struct SheetView: View {
                         .listRowSeparator(.hidden)
                 } else {
                     ForEach(filtered, id: \.id) { shazam in
-                        Button(action: { selection = shazam }) {
+                        Button(action: { view.stream = shazam }) {
                             SongRow(stream: shazam)
                         }
                         .listRowBackground(Color.clear)
@@ -146,8 +146,8 @@ struct SheetView: View {
         modelContext.insert(stream)
         try? modelContext.save()
         
-        // Set selection to newly created item
-        selection = stream
+        // Show newly created item
+        view.stream = stream
     }
     
     private func handleShazamAPIError(_ error: ShazamError) {

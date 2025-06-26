@@ -9,10 +9,9 @@ import SwiftUI
 
 struct MapView: View {
     @Environment(\.modelContext) private var context
+    @Environment(SheetProvider.self) private var view
 
     @Binding var detent: PresentationDetent
-    @Binding var sheetSelection: ShazamStream?
-    @Binding var groupSelection: ShazamStreamGroup?
 
     var shazams: [ShazamStream]
 
@@ -52,9 +51,9 @@ struct MapView: View {
             // Handle map annotation selection
             showSelectedAnnotation(mapProvider.selection)
         }
-        .onChange(of: sheetSelection) {
+        .onChange(of: view.stream) {
             // ShazamStream selected from inspector
-            if let coordinate = sheetSelection?.coordinate {
+            if let coordinate = view.stream?.coordinate {
                 showOnMap(coordinate)
             }
         }
@@ -88,13 +87,13 @@ struct MapView: View {
 
         if selection!.count == 1 {
             if let sstream = context.model(for: selection!.first!) as? ShazamStream {
-                showOnMap(sstream.coordinate)
-                sheetSelection = sstream // Open sheet
+                view.stream = sstream // Open sheet
+                view.detent = .fraction(0.50) // Resize detent
             }
         } else {
             // Create ShazamStreamGroup, feed to groupSelection
             let streams = context.fetchShazamStreams(fromIdentifiers: selection!)
-            groupSelection = ShazamStreamGroup(wrapped: streams)
+            view.group = ShazamStreamGroup(wrapped: streams)
         }
     }
 
@@ -128,6 +127,7 @@ struct MapView: View {
 #Preview {
     @Previewable @State var position = MapCameraPosition.automatic
 
-    MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview, .preview, .preview])
+    MapView(detent: .constant(.height(65)), shazams: [.preview, .preview, .preview])
+        .environment(SheetProvider())
         .modelContainer(PreviewSampleData.container)
 }

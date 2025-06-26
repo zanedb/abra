@@ -11,13 +11,12 @@ struct SongList: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.modelContext) private var modelContext
     @Environment(\.toastProvider) private var toast
+    @Environment(SheetProvider.self) private var view
     @Environment(MusicProvider.self) private var music
 
     var type: SpotType = .place
 
-    @State var streams: [ShazamStream]
-    @Binding var detent: PresentationDetent
-
+    @State private var streams: [ShazamStream]
     @State private var expanded: Bool = false
     @State private var spotName: String = ""
     @State private var symbol: String = ""
@@ -27,40 +26,17 @@ struct SongList: View {
         spotName == "" || symbol == ""
     }
 
-    init(group: ShazamStreamGroup, detent: Binding<PresentationDetent>) {
+    init(group: ShazamStreamGroup) {
         self.streams = group.wrapped
         self.expanded = group.expanded
         self.type = group.type
-        self._detent = detent
     }
 
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
                 if expanded {
-                    HStack {
-                        Button(action: { showingIconPicker.toggle() }) {
-                            Image(systemName: symbol == "" ? "plus.circle.fill" : symbol)
-                                .shadow(radius: 3, x: 0, y: 0)
-                                .font(.system(size: symbol == "" ? 24 : 28))
-                                .frame(width: 80, height: 80)
-                                .foregroundColor(.white)
-                                .background(symbol == "" ? .gray.opacity(0.20) : .indigo)
-                                .clipShape(Circle())
-                                .padding(.trailing, 5)
-                        }
-                        VStack(alignment: .leading, spacing: 0) {
-                            TextField("Name", text: $spotName)
-                                .font(.title)
-                                .frame(maxWidth: .infinity)
-                                .bold()
-                            Text("\(streams.count) Song\(streams.count != 1 ? "s" : "")")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
+                    heading
 
                     Text("Discovered")
                         .font(.subheadline)
@@ -103,13 +79,39 @@ struct SongList: View {
             }
         }
     }
+    
+    private var heading: some View {
+        HStack {
+            Button(action: { showingIconPicker.toggle() }) {
+                Image(systemName: symbol == "" ? "plus.circle.fill" : symbol)
+                    .shadow(radius: 3, x: 0, y: 0)
+                    .font(.system(size: symbol == "" ? 24 : 28))
+                    .frame(width: 80, height: 80)
+                    .foregroundColor(.white)
+                    .background(symbol == "" ? .gray.opacity(0.20) : .indigo)
+                    .clipShape(Circle())
+                    .padding(.trailing, 5)
+            }
+            VStack(alignment: .leading, spacing: 0) {
+                TextField("Name", text: $spotName)
+                    .font(.title)
+                    .frame(maxWidth: .infinity)
+                    .bold()
+                Text("\(streams.count) Song\(streams.count != 1 ? "s" : "")")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+    }
 
     private func expand() {
         withAnimation {
             expanded.toggle()
         }
 
-        detent = .fraction(0.999)
+        view.detent = .fraction(0.999)
     }
 
     private func createSpot() {
@@ -130,12 +132,11 @@ struct SongList: View {
 }
 
 #Preview {
-    @Previewable @State var detent: PresentationDetent = .fraction(0.50)
-
     Map(initialPosition: .automatic)
         .ignoresSafeArea(.all)
         .sheet(isPresented: .constant(true)) {
-            SongList(group: ShazamStreamGroup(wrapped: [.preview, .preview]), detent: $detent)
+            SongList(group: ShazamStreamGroup(wrapped: [.preview, .preview]))
+                .environment(SheetProvider())
                 .environment(MusicProvider())
                 .presentationDetents([.fraction(0.50), .large])
                 .presentationBackgroundInteraction(.enabled)

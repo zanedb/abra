@@ -6,19 +6,11 @@
 import SwiftData
 import SwiftUI
 
-struct SongSelectionKey: PreferenceKey {
-    static var defaultValue: ShazamStream? = nil
-
-    static func reduce(value: inout ShazamStream?, nextValue: () -> ShazamStream?) {
-        value = nextValue() ?? value
-    }
-}
-
 struct SongDetail: View {
     @Environment(\.modelContext) var modelContext
+    @Environment(SheetProvider.self) private var view
     
     @Query var streams: [ShazamStream]
-    @State var selected: ShazamStream?
     
     init(stream: ShazamStream) {
         let isrc = stream.isrc
@@ -57,9 +49,7 @@ struct SongDetail: View {
             }
         }
         .onTapGesture {
-            // Pass selection up hierarchy
-            selected = streams.first
+            view.stream = streams.first
         }
-        .preference(key: SongSelectionKey.self, value: selected)
     }
 }

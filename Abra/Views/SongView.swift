@@ -10,11 +10,11 @@ import SwiftUI
 struct SongView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
+    @Environment(SheetProvider.self) private var view
     @Environment(LibraryProvider.self) private var library
     @Environment(MusicProvider.self) private var music
     
     var stream: ShazamStream
-    var newSpotCallback: ((SpotType) -> Void)?
     
     @State private var minimized: Bool = false
     
@@ -27,7 +27,7 @@ struct SongView: View {
                         toolbar
                     }
                 
-                SongInfo(stream: stream, newSpotCallback: newSpotCallback)
+                SongInfo(stream: stream)
                     .padding(.top)
                     .padding(.bottom, 4)
                 
@@ -53,12 +53,15 @@ struct SongView: View {
                 Spacer()
             }
         }
+        .padding()
         .onGeometryChange(for: CGRect.self) { proxy in
             proxy.frame(in: .global)
         } action: { minimized = ($0.height < 100) ? true : false }
-        .padding()
         .task {
             await music.authorize()
+        }
+        .onDisappear {
+            view.detent = .fraction(0.50) // Reset height
         }
     }
     
@@ -101,6 +104,7 @@ struct SongView: View {
             EmptyView()
                 .inspector(isPresented: $showSheet) {
                     SongView(stream: stream)
+                        .environment(SheetProvider())
                         .environment(LibraryProvider())
                         .environment(MusicProvider())
                 }

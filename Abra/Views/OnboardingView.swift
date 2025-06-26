@@ -178,12 +178,15 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview])
+    MapView(detent: .constant(.height(65)), shazams: [.preview])
+        .environment(SheetProvider())
         .modelContainer(PreviewSampleData.container)
         .overlay {
             VisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
                 .edgesIgnoringSafeArea(.all)
 
             OnboardingView()
+                .environment(ShazamProvider())
+                .environment(LocationProvider())
         }
 }

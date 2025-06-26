@@ -81,7 +81,8 @@ struct Toast: View {
 #Preview("Animated") {
     @Previewable @State var toast = ToastProvider()
 
-    MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview])
+    MapView(detent: .constant(.height(65)), shazams: [.preview])
+        .environment(SheetProvider())
         .modelContainer(PreviewSampleData.container)
         .withToastProvider(toast)
         .withToastOverlay(using: toast)
@@ -91,7 +92,8 @@ struct Toast: View {
 }
 
 #Preview("Non-Animated") {
-    MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview])
+    MapView(detent: .constant(.height(65)), shazams: [.preview])
+        .environment(SheetProvider())
         .modelContainer(PreviewSampleData.container)
         .overlay {
             Toast(message: "Couldn’t save location", type: .error, sfSymbol: "location.slash.fill")

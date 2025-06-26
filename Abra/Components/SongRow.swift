@@ -80,6 +80,8 @@ struct SongRow: View {
 }
 
 struct SongRowMini: View {
+    @Environment(SheetProvider.self) var view
+    
     var stream: ShazamStream
     
     var body: some View {
@@ -118,6 +120,22 @@ struct SongRowMini: View {
             Spacer()
         }
         .frame(maxHeight: 44)
+        .contextMenu {
+            if stream.appleMusicURL != nil {
+                Link(destination: stream.appleMusicURL!) {
+                    Label("Open in Apple Music", systemImage: "arrow.up.forward.app.fill")
+                }
+                ShareLink(item: stream.appleMusicURL!) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                }
+            }
+                
+            Divider()
+                
+            Button(action: { view.stream = stream }) {
+                Label("View", systemImage: "arrow.up.forward")
+            }
+        }
     }
 }
 
@@ -139,5 +157,6 @@ struct SongRowMini: View {
             .listStyle(.plain)
         }
         .environment(ShazamProvider())
+        .environment(SheetProvider())
     }
 }

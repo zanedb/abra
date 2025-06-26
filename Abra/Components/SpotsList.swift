@@ -8,6 +8,7 @@ import SwiftUI
 
 struct SpotsList: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(SheetProvider.self) private var view
     
     @Query(sort: \Spot.updatedAt, order: .reverse)
     private var spots: [Spot]
@@ -43,7 +44,7 @@ struct SpotsList: View {
         LazyHStack {
             ForEach(spots, id: \.id) { spot in
                 Button {
-                    print("clicked")
+                    view.spot = spot
                 } label: {
                     VStack(alignment: .center) {
                         Image(systemName: spot.iconName)
@@ -112,6 +113,7 @@ struct SpotsList: View {
         ScrollView {
             SpotsList()
                 .modelContainer(PreviewSampleData.container)
+                .environment(SheetProvider())
                 .padding()
         }
         .background(.ultraThickMaterial)

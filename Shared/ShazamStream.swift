@@ -97,9 +97,9 @@ extension ShazamStream {
     // i.e. "August 11 in San Francisco", "July 4 at 1015"
     public var description: String {
         let date = self.date
-        let place = self.spot?.name ?? self.city ?? "Unknown"
+        let place = spot?.name ?? city ?? "Unknown"
         
-        return "\(date) \(self.spot?.name != nil ? "at" : "in") \(place)"
+        return "\(date) \(spot?.name != nil ? "at" : "in") \(place)"
     }
     
     // TODO: guess transport modality by speed
@@ -110,7 +110,7 @@ extension ShazamStream {
         }
         
         switch speed {
-        case 3..<5:
+        case 3 ..< 5:
             return .walking
         case 5...:
             return .driving
@@ -126,7 +126,7 @@ extension ShazamStream {
     }
 }
 
-struct ShazamStreamGroup: Identifiable {
+struct ShazamStreamGroup: Identifiable, Equatable {
     var id = UUID()
     var wrapped: [ShazamStream]
     var type: SpotType = .place

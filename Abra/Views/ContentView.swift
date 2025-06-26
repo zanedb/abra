@@ -13,13 +13,10 @@ struct ContentView: View {
     
     @AppStorage("hasCompletedOnboarding") var onboarded: Bool = false
     
-    @State var detent: PresentationDetent = .fraction(0.50)
-    @State var listDetent: PresentationDetent = .fraction(0.50)
-    @State var songDetent: PresentationDetent = .fraction(0.50)
-    @State var selection: ShazamStream? = nil
-    @State var groupSelection: ShazamStreamGroup? = nil
     @State var searchText: String = ""
+    @State var detent: PresentationDetent = .fraction(0.50)
     
+    @State private var sheet = SheetProvider()
     @State private var toast = ToastProvider()
     @State private var shazam = ShazamProvider()
     @State private var location = LocationProvider()
@@ -36,23 +33,33 @@ struct ContentView: View {
     }
     
     var body: some View {
-        MapView(detent: $detent, sheetSelection: $selection, groupSelection: $groupSelection, shazams: filtered)
+        MapView(detent: $detent, shazams: filtered)
+            .environment(sheet)
             .sheet(isPresented: Binding(
                 get: { onboarded || isPreview },
                 set: { _ in }
             )) {
-                sheet
+                inspector
                     .popover(isPresented: Binding(
                         get: { shazam.isMatching },
                         set: { _ in }
                     )) {
                         searching
                     }
-                    .sheet(item: $selection) { selection in
-                        song(selection)
-                    }
-                    .sheet(item: $groupSelection) { group in
-                        list(group)
+                    .sheet(isPresented: Binding<Bool>(
+                        get: { sheet.now != .none },
+                        set: { _ in sheet.now = .none }
+                    )) {
+                        switch sheet.now {
+                        case .stream(let stream):
+                            song(stream)
+                        case .group(let group):
+                            list(group)
+                        case .spot(let item):
+                            spot(item)
+                        case .none:
+                            EmptyView()
+                        }
                     }
             }
             .overlay(alignment: .top) {
@@ -87,14 +94,13 @@ struct ContentView: View {
             .withToastOverlay(using: toast)
     }
     
-    private var sheet: some View {
-        SheetView(selection: $selection, searchText: $searchText, filtered: filtered)
+    private var inspector: some View {
+        SheetView(searchText: $searchText, filtered: filtered)
+            .environment(sheet)
             .environment(shazam)
             .environment(location)
             .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $detent)
-            .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.999)))
-            .presentationBackground(.thickMaterial)
-            .presentationCornerRadius(18)
+            .presentationInspector()
             .interactiveDismissDisabled()
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
                 sheetView.prefersEdgeAttachedInCompactHeight = true // Disable full-width in landscape
@@ -130,28 +136,13 @@ struct ContentView: View {
             }
     }
     
-    private func list(_ group: ShazamStreamGroup) -> some View {
-        SongList(group: group, detent: $listDetent)
-            .environment(music)
-            .presentationDetents([.fraction(0.50), .fraction(0.999)], selection: $listDetent)
-            .presentationBackgroundInteraction(.enabled)
-            .presentationBackground(.thickMaterial)
-            .presentationCornerRadius(18)
-            .introspect(.sheet, on: .iOS(.v18)) { sheetView in
-                sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
-            }
-    }
-    
     private func song(_ stream: ShazamStream) -> some View {
-        SongView(stream: stream, newSpotCallback: newSpotCallback)
+        SongView(stream: stream)
+            .environment(sheet)
             .environment(library)
             .environment(music)
-            .onPreferenceChange(SongSelectionKey.self) { if ($0 != nil) { selection = $0 } }
-            .onDisappear { songDetent = .fraction(0.50) } // Reset height
-            .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $songDetent)
-            .presentationBackgroundInteraction(.enabled)
-            .presentationBackground(.thickMaterial)
-            .presentationCornerRadius(18)
+            .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $sheet.detent)
+            .presentationInspector()
             .edgesIgnoringSafeArea(.bottom)
             .interactiveDismissDisabled()
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
@@ -159,14 +150,21 @@ struct ContentView: View {
             }
     }
     
-    private func newSpotCallback(_ type: SpotType) {
-        // Dismiss song sheet
-        let selected = selection
-        selection = nil
-        
-        // Obtain groupSelection with relevant Shazams to then create a spot
-        // TODO: fetch ShazamStreams by radius and include them here
-        groupSelection = ShazamStreamGroup(wrapped: [selected!], type: type, expanded: true)
+    private func list(_ group: ShazamStreamGroup) -> some View {
+        SongList(group: group)
+            .environment(sheet)
+            .environment(music)
+            .presentationDetents([.fraction(0.50), .fraction(0.999)], selection: $sheet.detent)
+            .presentationInspector()
+            .introspect(.sheet, on: .iOS(.v18)) { sheetView in
+                sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
+            }
+    }
+    
+    private func spot(_ spot: Spot) -> some View {
+        SpotView(spot: spot)
+            .presentationDetents([.fraction(0.50), .fraction(0.999)])
+            .presentationInspector()
     }
 }
 
