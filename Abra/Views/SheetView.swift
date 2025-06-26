@@ -22,10 +22,10 @@ struct SheetView: View {
     
     @SectionedQuery(\.timeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var timeSections: SectionedResults<String, ShazamStream>
     
-    @State private var listOpacity: CGFloat = 0
+    @State private var minimizedOpacity: CGFloat = 0
     
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             HStack(alignment: .center) {
                 SearchBar(text: $searchText, placeholder: "Search Shazams")
                     
@@ -40,6 +40,10 @@ struct SheetView: View {
             .padding(.trailing)
             .padding(.leading, 8)
             .padding(.top, 8)
+            .padding(.bottom, 4)
+            
+            Divider()
+                .opacity(minimizedOpacity)
             
             List {
                 if searchText.isEmpty && filtered.isEmpty {
@@ -51,6 +55,7 @@ struct SheetView: View {
                     SpotsList()
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
+                        .padding(.top, 8)
                     
                     ForEach(timeSections) { section in
                         Section(header: Text("\(section.id)")) {
@@ -78,7 +83,11 @@ struct SheetView: View {
             }
             .listStyle(.inset)
             .scrollContentBackground(.hidden)
-            .opacity(listOpacity)
+            .opacity(minimizedOpacity)
+            .overlay(alignment: .top) {
+                VariableBlurView(maxBlurRadius: 1, direction: .blurredTopClearBottom)
+                    .frame(height: 4)
+            }
         }
         .onChange(of: shazam.status) {
             if case .matched(let song) = shazam.status {
@@ -91,7 +100,7 @@ struct SheetView: View {
         }
         .onGeometryChange(for: CGRect.self) { proxy in
             proxy.frame(in: .global)
-        } action: { listOpacity = ($0.height > 100) ? 1 : 0 }
+        } action: { minimizedOpacity = ($0.height > 100) ? 1 : 0 }
     }
     
     private func createShazamStream(_ mediaItem: SHMediaItem) {
