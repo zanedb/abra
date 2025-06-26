@@ -22,6 +22,8 @@ struct SheetView: View {
     
     @SectionedQuery(\.timeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var timeSections: SectionedResults<String, ShazamStream>
     
+    @State private var listOpacity: CGFloat = 0
+    
     var body: some View {
         VStack {
             HStack(alignment: .center) {
@@ -76,6 +78,7 @@ struct SheetView: View {
             }
             .listStyle(.inset)
             .scrollContentBackground(.hidden)
+            .opacity(listOpacity)
         }
         .onChange(of: shazam.status) {
             if case .matched(let song) = shazam.status {
@@ -86,6 +89,9 @@ struct SheetView: View {
                 handleShazamAPIError(error)
             }
         }
+        .onGeometryChange(for: CGRect.self) { proxy in
+            proxy.frame(in: .global)
+        } action: { listOpacity = ($0.height > 100) ? 1 : 0 }
     }
     
     private func createShazamStream(_ mediaItem: SHMediaItem) {
