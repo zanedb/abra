@@ -43,7 +43,11 @@ import StoreKit
     }
     
     func play(id: String) async {
-        if currentTrackID == id {
+        await play(ids: [id])
+    }
+    
+    func play(ids: [String]) async {
+        if currentTrackID == ids.first {
             // Resume if currently playing song is requested
             musicPlayer.play()
             
@@ -54,7 +58,7 @@ import StoreKit
             return
         }
         
-        musicPlayer.setQueue(with: [id])
+        musicPlayer.setQueue(with: ids)
         
         musicPlayer.prepareToPlay { [weak self] error in
             guard let self = self else { return }
@@ -70,7 +74,7 @@ import StoreKit
             self.musicPlayer.play()
             Task { @MainActor in
                 self.errorMessage = nil
-                self.currentTrackID = id
+                self.currentTrackID = ids.first
                 self.isPlaying = true
             }
         }

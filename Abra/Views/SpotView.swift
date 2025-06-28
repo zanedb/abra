@@ -10,6 +10,7 @@ struct SpotView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(SheetProvider.self) private var view
+    @Environment(MusicProvider.self) private var music
 
     @Bindable var spot: Spot
 
@@ -65,7 +66,6 @@ struct SpotView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Play", action: play)
-                        .disabled(notReady)
                 }
             }
 //            .onChange(of: streams) {
@@ -118,6 +118,11 @@ struct SpotView: View {
 
     private func play() {
         // TODO: Play a "station" based on this Spot's Shazams
+        // For now, just play the spot's contents
+        let trackIds = spot.shazamStreams?.compactMap(\.appleMusicID)
+        Task {
+            await music.play(ids: trackIds ?? [])
+        }
     }
 }
 
