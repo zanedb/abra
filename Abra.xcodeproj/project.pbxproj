@@ -55,7 +55,6 @@
 		2FC1E0982A622BA800EF92D4 /* sfsymbols.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2FC1E0972A622BA800EF92D4 /* sfsymbols.txt */; };
 		2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC675622A3FACD200FD7638 /* SearchBar.swift */; };
 		2FC8CCEF2AC399B600523478 /* SectionedQuery in Frameworks */ = {isa = PBXBuildFile; productRef = 2FC8CCEE2AC399B600523478 /* SectionedQuery */; };
-		2FCB20F02DBC8EF000373B73 /* SongList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FCB20EF2DBC8EED00373B73 /* SongList.swift */; };
 		2FDBA45C2E0DDFBA00552D44 /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FDBA45B2E0DDFB800552D44 /* ViewModifiers.swift */; };
 		2FE766D22A30515E00952513 /* SongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE766D12A30515E00952513 /* SongRow.swift */; };
 		2FEACDF72C7317AF00F79E2D /* LibraryProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEACDF62C7317AF00F79E2D /* LibraryProvider.swift */; };
@@ -148,7 +147,6 @@
 		2FC1E0942A622A7B00EF92D4 /* IconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPicker.swift; sourceTree = "<group>"; };
 		2FC1E0972A622BA800EF92D4 /* sfsymbols.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = sfsymbols.txt; sourceTree = "<group>"; };
 		2FC675622A3FACD200FD7638 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
-		2FCB20EF2DBC8EED00373B73 /* SongList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongList.swift; sourceTree = "<group>"; };
 		2FD8448B2A2F089000B67301 /* Abra.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Abra.entitlements; sourceTree = "<group>"; };
 		2FDBA45B2E0DDFB800552D44 /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
 		2FE766D12A30515E00952513 /* SongRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongRow.swift; sourceTree = "<group>"; };
@@ -348,7 +346,6 @@
 				2FB9AF002A3193F5003C7A21 /* SongSheet.swift */,
 				2F3DAB732DA79C61001004B9 /* SongInfo.swift */,
 				2FAF74B62E0C55AA003D246C /* SongDetail.swift */,
-				2FCB20EF2DBC8EED00373B73 /* SongList.swift */,
 				2F8919EF2A4442BA0012DFF6 /* SpotsList.swift */,
 				2F659BC32A40426300EA43F9 /* PlayButton.swift */,
 				2FC1E0942A622A7B00EF92D4 /* IconPicker.swift */,
@@ -578,7 +575,6 @@
 				2FA7D81A2AC0E60F0039AD5C /* ShazamStream.swift in Sources */,
 				2F63DEE02E0D2AF800DAA30F /* SheetProvider.swift in Sources */,
 				2F30A7C72DA77EB500DFE607 /* VariableBlur.swift in Sources */,
-				2FCB20F02DBC8EF000373B73 /* SongList.swift in Sources */,
 				2FDBA45C2E0DDFBA00552D44 /* ViewModifiers.swift in Sources */,
 				2F3DAB772DA89C69001004B9 /* OnboardingView.swift in Sources */,
 				2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */,

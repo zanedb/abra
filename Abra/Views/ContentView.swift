@@ -53,8 +53,6 @@ struct ContentView: View {
                         switch sheet.now {
                         case .stream(let stream):
                             song(stream)
-                        case .group(let group):
-                            list(group)
                         case .spot(let item):
                             spot(item)
                         case .none:
@@ -145,26 +143,15 @@ struct ContentView: View {
             .presentationInspector()
             .edgesIgnoringSafeArea(.bottom)
             .interactiveDismissDisabled()
-            .introspect(.sheet, on: .iOS(.v18)) { sheetView in
-                sheetView.prefersEdgeAttachedInCompactHeight = true // Disable full-width in landscape
-            }
-    }
-    
-    private func list(_ group: ShazamStreamGroup) -> some View {
-        SongList(group: group)
-            .environment(sheet)
-            .environment(music)
-            .presentationDetents([.fraction(0.50), .fraction(0.999)], selection: $sheet.detent)
-            .presentationInspector()
-            .introspect(.sheet, on: .iOS(.v18)) { sheetView in
-                sheetView.prefersEdgeAttachedInCompactHeight = true // disable full-width in landscape
-            }
+            .prefersEdgeAttachedInCompactHeight()
     }
     
     private func spot(_ spot: Spot) -> some View {
         SpotView(spot: spot)
-            .presentationDetents([.fraction(0.50), .fraction(0.999)])
+            .environment(sheet)
+            .presentationDetents([.fraction(0.50), .fraction(0.999)], selection: $sheet.detent)
             .presentationInspector()
+            .prefersEdgeAttachedInCompactHeight()
     }
 }
 

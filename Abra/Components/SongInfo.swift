@@ -7,6 +7,7 @@ import SwiftData
 import SwiftUI
 
 struct SongInfo: View {
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
     @Environment(\.toastProvider) private var toast
     @Environment(SheetProvider.self) private var view
@@ -147,10 +148,12 @@ struct SongInfo: View {
         // Dismiss song sheet
         let selected = view.stream
         view.stream = nil
-            
-        // Obtain groupSelection with relevant Shazams to then create a spot
+           
+        // Create new Spot, insert into modelContext, and open for immediate editing
         // TODO: fetch ShazamStreams by radius and include them here
-        view.group = ShazamStreamGroup(wrapped: [selected!], type: type, expanded: true)
+        let spot = Spot(name: "", type: type, iconName: "", latitude: selected!.latitude, longitude: selected!.longitude, shazamStreams: [selected!])
+        modelContext.insert(spot)
+        view.spot = spot
     }
     
     private func addToSpot(_ spot: Spot) {
@@ -164,6 +167,7 @@ struct SongInfo: View {
     ModelContainerPreview(PreviewSampleData.inMemoryContainer) {
         SongInfo(stream: .preview)
             .padding()
+            .environment(SheetProvider())
             .environment(MusicProvider())
     }
 }

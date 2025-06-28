@@ -132,7 +132,10 @@ struct SongRowMini: View {
                 
             Divider()
                 
-            Button(action: { view.stream = stream }) {
+            Button(action: {
+                view.stream = stream
+                view.spot = nil
+            }) {
                 Label("View", systemImage: "arrow.up.forward")
             }
         }

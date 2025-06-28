@@ -31,7 +31,13 @@ struct SpotsList: View {
                 .padding(.bottom, 8)
                 
                 ScrollView(.horizontal) {
-                    list
+                    LazyHStack {
+                        ForEach(spots, id: \.id) { spot in
+                            spotView(spot)
+                        }
+                    }
+                    .padding(.leading, 5)
+                    .padding(.horizontal, 10)
                 }
                 .frame(maxHeight: 96)
                 .background(.background)
@@ -40,43 +46,37 @@ struct SpotsList: View {
         }
     }
     
-    private var list: some View {
-        LazyHStack {
-            ForEach(spots, id: \.id) { spot in
-                Button {
-                    view.spot = spot
-                } label: {
-                    VStack(alignment: .center) {
-                        Image(systemName: spot.iconName)
-                            .resizable()
-                            .frame(width: 20, height: 20)
-                            .padding(12)
-                            .foregroundColor(.white)
-                            .background(.indigo)
-                            .cornerRadius(500)
-                        Text(spot.name)
-                            .font(.system(size: 12))
-                            .foregroundColor(.primary)
-                            .lineLimit(1)
-                    }
-                    .frame(width: 54)
-                    .contextMenu {
-                        Button(action: {}) { // TODO: make these work
-                            Label("Open Playlist", systemImage: "arrow.up.forward.app.fill")
-                        }
-                        Button(action: {}) {
-                            Label("Share", systemImage: "square.and.arrow.up")
-                        }
-                        Divider()
-                        Button(role: .destructive, action: { deleteSpot(spot) }, label: {
-                            Label("Remove", systemImage: "trash")
-                        })
-                    }
+    private func spotView(_ spot: Spot) -> some View {
+        Button {
+            view.spot = spot
+        } label: {
+            VStack(alignment: .center) {
+                Image(systemName: spot.iconName == "" ? "exclamationmark.triangle" : spot.iconName)
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                    .padding(12)
+                    .foregroundColor(.white)
+                    .background(.indigo)
+                    .cornerRadius(500)
+                Text(spot.name)
+                    .font(.system(size: 12))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+            }
+            .frame(width: 54)
+            .contextMenu {
+                Button(action: {}) { // TODO: make these work
+                    Label("Open Playlist", systemImage: "arrow.up.forward.app.fill")
                 }
+                Button(action: {}) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                }
+                Divider()
+                Button(role: .destructive, action: { deleteSpot(spot) }, label: {
+                    Label("Remove", systemImage: "trash")
+                })
             }
         }
-        .padding(.leading, 5)
-        .padding(.horizontal, 10)
     }
     
     private func deleteSpots(offsets: IndexSet) {
