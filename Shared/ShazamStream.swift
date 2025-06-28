@@ -126,13 +126,6 @@ extension ShazamStream {
     }
 }
 
-struct ShazamStreamGroup: Identifiable, Equatable {
-    var id = UUID()
-    var wrapped: [ShazamStream]
-    var type: SpotType = .place
-    var expanded: Bool = false
-}
-
 enum Modality {
     case still
     case walking
