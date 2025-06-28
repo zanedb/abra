@@ -10,11 +10,7 @@ struct Thumbnail: View {
     @Environment(LibraryProvider.self) private var library
     @State private var image: Image?
     
-    private var assetLocalId: String
-    
-    init(assetLocalId: String) {
-        self.assetLocalId = assetLocalId
-    }
+    var assetLocalId: String
     
     func loadImageAsset(
         targetSize: CGSize = CGSize(width: 1024, height: 1024)
@@ -53,7 +49,7 @@ struct Thumbnail: View {
             }
         }
             .task {
-                await loadImageAsset(targetSize: CGSize(width: 512, height: 512))
+                await loadImageAsset(targetSize: CGSize(width: 256, height: 256))
             }
             .onDisappear {
                 image = nil
