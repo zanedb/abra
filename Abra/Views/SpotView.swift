@@ -13,7 +13,6 @@ struct SpotView: View {
 
     @Bindable var spot: Spot
 
-    @State private var editing: Bool = false
     @State private var showingIconPicker: Bool = false
 
     private var notReady: Bool {
@@ -22,6 +21,10 @@ struct SpotView: View {
 
     private var count: Int {
         spot.shazamStreams?.count ?? 0
+    }
+    
+    private var editing: Bool {
+        view.detent == .fraction(0.999)
     }
 
     var body: some View {
@@ -58,7 +61,7 @@ struct SpotView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(notReady ? "+ Save Spot" : editing ? "Done" : "Edit", action: edit)
+                    Button(notReady && !editing ? "+ Save Spot" : editing ? "Done" : "Edit", action: edit)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Play", action: play)
@@ -110,10 +113,6 @@ struct SpotView: View {
     }
 
     private func edit() {
-        withAnimation {
-            editing.toggle()
-        }
-
         view.detent = .fraction(0.999)
     }
 
@@ -123,15 +122,16 @@ struct SpotView: View {
 }
 
 #Preview {
+    @Previewable @State var view = SheetProvider()
     @Previewable var spot = Spot(name: "", type: .place, iconName: "", latitude: ShazamStream.preview.latitude, longitude: ShazamStream.preview.longitude, shazamStreams: [.preview, .preview])
 
     Map(initialPosition: .automatic)
         .ignoresSafeArea(.all)
         .sheet(isPresented: .constant(true)) {
             SpotView(spot: spot)
-                .environment(SheetProvider())
+                .environment(view)
                 .environment(MusicProvider())
-                .presentationDetents([.fraction(0.50), .large])
+                .presentationDetents([.fraction(0.50), .fraction(0.999)], selection: $view.detent)
                 .presentationBackgroundInteraction(.enabled)
         }
 }
