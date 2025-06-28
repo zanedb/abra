@@ -149,6 +149,7 @@ struct ContentView: View {
     private func spot(_ spot: Spot) -> some View {
         SpotView(spot: spot)
             .environment(sheet)
+            .environment(music)
             .presentationDetents([.fraction(0.50), .fraction(0.999)], selection: $sheet.detent)
             .presentationInspector()
             .prefersEdgeAttachedInCompactHeight()
