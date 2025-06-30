@@ -5,6 +5,7 @@
 
 import SwiftData
 import SwiftUI
+import MusicKit
 
 struct SongInfo: View {
     @Environment(\.modelContext) private var modelContext
@@ -25,6 +26,7 @@ struct SongInfo: View {
     
     @Query(sort: \Spot.updatedAt, order: .reverse)
     private var spots: [Spot]
+    
     var body: some View {
         VStack(alignment: .leading) {
             Divider()
@@ -93,7 +95,7 @@ struct SongInfo: View {
             Divider()
         }
         .task(id: stream.persistentModelID) {
-            guard let id = stream.appleMusicID else { return }
+            guard let id = stream.appleMusicID else { return loadedMetadata = false }
             
             do {
                 let song = try await music.fetchTrackInfo(id)
@@ -106,8 +108,15 @@ struct SongInfo: View {
                     loadedMetadata = true
                 }
             } catch {
+                loadedMetadata = false // Don't show stale information
+                
+                var message = error.localizedDescription
+                if let e = error as? MusicDataRequest.Error {
+                    message = e.title
+                }
+                
                 toast.show(
-                    message: "Music error",
+                    message: message,
                     type: .error,
                     symbol: "ear.trianglebadge.exclamationmark",
                     action: {
