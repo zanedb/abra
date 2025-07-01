@@ -56,8 +56,8 @@ struct SpotView: View {
             }
             .navigationTitle(
                 editing
-                    ? "Edit \(spot.type == .place ? "Spot" : "Vehicle")"
-                    : spot.name == "" ? "\(count) Shazam\(count != 1 ? "s" : "")" : spot.name
+                    ? "\(spot.type == .place ? "Spot" : "Vehicle")"
+                    : spot.name == "" ? "\(count) Song\(count != 1 ? "s" : "")" : spot.name
             )
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -65,7 +65,20 @@ struct SpotView: View {
                     Button(notReady && !editing ? "+ Save Spot" : editing ? "Done" : "Edit", action: edit)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Play", action: play)
+                    HStack(spacing: -2) {
+                        Button(action: play) {
+                            Image(systemName: "play.circle.fill")
+                                .foregroundColor(.gray)
+                                .font(.system(size: 24))
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                                .font(.system(size: 24))
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                    }
                 }
             }
 //            .onChange(of: streams) {
@@ -113,7 +126,7 @@ struct SpotView: View {
     }
 
     private func edit() {
-        view.detent = .fraction(0.999)
+        view.detent = editing ? .fraction(0.50) : .fraction(0.999)
     }
 
     private func play() {
@@ -136,7 +149,7 @@ struct SpotView: View {
             SpotView(spot: spot)
                 .environment(view)
                 .environment(MusicProvider())
-                .presentationDetents([.fraction(0.50), .fraction(0.999)], selection: $view.detent)
+                .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $view.detent)
                 .presentationBackgroundInteraction(.enabled)
         }
 }
