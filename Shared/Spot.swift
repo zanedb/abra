@@ -45,17 +45,30 @@ enum SpotType: Codable {
         self.name = ""
         self.type = type
         self.iconName = ""
-        self.latitude = locationFrom.latitude
-        self.longitude = locationFrom.longitude
         self.shazamStreams = streams
         self.createdAt = .now
         self.updatedAt = .now
+        
+        self.latitude = locationFrom.latitude
+        self.longitude = locationFrom.longitude
+        self.city = locationFrom.city
+        self.state = locationFrom.state
+        self.country = locationFrom.country
+        self.countryCode = locationFrom.countryCode
     }
 }
 
 extension Spot {
     public var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
+    
+    public var cityState: String {
+        if city != nil && state != nil {
+            "\(city!), \(state!)"
+        } else {
+            "Unknown"
+        }
     }
 
     static var preview: Spot {
