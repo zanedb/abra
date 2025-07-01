@@ -34,7 +34,7 @@ struct SpotView: View {
                 if editing {
                     heading
 
-                    Text("Discovered")
+                    Text("\(count) Song\(count != 1 ? "s" : "")")
                         .font(.subheadline)
                         .bold()
                         .foregroundColor(.gray)
@@ -103,7 +103,7 @@ struct SpotView: View {
                     .font(.title)
                     .frame(maxWidth: .infinity)
                     .bold()
-                Text("\(count) Song\(count != 1 ? "s" : "")")
+                Text(spot.cityState)
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }
