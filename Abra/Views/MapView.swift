@@ -93,7 +93,7 @@ struct MapView: View {
         } else {
             // Fetch all Shazams, insert new spot, open for immediate editing
             let streams = context.fetchShazamStreams(fromIdentifiers: selection!)
-            let spot = Spot(name: "", type: .place, iconName: "", latitude: streams.first!.latitude, longitude: streams.first!.longitude, shazamStreams: streams)
+            let spot = Spot(locationFrom: streams.first!, type: .place, streams: streams)
             context.insert(spot)
             view.spot = spot
         }

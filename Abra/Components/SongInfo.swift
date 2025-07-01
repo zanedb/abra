@@ -160,7 +160,7 @@ struct SongInfo: View {
            
         // Create new Spot, insert into modelContext, and open for immediate editing
         // TODO: fetch ShazamStreams by radius and include them here
-        let spot = Spot(name: "", type: type, iconName: "", latitude: selected!.latitude, longitude: selected!.longitude, shazamStreams: [selected!])
+        let spot = Spot(locationFrom: selected!, type: type, streams: [selected!])
         modelContext.insert(spot)
         view.spot = spot
     }

@@ -118,35 +118,9 @@ struct SheetView: View {
             return
         }
         
-        // Create object
-        let stream = ShazamStream(
-            title: mediaItem.title ?? "Unknown Title",
-            artist: mediaItem.artist ?? "Unknown Artist",
-            isExplicit: mediaItem.explicitContent,
-            artworkURL: mediaItem.artworkURL ?? URL(string: "https://zane.link/abra-unavailable")!,
-            latitude: location.currentLocation!.coordinate.latitude,
-            longitude: location.currentLocation!.coordinate.longitude
-        )
-        
-        // Fill optional properties
-        stream.isrc = mediaItem.isrc
-        stream.shazamID = mediaItem.shazamID
-        stream.shazamLibraryID = mediaItem.id
-        stream.appleMusicID = mediaItem.appleMusicID
-        stream.appleMusicURL = mediaItem.appleMusicURL
-        stream.altitude = location.currentLocation?.altitude
-        stream.speed = location.currentLocation?.speed
-        stream.thoroughfare = location.currentPlacemark?.thoroughfare
-        stream.city = location.currentPlacemark?.locality
-        stream.state = location.currentPlacemark?.administrativeArea
-        stream.country = location.currentPlacemark?.country
-        stream.countryCode = location.currentPlacemark?.isoCountryCode
-        
-        // Save in ModelContext
+        // Create and show ShazamStream
+        let stream = ShazamStream(mediaItem: mediaItem, location: location.currentLocation!, placemark: location.currentPlacemark)
         modelContext.insert(stream)
-        try? modelContext.save()
-        
-        // Show newly created item
         view.stream = stream
     }
     

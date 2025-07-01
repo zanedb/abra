@@ -40,6 +40,17 @@ enum SpotType: Codable {
         self.createdAt = .now
         self.updatedAt = .now
     }
+    
+    init(locationFrom: ShazamStream, type: SpotType, streams: [ShazamStream]) {
+        self.name = ""
+        self.type = type
+        self.iconName = ""
+        self.latitude = locationFrom.latitude
+        self.longitude = locationFrom.longitude
+        self.shazamStreams = streams
+        self.createdAt = .now
+        self.updatedAt = .now
+    }
 }
 
 extension Spot {

@@ -9,6 +9,7 @@ import ClusterMap
 import Foundation
 import MapKit
 import SwiftData
+import ShazamKit
 
 @Model final class ShazamStream {
     var title: String = ""
@@ -43,6 +44,30 @@ import SwiftData
         self.artworkURL = artworkURL
         self.latitude = latitude
         self.longitude = longitude
+    }
+    
+    init(mediaItem: SHMediaItem, location: CLLocation, placemark: CLPlacemark?) {
+        self.title = mediaItem.title ?? "Unknown Title"
+        self.artist = mediaItem.artist ?? "Unknown Artist"
+        self.isExplicit = mediaItem.explicitContent
+        self.timestamp = .now
+        self.artworkURL = mediaItem.artworkURL ?? URL(string: "https://zane.link/abra-unavailable")!
+        self.latitude = location.coordinate.latitude
+        self.longitude = location.coordinate.longitude
+        
+        // Optional properties
+        self.isrc = mediaItem.isrc
+        self.shazamID = mediaItem.shazamID
+        self.shazamLibraryID = mediaItem.id
+        self.appleMusicID = mediaItem.appleMusicID
+        self.appleMusicURL = mediaItem.appleMusicURL
+        self.altitude = location.altitude
+        self.speed = location.speed
+        self.thoroughfare = placemark?.thoroughfare
+        self.city = placemark?.locality
+        self.state = placemark?.administrativeArea
+        self.country = placemark?.country
+        self.countryCode = placemark?.isoCountryCode
     }
 }
 
