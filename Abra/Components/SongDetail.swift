@@ -13,12 +13,13 @@ struct SongDetail: View {
     @Query var streams: [ShazamStream]
     
     init(stream: ShazamStream) {
-        let isrc = stream.isrc
+        let title = stream.title
+        let artist = stream.artist
         let id = stream.persistentModelID
         
-        // Find instances of the same Shazam via matching ISRC
+        // Find instances of the same Shazam via matching title & artist
         let predicate = #Predicate<ShazamStream> {
-            $0.isrc == isrc && $0.persistentModelID != id
+            $0.title == title && $0.artist == artist && $0.persistentModelID != id
         }
             
         _streams = Query(filter: predicate, sort: \.timestamp)
