@@ -150,7 +150,7 @@ struct ContentView: View {
         SpotView(spot: spot)
             .environment(sheet)
             .environment(music)
-            .presentationDetents([.fraction(0.50), .fraction(0.999)], selection: $sheet.detent)
+            .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $sheet.detent)
             .presentationInspector()
             .prefersEdgeAttachedInCompactHeight()
     }

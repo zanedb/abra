@@ -14,55 +14,54 @@ struct SpotView: View {
 
     @Bindable var spot: Spot
 
+    @State private var minimized: Bool = false
     @State private var showingIconPicker: Bool = false
+    @State private var showingHeader: Bool
 
-    private var notReady: Bool {
-        spot.name == "" || spot.iconName == ""
+    init(spot: Spot) {
+        self.spot = spot
+        _showingHeader = State(initialValue: spot.name != "" && spot.iconName != "")
     }
 
     private var count: Int {
         spot.shazamStreams?.count ?? 0
     }
-    
-    private var editing: Bool {
-        view.detent == .fraction(0.999)
-    }
 
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
-                if editing {
+                if showingHeader {
                     heading
+                        .padding(.top, -40)
 
-                    Text("\(count) Song\(count != 1 ? "s" : "")")
-                        .font(.subheadline)
-                        .bold()
-                        .foregroundColor(.gray)
-                        .padding(.horizontal)
-                        .padding(.top, 12)
-                }
-
-//                EditableList($spot.shazamStreams) { $stream in
-//                    SongRowMini(stream: stream)
-//                }
-                List {
-                    ForEach(spot.shazamStreams!) { stream in
-                        SongRowMini(stream: stream)
+                    if !minimized {
+                        Text("\(count) Song\(count != 1 ? "s" : "")")
+                            .font(.subheadline)
+                            .bold()
+                            .foregroundColor(.gray)
+                            .padding(.horizontal)
+                            .padding(.top, 12)
                     }
-                    .listRowBackground(Color.clear)
                 }
-                .scrollContentBackground(.hidden)
-                .listStyle(.plain)
+
+                if !minimized {
+                    List {
+                        ForEach(spot.shazamStreams!) { stream in
+                            SongRowMini(stream: stream)
+                        }
+                        .listRowBackground(Color.clear)
+                    }
+                    .scrollContentBackground(.hidden)
+                    .listStyle(.plain)
+                }
             }
-            .navigationTitle(
-                editing
-                    ? "\(spot.type == .place ? "Spot" : "Vehicle")"
-                    : spot.name == "" ? "\(count) Song\(count != 1 ? "s" : "")" : spot.name
-            )
+            .navigationTitle(showingHeader ? "" : "\(count) Song\(count != 1 ? "s" : "")")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(notReady && !editing ? "+ Save Spot" : editing ? "Done" : "Edit", action: edit)
+                if !showingHeader {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("+ Save Spot", action: edit)
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     HStack(spacing: -2) {
@@ -81,21 +80,21 @@ struct SpotView: View {
                     }
                 }
             }
-//            .onChange(of: streams) {
-//                if count == 0 {
-//                    dismiss()
-//                }
-//            }
             .popover(isPresented: $showingIconPicker) {
                 IconPicker(symbol: $spot.iconName)
             }
             .onDisappear {
                 // Destroy Spot if not saved
                 // TODO: test if there are cases where this isn't triggered
-                if notReady {
+                if spot.name == "" || spot.iconName == "" {
                     modelContext.delete(spot)
                 }
             }
+        }
+        .onGeometryChange(for: CGRect.self) { proxy in
+            proxy.frame(in: .global)
+        } action: {
+            minimized = ($0.height < 100) ? true : false
         }
     }
 
@@ -103,9 +102,8 @@ struct SpotView: View {
         HStack {
             Button(action: { showingIconPicker.toggle() }) {
                 Image(systemName: spot.iconName == "" ? "plus.circle.fill" : spot.iconName)
-                    .shadow(radius: 3, x: 0, y: 0)
-                    .font(.system(size: spot.iconName == "" ? 24 : 28))
-                    .frame(width: 80, height: 80)
+                    .font(.system(size: minimized ? 12 : spot.iconName == "" ? 24 : 28))
+                    .frame(width: minimized ? 40 : 80, height: minimized ? 40 : 80)
                     .foregroundColor(.white)
                     .background(spot.iconName == "" ? .gray.opacity(0.20) : .indigo)
                     .clipShape(Circle())
@@ -113,20 +111,23 @@ struct SpotView: View {
             }
             VStack(alignment: .leading, spacing: 0) {
                 TextField("Name", text: $spot.name)
-                    .font(.title)
-                    .frame(maxWidth: .infinity)
+                    .font(minimized ? .title2 : .title)
+                    .frame(maxWidth: minimized ? 220 : 180, alignment: .leading)
                     .bold()
-                Text(spot.cityState)
+                Text(spot.type == .place ? spot.cityState : "Vehicle")
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
     }
 
     private func edit() {
-        view.detent = editing ? .fraction(0.50) : .fraction(0.999)
+        withAnimation {
+            showingHeader.toggle()
+        }
     }
 
     private func play() {
@@ -141,7 +142,7 @@ struct SpotView: View {
 
 #Preview {
     @Previewable @State var view = SheetProvider()
-    @Previewable var spot = Spot(name: "", type: .place, iconName: "", latitude: ShazamStream.preview.latitude, longitude: ShazamStream.preview.longitude, shazamStreams: [.preview, .preview])
+    @Previewable var spot = Spot(name: "Me", type: .place, iconName: "play", latitude: ShazamStream.preview.latitude, longitude: ShazamStream.preview.longitude, shazamStreams: [.preview, .preview])
 
     Map(initialPosition: .automatic)
         .ignoresSafeArea(.all)
