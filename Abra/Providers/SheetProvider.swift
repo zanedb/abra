@@ -35,6 +35,7 @@ import SwiftUI
             if newValue == .none {
                 stream = nil
                 spot = nil
+                detent = .fraction(0.50)
             }
         }
     }

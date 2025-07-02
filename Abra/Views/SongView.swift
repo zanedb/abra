@@ -60,9 +60,6 @@ struct SongView: View {
         .task {
             await music.authorize()
         }
-        .onDisappear {
-            view.detent = .fraction(0.50) // Reset height
-        }
     }
     
     private var toolbar: some View {
