@@ -9,6 +9,7 @@ import SwiftUI
 struct SpotsList: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(SheetProvider.self) private var view
+    @Environment(MusicProvider.self) private var music
     
     @Query(sort: \Spot.updatedAt, order: .reverse)
     private var spots: [Spot]
@@ -65,11 +66,11 @@ struct SpotsList: View {
             }
             .frame(width: 54)
             .contextMenu {
-                Button(action: {}) { // TODO: make these work
-                    Label("Open Playlist", systemImage: "arrow.up.forward.app.fill")
+                Button(action: { spot.play(music, shuffle: true) }) {
+                    Label("Shuffle", systemImage: "shuffle")
                 }
-                Button(action: {}) {
-                    Label("Share", systemImage: "square.and.arrow.up")
+                Button(action: { spot.play(music) }) {
+                    Label("Play", systemImage: "play.fill")
                 }
                 Divider()
                 Button(role: .destructive, action: { deleteSpot(spot) }, label: {
@@ -114,6 +115,7 @@ struct SpotsList: View {
             SpotsList()
                 .modelContainer(PreviewSampleData.container)
                 .environment(SheetProvider())
+                .environment(MusicProvider())
                 .padding()
         }
         .background(.ultraThickMaterial)

@@ -97,6 +97,7 @@ struct ContentView: View {
             .environment(sheet)
             .environment(shazam)
             .environment(location)
+            .environment(music)
             .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $detent)
             .presentationInspector()
             .interactiveDismissDisabled()

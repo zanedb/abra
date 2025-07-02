@@ -70,6 +70,20 @@ extension Spot {
             "Unknown"
         }
     }
+    
+    /// Plays the Spot's contents; optionally shuffle
+    /// In the future, will play a station based on Spot's Shazams
+    public func play(_ music: MusicProvider, shuffle: Bool = false) {
+        var trackIds = self.shazamStreams?.compactMap(\.appleMusicID)
+        
+        if shuffle {
+            trackIds?.shuffle()
+        }
+        
+        Task {
+            await music.play(ids: trackIds ?? [])
+        }
+    }
 
     static var preview: Spot {
         Spot(name: "Sioux Falls", type: .place, iconName: "magnifyingglass", latitude: 37.3316876, longitude: -122.0327261, shazamStreams: [ShazamStream.preview])

@@ -65,7 +65,7 @@ struct SpotView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     HStack(spacing: -2) {
-                        Button(action: play) {
+                        Button(action: { spot.play(music) }) {
                             Image(systemName: "play.circle.fill")
                                 .foregroundColor(.gray)
                                 .font(.system(size: 24))
@@ -127,15 +127,6 @@ struct SpotView: View {
     private func edit() {
         withAnimation {
             showingHeader.toggle()
-        }
-    }
-
-    private func play() {
-        // TODO: Play a "station" based on this Spot's Shazams
-        // For now, just play the spot's contents
-        let trackIds = spot.shazamStreams?.compactMap(\.appleMusicID)
-        Task {
-            await music.play(ids: trackIds ?? [])
         }
     }
 }
