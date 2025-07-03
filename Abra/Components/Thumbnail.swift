@@ -3,15 +3,15 @@
 //  Abra
 //
 
-import SwiftUI
 import Photos
+import SwiftUI
 
 struct Thumbnail: View {
     @Environment(LibraryProvider.self) private var library
     @State private var image: Image?
-    
+
     var assetLocalId: String
-    
+
     func loadImageAsset(
         targetSize: CGSize = CGSize(width: 1024, height: 1024)
     ) async {
@@ -19,41 +19,35 @@ struct Thumbnail: View {
             .fetchImage(
                 byLocalIdentifier: assetLocalId,
                 targetSize: targetSize
-            ) else {
-                image = nil
-                return
-            }
+            )
+        else {
+            image = nil
+            return
+        }
         image = Image(uiImage: uiImage)
     }
-    
+
     var body: some View {
         ZStack {
             if let image = image {
-                GeometryReader { proxy in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(
-                            width: proxy.size.width,
-                            height: proxy.size.width
-                        )
-                        .clipped()
-                }
-                    .aspectRatio(1, contentMode: .fit)
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .aspectRatio(2/3, contentMode: .fit)
             } else {
                 Rectangle()
                     .foregroundColor(.primary)
                     .colorInvert()
-                    .aspectRatio(1, contentMode: .fit)
+                    .aspectRatio(2/3, contentMode: .fit)
                 ProgressView()
             }
         }
-            .task {
-                await loadImageAsset(targetSize: CGSize(width: 256, height: 256))
-            }
-            .onDisappear {
-                image = nil
-            }
+        .task(id: assetLocalId) {
+            await loadImageAsset(targetSize: CGSize(width: 256, height: 384))
+        }
+        .onDisappear {
+            image = nil
+        }
     }
 }
 

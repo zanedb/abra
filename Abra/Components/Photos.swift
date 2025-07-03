@@ -37,8 +37,23 @@ struct Photos: View {
                 }
             }
         }
-        .onAppear {
+        .task(id: stream.persistentModelID) {
             requestForAuthorizationIfNecessary()
+        }
+    }
+
+    var libraryView: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHStack {
+                ForEach(library.results, id: \.self) { asset in
+                    Thumbnail(assetLocalId: asset.localIdentifier)
+                        .clipShape(RoundedRectangle(
+                            cornerRadius: 8
+                        ))
+                }
+            }
+            .padding(.horizontal)
+            .frame(height: 192)
         }
     }
 
@@ -52,6 +67,7 @@ struct Photos: View {
                 ))
 
             // MARK: this creates an X button that closes the card permanently
+
             // I'm disabling this for now because it is annoying to reset
             // Also, there's no settings UI yet so no it's irreversible
             // And I want people to use it! Sorry!
@@ -100,25 +116,6 @@ struct Photos: View {
             .padding(.horizontal)
             .frame(maxWidth: 256)
         }
-    }
-
-    var libraryView: some View {
-        LazyVGrid(
-            // 3-column row with adaptive width of 100 for each grid item
-            // 1px space between columns and rows
-            columns: Array(
-                repeating: .init(.adaptive(minimum: 100), spacing: 1),
-                count: 3
-            ),
-            spacing: 1
-        ) {
-            ForEach(library.results, id: \.self) { asset in
-                Thumbnail(assetLocalId: asset.localIdentifier)
-            }
-        }
-        .clipShape(RoundedRectangle(
-            cornerRadius: 8
-        ))
     }
 }
 
