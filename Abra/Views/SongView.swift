@@ -22,16 +22,19 @@ struct SongView: View {
         VStack(alignment: .leading, spacing: 0) {
             ScrollView {
                 SongSheet(stream: stream, mini: minimized)
+                    .padding()
                     .padding(.top, 8)
                     .overlay(alignment: .top) {
                         toolbar
                     }
                 
-                SongInfo(stream: stream)
-                    .padding(.top)
-                    .padding(.bottom, 4)
+//                SongInfo(stream: stream)
+//                    .padding(.horizontal)
+//                    .padding(.top)
+//                    .padding(.bottom, 4)
                 
                 SongDetail(stream: stream)
+                    .padding(.horizontal)
                 
                 if !library.hasIgnoredPhotosRequest {
                     HStack {
@@ -44,6 +47,7 @@ struct SongView: View {
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
                     }
+                    .padding(.horizontal)
                     .padding(.top)
                     .padding(.bottom, 8)
                     
@@ -53,7 +57,6 @@ struct SongView: View {
                 Spacer()
             }
         }
-        .padding()
         .onGeometryChange(for: CGRect.self) { proxy in
             proxy.frame(in: .global)
         } action: { minimized = ($0.height < 100) ? true : false }
@@ -85,7 +88,7 @@ struct SongView: View {
                     .symbolRenderingMode(.hierarchical)
             }
         }
-        .padding(.bottom, 12)
+        .padding()
     }
 }
 
