@@ -23,7 +23,7 @@ struct SpotsList: View {
                     Text("Spots")
                         .foregroundColor(.gray)
                         .bold()
-                        .font(.system(size: 14))
+                        .font(.system(size: 15))
                     Spacer()
                     
                     //                Button("More") { }

@@ -26,13 +26,15 @@ struct Photos: View {
     }
 
     var body: some View {
-        VStack {
+        VStack(alignment: .leading) {
             if showError {
+                heading
                 permissionView
             } else {
                 if library.results.isEmpty {
                     EmptyView()
                 } else {
+                    heading
                     libraryView
                 }
             }
@@ -42,7 +44,16 @@ struct Photos: View {
         }
     }
 
-    var libraryView: some View {
+    private var heading: some View {
+        Text("Moments")
+            .foregroundColor(.gray)
+            .bold()
+            .font(.system(size: 15))
+            .padding(.horizontal)
+            .padding(.top, 8)
+    }
+
+    private var libraryView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack {
                 ForEach(library.results, id: \.self) { asset in
@@ -57,13 +68,13 @@ struct Photos: View {
         }
     }
 
-    var permissionView: some View {
+    private var permissionView: some View {
         ZStack {
             Rectangle()
                 .fill(.background)
                 .frame(height: 172)
                 .clipShape(RoundedRectangle(
-                    cornerRadius: 8
+                    cornerRadius: 14
                 ))
 
             // MARK: this creates an X button that closes the card permanently
@@ -125,7 +136,6 @@ struct Photos: View {
 
     let s = ShazamStream.preview
     return Photos(stream: s)
-        .padding()
         .modelContainer(container)
         .environment(LibraryProvider())
 }
