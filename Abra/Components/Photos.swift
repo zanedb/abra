@@ -113,9 +113,9 @@ struct Photos: View {
                 })
                 .padding(.top, 8)
             }
-            .padding(.horizontal)
             .frame(maxWidth: 256)
         }
+        .padding(.horizontal)
     }
 }
 
