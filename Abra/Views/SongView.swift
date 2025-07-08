@@ -28,31 +28,10 @@ struct SongView: View {
                         toolbar
                     }
                 
-//                SongInfo(stream: stream)
-//                    .padding(.horizontal)
-//                    .padding(.top)
-//                    .padding(.bottom, 4)
-                
                 SongDetail(stream: stream)
                     .padding(.horizontal)
                 
-                if !library.hasIgnoredPhotosRequest {
-                    HStack {
-                        Text(stream.timestamp, style: .date)
-                            .font(.headline)
-                        
-                        Spacer()
-                        
-                        Text(stream.timestamp, style: .time)
-                            .font(.system(size: 14))
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.horizontal)
-                    .padding(.top)
-                    .padding(.bottom, 8)
-                    
-                    Photos(stream: stream)
-                }
+                Photos(stream: stream)
                 
                 Spacer()
             }
@@ -93,24 +72,11 @@ struct SongView: View {
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: ShazamStream.self, configurations: config)
-    
-    struct ContentView: View {
-        @State private var showSheet = true
-        let stream = ShazamStream.preview
-        
-        var body: some View {
-            EmptyView()
-                .inspector(isPresented: $showSheet) {
-                    SongView(stream: stream)
-                        .environment(SheetProvider())
-                        .environment(LibraryProvider())
-                        .environment(MusicProvider())
-                }
+    EmptyView()
+        .inspector(isPresented: .constant(true)) {
+            SongView(stream: .preview)
+                .environment(SheetProvider())
+                .environment(LibraryProvider())
+                .environment(MusicProvider())
         }
-    }
-    
-    return ContentView()
-        .modelContainer(container)
 }
