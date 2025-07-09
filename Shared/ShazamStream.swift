@@ -8,8 +8,8 @@
 import ClusterMap
 import Foundation
 import MapKit
-import SwiftData
 import ShazamKit
+import SwiftData
 
 @Model final class ShazamStream {
     var title: String = ""
@@ -46,7 +46,7 @@ import ShazamKit
         self.longitude = longitude
     }
     
-    init(mediaItem: SHMediaItem, location: CLLocation, placemark: CLPlacemark?) {
+    init(mediaItem: SHMediaItem, location: CLLocation, placemark: CLPlacemark?, modelContext: ModelContext) {
         self.title = mediaItem.title ?? "Unknown Title"
         self.artist = mediaItem.artist ?? "Unknown Artist"
         self.isExplicit = mediaItem.explicitContent
@@ -68,6 +68,11 @@ import ShazamKit
         self.state = placemark?.administrativeArea
         self.country = placemark?.country
         self.countryCode = placemark?.isoCountryCode
+        
+        // If Spot exists with similar latitude/longitude, set it automatically
+        Task {
+            spotIt(context: modelContext)
+        }
     }
 }
 
@@ -145,6 +150,35 @@ extension ShazamStream {
             return .driving
         default:
             return .still
+        }
+    }
+    
+    /// Find Spots that are super close by and save to automagically
+    /// Queries for lat/long within three decimal sig figs of precision
+    public func spotIt(context: ModelContext) {
+        let precision = 0.001
+        let halfPrecision = precision / 2
+
+        let latMin = latitude - halfPrecision
+        let latMax = latitude + halfPrecision
+        let lonMin = longitude - halfPrecision
+        let lonMax = longitude + halfPrecision
+        
+        let predicate = #Predicate<Spot> {
+            $0.latitude >= latMin && $0.latitude < latMax &&
+            $0.longitude >= lonMin && $0.longitude < lonMax
+        }
+            
+        let fetchDescriptor = FetchDescriptor<Spot>(predicate: predicate)
+        
+        do {
+            let spots = try context.fetch(fetchDescriptor)
+            spots.forEach {
+                if $0.type != .place { return } // Only SpotType.place groups by location
+                self.spot = $0
+            }
+        } catch {
+            print(error.localizedDescription)
         }
     }
     

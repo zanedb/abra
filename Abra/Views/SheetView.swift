@@ -119,7 +119,7 @@ struct SheetView: View {
         }
         
         // Create and show ShazamStream
-        let stream = ShazamStream(mediaItem: mediaItem, location: location.currentLocation!, placemark: location.currentPlacemark)
+        let stream = ShazamStream(mediaItem: mediaItem, location: location.currentLocation!, placemark: location.currentPlacemark, modelContext: modelContext)
         modelContext.insert(stream)
         view.stream = stream
     }

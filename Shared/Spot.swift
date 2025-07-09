@@ -41,7 +41,7 @@ enum SpotType: Codable {
         self.updatedAt = .now
     }
     
-    init(locationFrom: ShazamStream, type: SpotType, streams: [ShazamStream]) {
+    init(locationFrom: ShazamStream, type: SpotType, streams: [ShazamStream], modelContext: ModelContext) {
         self.name = ""
         self.type = type
         self.iconName = ""
@@ -55,6 +55,10 @@ enum SpotType: Codable {
         self.state = locationFrom.state
         self.country = locationFrom.country
         self.countryCode = locationFrom.countryCode
+        
+        Task {
+            appendNearbyShazamStreams(modelContext)
+        }
     }
 }
 
@@ -82,6 +86,35 @@ extension Spot {
         
         Task {
             await music.play(ids: trackIds ?? [])
+        }
+    }
+    
+    /// Save ShazamStreams within a close nearby area to the Spot
+    /// Queries for lat/long within three decimal sig figs of precision
+    public func appendNearbyShazamStreams(_ context: ModelContext) {
+        // Only SpotType.place groups by location
+        if type != .place { return }
+        
+        let precision = 0.001
+        let halfPrecision = precision / 2
+
+        let latMin = latitude - halfPrecision
+        let latMax = latitude + halfPrecision
+        let lonMin = longitude - halfPrecision
+        let lonMax = longitude + halfPrecision
+        
+        let predicate = #Predicate<ShazamStream> {
+            $0.latitude >= latMin && $0.latitude < latMax &&
+                $0.longitude >= lonMin && $0.longitude < lonMax && $0.spot == nil
+        }
+            
+        let fetchDescriptor = FetchDescriptor<ShazamStream>(predicate: predicate)
+        
+        do {
+            let streams = try context.fetch(fetchDescriptor)
+            shazamStreams?.append(contentsOf: streams)
+        } catch {
+            print(error.localizedDescription)
         }
     }
 
