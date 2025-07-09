@@ -81,6 +81,7 @@ struct SongRow: View {
 
 struct SongRowMini: View {
     @Environment(SheetProvider.self) var view
+    @Environment(MusicProvider.self) private var music
     
     var stream: ShazamStream
     
@@ -133,10 +134,11 @@ struct SongRowMini: View {
             Divider()
                 
             Button(action: {
-                view.stream = stream
-                view.spot = nil
+                Task {
+                    await music.play(ids: [stream.appleMusicID ?? ""])
+                }
             }) {
-                Label("View", systemImage: "arrow.up.forward")
+                Label("Play", systemImage: "play.fill")
             }
         }
     }

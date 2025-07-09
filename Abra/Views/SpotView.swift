@@ -47,7 +47,12 @@ struct SpotView: View {
                 if !minimized {
                     List {
                         ForEach(spot.shazamStreams!) { stream in
-                            SongRowMini(stream: stream)
+                            Button(action: {
+                                view.stream = stream
+                                view.spot = nil
+                            }) {
+                                SongRowMini(stream: stream)
+                            }
                         }
                         .listRowBackground(Color.clear)
                     }
