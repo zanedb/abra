@@ -29,5 +29,6 @@ struct abraApp: App {
         }
             .modelContainer(for: ShazamStream.self)
             .modelContainer(for: Spot.self)
+            .modelContainer(for: Event.self)
     }
 }

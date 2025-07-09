@@ -35,6 +35,7 @@ import SwiftData
     var countryCode: String?
     
     var spot: Spot?
+    var event: Event?
     
     init(title: String = "", artist: String = "", isExplicit: Bool = false, artworkURL: URL = URL(string: "https://upload.wikimedia.org/wikipedia/en/c/cf/Denzel_Curry_-_Melt_My_Eyez_See_Your_Future.png")!, latitude: Double = 37.721941, longitude: Double = -122.4739084) {
         self.title = title
@@ -133,7 +134,7 @@ extension ShazamStream {
     public var description: String {
         let date = self.date
         
-        return "\(date) \(self.place)"
+        return "\(date) \(place)"
     }
     
     // TODO: guess transport modality by speed

@@ -37,8 +37,8 @@ struct SpotsList: View {
                             spotView(spot)
                         }
                     }
-                    .padding(.leading, 5)
-                    .padding(.horizontal, 10)
+                    .padding(4)
+                    .padding(.leading, 8)
                 }
                 .frame(maxHeight: 96)
                 .background(.background)
@@ -53,7 +53,6 @@ struct SpotsList: View {
         } label: {
             VStack(alignment: .center) {
                 Image(systemName: spot.iconName == "" ? "exclamationmark.triangle" : spot.iconName)
-                    .resizable()
                     .frame(width: 20, height: 20)
                     .padding(12)
                     .foregroundColor(.white)

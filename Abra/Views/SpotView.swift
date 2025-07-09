@@ -11,31 +11,56 @@ struct SpotView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(SheetProvider.self) private var view
     @Environment(MusicProvider.self) private var music
-
+    
     @Bindable var spot: Spot
-
+    
     @State private var minimized: Bool = false
     @State private var showingIconPicker: Bool = false
     @State private var showingHeader: Bool
-
+    @State private var selectedEvent: Event?
+    
     init(spot: Spot) {
         self.spot = spot
         _showingHeader = State(initialValue: spot.name != "" && spot.iconName != "")
     }
-
-    private var count: Int {
-        spot.shazamStreams?.count ?? 0
+    
+    private var songCount: Int {
+        spot.shazamStreamsByEvent(selectedEvent).count
     }
-
+    
+    private var eventCount: Int {
+        spot.events?.count ?? 0
+    }
+    
+    private var headerTitle: String {
+        "\(songCount) Song\(songCount != 1 ? "s" : "")"
+    }
+    
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
                 if showingHeader {
                     heading
                         .padding(.top, -40)
-
+                    
                     if !minimized {
-                        Text("\(count) Song\(count != 1 ? "s" : "")")
+                        if eventCount > 0 {
+                            Text("\(eventCount) Event\(eventCount != 1 ? "s" : "")")
+                                .font(.subheadline)
+                                .bold()
+                                .foregroundColor(.gray)
+                                .padding(.horizontal)
+                                .padding(.top, 12)
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack {
+                                    events
+                                }
+                                .padding(.horizontal)
+                            }
+                        }
+                        
+                        Text(headerTitle)
                             .font(.subheadline)
                             .bold()
                             .foregroundColor(.gray)
@@ -43,10 +68,10 @@ struct SpotView: View {
                             .padding(.top, 12)
                     }
                 }
-
+                
                 if !minimized {
                     List {
-                        ForEach(spot.shazamStreams!) { stream in
+                        ForEach(spot.shazamStreamsByEvent(selectedEvent)) { stream in
                             Button(action: {
                                 view.stream = stream
                                 view.spot = nil
@@ -60,7 +85,7 @@ struct SpotView: View {
                     .listStyle(.plain)
                 }
             }
-            .navigationTitle(showingHeader ? "" : "\(count) Song\(count != 1 ? "s" : "")")
+            .navigationTitle(showingHeader ? "" : headerTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if !showingHeader {
@@ -70,7 +95,7 @@ struct SpotView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     HStack(spacing: -2) {
-                        Button(action: { spot.play(music) }) {
+                        Button(action: play) {
                             Image(systemName: "play.circle.fill")
                                 .foregroundColor(.gray)
                                 .font(.system(size: 24))
@@ -102,7 +127,7 @@ struct SpotView: View {
             minimized = ($0.height < 100) ? true : false
         }
     }
-
+    
     private var heading: some View {
         HStack {
             Button(action: { showingIconPicker.toggle() }) {
@@ -128,10 +153,44 @@ struct SpotView: View {
         .padding(.horizontal)
         .padding(.vertical, 8)
     }
+    
+    private var events: some View {
+        ForEach(spot.events!) { event in
+            Button(action: {
+                withAnimation {
+                    selectedEvent = selectedEvent == event ? nil : event
+                }
+            }) {
+                Text(event.name)
+                    .font(.headline)
+                    .padding(12)
+                    .background {
+                        if selectedEvent == event {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.primary)
+                        } else {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(.background)
+                        }
+                    }
+            }
+            .contextMenu {
+                Button(role: .destructive, action: { modelContext.delete(event) }, label: {
+                    Label("Remove", systemImage: "trash")
+                })
+            }
+        }
+    }
 
     private func edit() {
         withAnimation {
             showingHeader.toggle()
+        }
+    }
+    
+    private func play() {
+        Task {
+            await music.play(ids: spot.shazamStreamsByEvent(selectedEvent).compactMap(\.appleMusicID))
         }
     }
 }

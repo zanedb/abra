@@ -24,8 +24,11 @@ enum SpotType: Codable {
     var country: String?
     var countryCode: String?
 
-    @Relationship(deleteRule: .nullify)
+    @Relationship(deleteRule: .nullify, inverse: \ShazamStream.spot)
     var shazamStreams: [ShazamStream]? = [ShazamStream]()
+    
+    @Relationship(deleteRule: .cascade, inverse: \Event.spot)
+    var events: [Event]? = [Event]()
 
     var createdAt: Date = Date.now
     var updatedAt: Date = Date.now
@@ -78,7 +81,7 @@ extension Spot {
     /// Plays the Spot's contents; optionally shuffle
     /// In the future, will play a station based on Spot's Shazams
     public func play(_ music: MusicProvider, shuffle: Bool = false) {
-        var trackIds = self.shazamStreams?.compactMap(\.appleMusicID)
+        var trackIds = shazamStreams?.compactMap(\.appleMusicID)
         
         if shuffle {
             trackIds?.shuffle()
@@ -116,6 +119,13 @@ extension Spot {
         } catch {
             print(error.localizedDescription)
         }
+    }
+    
+    /// Returns ShazamStreams at a Spot, in an event, OR all if event is nil
+    public func shazamStreamsByEvent(_ event: Event?) -> [ShazamStream] {
+        if event == nil { return shazamStreams ?? [] }
+        
+        return shazamStreams?.filter { $0.event == event } ?? []
     }
 
     static var preview: Spot {
