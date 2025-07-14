@@ -46,9 +46,7 @@ struct Photos: View {
 
     private var heading: some View {
         Text("Moments")
-            .foregroundColor(.gray)
-            .bold()
-            .font(.system(size: 15))
+            .subheading()
             .padding(.horizontal)
             .padding(.top, 8)
     }

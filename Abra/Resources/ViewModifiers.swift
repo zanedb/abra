@@ -34,4 +34,9 @@ extension View {
     func prefersEdgeAttachedInCompactHeight() -> some View {
         modifier(EdgeAttachedInCompactHeight())
     }
+    
+    /// Subheading style, used in "Discovered," "Moments," etc.
+    func subheading() -> some View {
+        self.font(.system(size: 15, weight: .medium))
+    }
 }

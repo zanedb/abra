@@ -50,10 +50,10 @@ struct SongDetail: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Discovered")
-                .foregroundColor(.gray)
-                .bold()
-                .font(.system(size: 15))
+            HStack {
+                Text("Discovered")
+                    .subheading()
+            }
         
             ZStack(alignment: .leading) {
                 Rectangle()
