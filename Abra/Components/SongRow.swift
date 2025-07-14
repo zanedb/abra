@@ -129,16 +129,14 @@ struct SongRowMini: View {
                 ShareLink(item: stream.appleMusicURL!) {
                     Label("Share", systemImage: "square.and.arrow.up")
                 }
-            }
                 
-            Divider()
-                
-            Button(action: {
-                Task {
-                    await music.play(ids: [stream.appleMusicID ?? ""])
-                }
-            }) {
-                Label("Play", systemImage: "play.fill")
+                Divider()
+                    
+                Button("Play", systemImage: "play.fill", action: {
+                    Task {
+                        await music.play(ids: [stream.appleMusicID ?? ""])
+                    }
+                })
             }
         }
     }
