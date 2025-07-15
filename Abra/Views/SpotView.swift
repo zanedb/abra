@@ -12,6 +12,8 @@ struct SpotView: View {
     @Environment(SheetProvider.self) private var view
     @Environment(MusicProvider.self) private var music
     
+    @Namespace var animation
+    
     @Bindable var spot: Spot
     
     @State private var minimized: Bool = false
@@ -109,7 +111,7 @@ struct SpotView: View {
                 }
             }
             .popover(isPresented: $showingIconPicker) {
-                IconPicker(symbol: $spot.symbol, color: $spot.color)
+                IconPicker(symbol: $spot.symbol, color: $spot.color, animation: animation, id: spot.persistentModelID)
                     .presentationDetents([.fraction(0.999)])
                     .presentationBackground(.thickMaterial)
             }
@@ -131,9 +133,8 @@ struct SpotView: View {
     private var heading: some View {
         HStack {
             Button(action: { showingIconPicker.toggle() }) {
-                SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: 80)
-                    .scaleEffect(minimized ? 0.5 : 1)
-                    .frame(maxWidth: minimized ? 40 : 80, maxHeight: minimized ? 40 : 80)
+                SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: minimized ? 40 : 80)
+                    .matchedTransitionSource(id: spot.id, in: animation)
             }
             VStack(alignment: .leading, spacing: 0) {
                 TextField("Name", text: $spot.name)

@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftData
 
 struct IconCollection: Codable, Identifiable {
     let id: Int
@@ -17,6 +18,9 @@ struct IconPicker: View {
     
     @Binding public var symbol: String
     @Binding public var color: UIColor
+    
+    var animation: Namespace.ID
+    var id: PersistentIdentifier
     
     @State private var searchText = ""
     
@@ -35,9 +39,11 @@ struct IconPicker: View {
         return collections
     }
     
-    public init(symbol: Binding<String>, color: Binding<UIColor>) {
+    public init(symbol: Binding<String>, color: Binding<UIColor>, animation: Namespace.ID, id: PersistentIdentifier) {
         _symbol = symbol
         _color = color
+        self.animation = animation
+        self.id = id
         
         collections = fetchSymbols()
     }
@@ -47,6 +53,7 @@ struct IconPicker: View {
             ScrollView {
                 Wrapper {
                     SpotIcon(symbol: symbol, color: Color(color), size: 96)
+                        .navigationTransition(.zoom(sourceID: id, in: animation))
                 }
                     
                 Wrapper {
@@ -113,7 +120,7 @@ struct IconPicker: View {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 48, maximum: 64))]) {
                     ForEach(collection.contents.filter { searchText.isEmpty ? true : $0.localizedCaseInsensitiveContains(searchText) }, id: \.self) { thisSymbol in
                         Button {
-                            withAnimation(.linear(duration: 0.15)) { symbol = thisSymbol }
+                            symbol = thisSymbol
                         } label: {
                             Image(systemName: thisSymbol)
                                 .font(.system(size: 24))
@@ -134,10 +141,11 @@ struct IconPicker: View {
 #Preview {
     @Previewable @State var symbol = ""
     @Previewable @State var color = UIColor.systemIndigo
+    @Previewable @Namespace var animation
     
     VStack {}
         .popover(isPresented: .constant(true)) {
-            IconPicker(symbol: $symbol, color: $color)
+            IconPicker(symbol: $symbol, color: $color, animation: animation, id: Spot.preview.id)
                 .presentationDetents([.fraction(0.999)])
                 .presentationBackground(.thickMaterial)
         }
