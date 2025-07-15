@@ -19,7 +19,6 @@ struct SpotIcon: View {
             .frame(width: size, height: size)
             .background(symbol == "" ? .gray.opacity(0.20) : color)
             .clipShape(Circle())
-            .padding(.trailing, 5)
     }
 }
 

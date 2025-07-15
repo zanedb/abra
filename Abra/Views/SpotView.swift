@@ -135,6 +135,7 @@ struct SpotView: View {
             Button(action: { showingIconPicker.toggle() }) {
                 SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: minimized ? 40 : 80)
                     .matchedTransitionSource(id: spot.id, in: animation)
+                    .padding(.trailing, minimized ? 2 : 4)
             }
             VStack(alignment: .leading, spacing: 0) {
                 TextField("Name", text: $spot.name)
@@ -144,6 +145,10 @@ struct SpotView: View {
                 Text(spot.type == .place ? spot.cityState : "Vehicle")
                     .font(.subheadline)
                     .foregroundColor(.gray)
+//                Picker(spot.type == .place ? spot.cityState : "Vehicle", selection: $spot.type) {
+//                    Text("Place").tag(SpotType.place)
+//                    Text("Vehicle").tag(SpotType.vehicle)
+//                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
