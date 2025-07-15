@@ -4,8 +4,8 @@
 //
 
 import Foundation
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct IconCollection: Codable, Identifiable {
     let id: Int
@@ -61,7 +61,11 @@ struct IconPicker: View {
                 }
                     
                 Wrapper {
-                    symbolGrid
+                    if searchText.isEmpty {
+                        symbolGrid
+                    } else {
+                        searchResults
+                    }
                 }
             }
             .scrollIndicators(.hidden)
@@ -118,23 +122,35 @@ struct IconPicker: View {
                     .font(.subheading)
                 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 48, maximum: 64))]) {
-                    ForEach(collection.contents.filter { searchText.isEmpty ? true : $0.localizedCaseInsensitiveContains(searchText) }, id: \.self) { thisSymbol in
-                        Button {
-                            symbol = thisSymbol
-                        } label: {
-                            Image(systemName: thisSymbol)
-                                .font(.system(size: 24))
-                                .frame(width: 48, height: 48)
-                                .background(thisSymbol == symbol ? Color.secondary.opacity(0.2) : Color.clear)
-                                .foregroundStyle(thisSymbol == symbol ? .secondary : .secondary)
-                                .cornerRadius(8)
-                        }
-                        .buttonStyle(.plain)
+                    ForEach(collection.contents, id: \.self) { thisSymbol in
+                        iconButton(thisSymbol)
                     }
                 }
                 .padding(.bottom, 8)
             }
         }
+    }
+    
+    private var searchResults: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 48, maximum: 64))]) {
+            ForEach(Array(Set(collections.flatMap(\.contents))).filter { $0.localizedCaseInsensitiveContains(searchText) }, id: \.self) { thisSymbol in
+                iconButton(thisSymbol)
+            }
+        }
+    }
+    
+    private func iconButton(_ thisSymbol: String) -> some View {
+        Button {
+            symbol = thisSymbol
+        } label: {
+            Image(systemName: thisSymbol)
+                .font(.system(size: 24))
+                .frame(width: 48, height: 48)
+                .background(thisSymbol == symbol ? Color.secondary.opacity(0.2) : Color.clear)
+                .foregroundStyle(thisSymbol == symbol ? .secondary : .secondary)
+                .cornerRadius(8)
+        }
+        .buttonStyle(.plain)
     }
 }
 
