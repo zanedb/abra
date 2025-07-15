@@ -1,5 +1,5 @@
 //
-//  IconPicker.swift
+//  IconDesigner.swift
 //  Abra
 //
 
@@ -13,7 +13,7 @@ struct IconCollection: Codable, Identifiable {
     let contents: [String]
 }
 
-struct IconPicker: View {
+struct IconDesigner: View {
     @Environment(\.dismiss) private var dismiss
     
     @Binding public var symbol: String
@@ -32,7 +32,7 @@ struct IconPicker: View {
               let collections = try? JSONDecoder().decode([IconCollection].self, from: Data(contentsOf: URL(fileURLWithPath: path)))
         else {
             #if DEBUG
-            assertionFailure("[IconPicker] Failed to load bundle resource file.")
+            assertionFailure("[IconDesigner] Failed to load bundle resource file.")
             #endif
             return []
         }
@@ -161,7 +161,7 @@ struct IconPicker: View {
     
     VStack {}
         .popover(isPresented: .constant(true)) {
-            IconPicker(symbol: $symbol, color: $color, animation: animation, id: Spot.preview.id)
+            IconDesigner(symbol: $symbol, color: $color, animation: animation, id: Spot.preview.id)
                 .presentationDetents([.fraction(0.999)])
                 .presentationBackground(.thickMaterial)
         }

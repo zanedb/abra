@@ -17,7 +17,7 @@ struct SpotView: View {
     @Bindable var spot: Spot
     
     @State private var minimized: Bool = false
-    @State private var showingIconPicker: Bool = false
+    @State private var showingIconDesigner: Bool = false
     @State private var showingHeader: Bool
     @State private var selectedEvent: Event?
     
@@ -110,8 +110,8 @@ struct SpotView: View {
                     }
                 }
             }
-            .popover(isPresented: $showingIconPicker) {
-                IconPicker(symbol: $spot.symbol, color: $spot.color, animation: animation, id: spot.persistentModelID)
+            .popover(isPresented: $showingIconDesigner) {
+                IconDesigner(symbol: $spot.symbol, color: $spot.color, animation: animation, id: spot.persistentModelID)
                     .presentationDetents([.fraction(0.999)])
                     .presentationBackground(.thickMaterial)
             }
@@ -132,7 +132,7 @@ struct SpotView: View {
     
     private var heading: some View {
         HStack {
-            Button(action: { showingIconPicker.toggle() }) {
+            Button(action: { showingIconDesigner.toggle() }) {
                 SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: minimized ? 40 : 80)
                     .matchedTransitionSource(id: spot.id, in: animation)
                     .padding(.trailing, minimized ? 2 : 4)
