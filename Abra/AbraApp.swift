@@ -22,13 +22,15 @@ struct abraApp: App {
 //        }
 //    }
 
+    init() {
+        ValueTransformer.setValueTransformer(UIColorValueTransformer(), forName: NSValueTransformerName("UIColorValueTransformer"))
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
 //                .environment(\.database, database)
         }
-            .modelContainer(for: ShazamStream.self)
-            .modelContainer(for: Spot.self)
-            .modelContainer(for: Event.self)
+        .modelContainer(for: [ShazamStream.self, Spot.self, Event.self])
     }
 }

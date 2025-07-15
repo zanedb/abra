@@ -52,11 +52,13 @@
 		2FB9AF012A3193F5003C7A21 /* SongSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB9AF002A3193F5003C7A21 /* SongSheet.swift */; };
 		2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */; };
 		2FC1E0952A622A7B00EF92D4 /* IconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC1E0942A622A7B00EF92D4 /* IconPicker.swift */; };
-		2FC1E0982A622BA800EF92D4 /* sfsymbols.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2FC1E0972A622BA800EF92D4 /* sfsymbols.txt */; };
 		2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC675622A3FACD200FD7638 /* SearchBar.swift */; };
 		2FC8CCEF2AC399B600523478 /* SectionedQuery in Frameworks */ = {isa = PBXBuildFile; productRef = 2FC8CCEE2AC399B600523478 /* SectionedQuery */; };
 		2FDBA45C2E0DDFBA00552D44 /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FDBA45B2E0DDFB800552D44 /* ViewModifiers.swift */; };
 		2FE766D22A30515E00952513 /* SongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE766D12A30515E00952513 /* SongRow.swift */; };
+		2FE893732E25BF9200244DEF /* sfsymbols.json in Resources */ = {isa = PBXBuildFile; fileRef = 2FE893722E25BF8F00244DEF /* sfsymbols.json */; };
+		2FE893752E25D12100244DEF /* SpotIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE893742E25D12000244DEF /* SpotIcon.swift */; };
+		2FE893782E25D92100244DEF /* Wrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE893772E25D92100244DEF /* Wrapper.swift */; };
 		2FEACDF72C7317AF00F79E2D /* LibraryProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEACDF62C7317AF00F79E2D /* LibraryProvider.swift */; };
 		2FEACDFB2C7320B000F79E2D /* Thumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */; };
 		2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FF310C92A4A6DE900DA2A80 /* Searching.swift */; };
@@ -145,11 +147,13 @@
 		2FB9AF002A3193F5003C7A21 /* SongSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongSheet.swift; sourceTree = "<group>"; };
 		2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetView.swift; sourceTree = "<group>"; };
 		2FC1E0942A622A7B00EF92D4 /* IconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPicker.swift; sourceTree = "<group>"; };
-		2FC1E0972A622BA800EF92D4 /* sfsymbols.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = sfsymbols.txt; sourceTree = "<group>"; };
 		2FC675622A3FACD200FD7638 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		2FD8448B2A2F089000B67301 /* Abra.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Abra.entitlements; sourceTree = "<group>"; };
 		2FDBA45B2E0DDFB800552D44 /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
 		2FE766D12A30515E00952513 /* SongRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongRow.swift; sourceTree = "<group>"; };
+		2FE893722E25BF8F00244DEF /* sfsymbols.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = sfsymbols.json; sourceTree = "<group>"; };
+		2FE893742E25D12000244DEF /* SpotIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotIcon.swift; sourceTree = "<group>"; };
+		2FE893772E25D92100244DEF /* Wrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wrapper.swift; sourceTree = "<group>"; };
 		2FEACDF62C7317AF00F79E2D /* LibraryProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryProvider.swift; sourceTree = "<group>"; };
 		2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thumbnail.swift; sourceTree = "<group>"; };
 		2FF310C92A4A6DE900DA2A80 /* Searching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Searching.swift; sourceTree = "<group>"; };
@@ -328,8 +332,8 @@
 		2FC1E0962A622B9500EF92D4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				2FE893722E25BF8F00244DEF /* sfsymbols.json */,
 				2FDBA45B2E0DDFB800552D44 /* ViewModifiers.swift */,
-				2FC1E0972A622BA800EF92D4 /* sfsymbols.txt */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -337,6 +341,7 @@
 		2FE766D02A30512400952513 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				2FE893772E25D92100244DEF /* Wrapper.swift */,
 				2F736BB82DBD8D020078F1BB /* Toast.swift */,
 				2FB5FA2E2DB883FF00EFD901 /* Annotations.swift */,
 				2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */,
@@ -346,6 +351,7 @@
 				2FE766D12A30515E00952513 /* SongRow.swift */,
 				2FB9AF002A3193F5003C7A21 /* SongSheet.swift */,
 				2F3DAB732DA79C61001004B9 /* SongInfo.swift */,
+				2FE893742E25D12000244DEF /* SpotIcon.swift */,
 				2FAF74B62E0C55AA003D246C /* SongDetail.swift */,
 				2F8919EF2A4442BA0012DFF6 /* SpotsList.swift */,
 				2FC1E0942A622A7B00EF92D4 /* IconPicker.swift */,
@@ -509,8 +515,8 @@
 			files = (
 				2F4BE1D22D7FA059006AFFC2 /* .gitignore in Resources */,
 				2F6093772A2EDFB50092A6DD /* Preview Assets.xcassets in Resources */,
+				2FE893732E25BF9200244DEF /* sfsymbols.json in Resources */,
 				2F6093742A2EDFB50092A6DD /* Assets.xcassets in Resources */,
-				2FC1E0982A622BA800EF92D4 /* sfsymbols.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -548,6 +554,7 @@
 				2F3DAB7F2DA9CEF1001004B9 /* RoundedButton.swift in Sources */,
 				2F6093A22A2EEC960092A6DD /* ContentView.swift in Sources */,
 				2F736BBF2DC05A6C0078F1BB /* ToastProvider.swift in Sources */,
+				2FE893782E25D92100244DEF /* Wrapper.swift in Sources */,
 				2F736BBB2DBD9E120078F1BB /* ShazamProvider.swift in Sources */,
 				2FC1E0952A622A7B00EF92D4 /* IconPicker.swift in Sources */,
 				2F3DAB792DA8C361001004B9 /* Utils.swift in Sources */,
@@ -567,6 +574,7 @@
 				2FAF74B72E0C55AD003D246C /* SongDetail.swift in Sources */,
 				2F736BBD2DC04ED20078F1BB /* LocationProvider.swift in Sources */,
 				2FB5FA2F2DB8840100EFD901 /* Annotations.swift in Sources */,
+				2FE893752E25D12100244DEF /* SpotIcon.swift in Sources */,
 				2FEACDFB2C7320B000F79E2D /* Thumbnail.swift in Sources */,
 				2F8AC5B72E1DCD9000162760 /* Event.swift in Sources */,
 				2FB5FA2D2DB877F300EFD901 /* MapProvider.swift in Sources */,

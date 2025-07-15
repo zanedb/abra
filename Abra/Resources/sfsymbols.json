@@ -1,0 +1,72 @@
+[
+    {
+        "id": 0,
+        "title": "Transportation",
+        "contents": [
+            "car.fill",
+            "car.2.fill",
+            "bolt.car.fill",
+            "bus.fill",
+            "bus.doubledecker.fill",
+            "tram.fill",
+            "tram.fill.tunnel",
+            "bicycle",
+            "motorcycle.fill",
+            "airplane",
+            "sailboat.fill",
+            "fuelpump.fill",
+            "figure.walk",
+            "figure.wave",
+            "moped.fill",
+            "scooter",
+            "airplane.arrival",
+            "airplane.departure",
+            "cablecar.fill",
+            "lightrail.fill",
+            "ferry.fill",
+            "truck.box.fill",
+            "ev.charger.fill"
+        ]
+    },
+    {
+        "id": 1,
+        "title": "Automotive",
+        "contents": [
+            "car.fill",
+            "car.2.fill",
+            "bolt.car.fill",
+            "fuelpump.fill",
+            "key.fill",
+            "gauge.with.dots.needle.bottom.50percent",
+            "gauge.with.dots.needle.67percent",
+            "exclamationmark.triangle.fill",
+            "fan.fill",
+            "horn.fill",
+            "snowflake",
+            "ev.charger.fill",
+            "road.lanes",
+            "book.and.wrench.fill",
+            "key.radiowaves.forward.fill"
+        ]
+    },
+    {
+        "id": 2,
+        "title": "Objects & Tools",
+        "contents": []
+    },
+    {
+        "id": 3,
+        "title": "Home",
+        "contents": []
+    },
+    {
+        "id": 4,
+        "title": "Human",
+        "contents": []
+    },
+    {
+        "id": 5,
+        "title": "Symbols",
+        "contents": []
+    }
+]

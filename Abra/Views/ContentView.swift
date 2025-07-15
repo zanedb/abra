@@ -153,6 +153,7 @@ struct ContentView: View {
             .environment(music)
             .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $sheet.detent)
             .presentationInspector()
+            .interactiveDismissDisabled()
             .prefersEdgeAttachedInCompactHeight()
     }
 }

@@ -21,7 +21,7 @@ struct SpotView: View {
     
     init(spot: Spot) {
         self.spot = spot
-        _showingHeader = State(initialValue: spot.name != "" && spot.iconName != "")
+        _showingHeader = State(initialValue: spot.name != "" && spot.symbol != "")
     }
     
     private var songCount: Int {
@@ -70,14 +70,12 @@ struct SpotView: View {
                 }
                 
                 if !minimized {
-                    List {
-                        ForEach(spot.shazamStreamsByEvent(selectedEvent)) { stream in
-                            Button(action: {
-                                view.stream = stream
-                                view.spot = nil
-                            }) {
-                                SongRowMini(stream: stream)
-                            }
+                    List(spot.shazamStreamsByEvent(selectedEvent)) { stream in
+                        Button(action: {
+                            view.stream = stream
+                            view.spot = nil
+                        }) {
+                            SongRowMini(stream: stream)
                         }
                         .listRowBackground(Color.clear)
                     }
@@ -111,12 +109,14 @@ struct SpotView: View {
                 }
             }
             .popover(isPresented: $showingIconPicker) {
-                IconPicker(symbol: $spot.iconName)
+                IconPicker(symbol: $spot.symbol, color: $spot.color)
+                    .presentationDetents([.fraction(0.999)])
+                    .presentationBackground(.thickMaterial)
             }
             .onDisappear {
                 // Destroy Spot if not saved
                 // TODO: test if there are cases where this isn't triggered
-                if spot.name == "" || spot.iconName == "" {
+                if spot.name == "" || spot.symbol == "" {
                     modelContext.delete(spot)
                 }
             }
@@ -131,13 +131,9 @@ struct SpotView: View {
     private var heading: some View {
         HStack {
             Button(action: { showingIconPicker.toggle() }) {
-                Image(systemName: spot.iconName == "" ? "plus.circle.fill" : spot.iconName)
-                    .font(.system(size: minimized ? 12 : spot.iconName == "" ? 24 : 28))
-                    .frame(width: minimized ? 40 : 80, height: minimized ? 40 : 80)
-                    .foregroundColor(.white)
-                    .background(spot.iconName == "" ? .gray.opacity(0.20) : .indigo)
-                    .clipShape(Circle())
-                    .padding(.trailing, 5)
+                SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: 80)
+                    .scaleEffect(minimized ? 0.5 : 1)
+                    .frame(maxWidth: minimized ? 40 : 80, maxHeight: minimized ? 40 : 80)
             }
             VStack(alignment: .leading, spacing: 0) {
                 TextField("Name", text: $spot.name)
@@ -197,7 +193,7 @@ struct SpotView: View {
 
 #Preview {
     @Previewable @State var view = SheetProvider()
-    @Previewable var spot = Spot(name: "Me", type: .place, iconName: "play", latitude: ShazamStream.preview.latitude, longitude: ShazamStream.preview.longitude, shazamStreams: [.preview, .preview])
+    @Previewable var spot = Spot(name: "Me", type: .place, symbol: "play", latitude: ShazamStream.preview.latitude, longitude: ShazamStream.preview.longitude, shazamStreams: [.preview, .preview])
 
     Map(initialPosition: .automatic)
         .ignoresSafeArea(.all)

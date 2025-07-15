@@ -52,11 +52,11 @@ struct SpotsList: View {
             view.spot = spot
         } label: {
             VStack(alignment: .center) {
-                Image(systemName: spot.iconName == "" ? "exclamationmark.triangle" : spot.iconName)
+                Image(systemName: spot.symbol == "" ? "exclamationmark.triangle" : spot.symbol)
                     .frame(width: 20, height: 20)
                     .padding(12)
                     .foregroundColor(.white)
-                    .background(.indigo)
+                    .background(Color(spot.color))
                     .cornerRadius(500)
                 Text(spot.name)
                     .font(.system(size: 12))

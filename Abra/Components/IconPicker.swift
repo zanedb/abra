@@ -6,74 +6,139 @@
 import Foundation
 import SwiftUI
 
+struct IconCollection: Codable, Identifiable {
+    let id: Int
+    let title: String
+    let contents: [String]
+}
+
 struct IconPicker: View {
     @Environment(\.dismiss) private var dismiss
     
-    private var symbols: [String] = ["bag", "house", "lightbulb", "lamp.desk"]
+    @Binding public var symbol: String
+    @Binding public var color: UIColor
     
-    private func fetchSymbols() -> [String] {
-        guard let path = Bundle.main.path(forResource: "sfsymbols", ofType: "txt"),
-              let content = try? String(contentsOfFile: path, encoding: .utf8)
+    @State private var searchText = ""
+    
+    private var collections: [IconCollection] = []
+    private var systemColorOptions: [UIColor] = [.systemRed, .systemOrange, .systemYellow, .systemGreen, .systemMint, .systemCyan, .systemBlue, .systemIndigo, .systemPurple, .systemBrown, .systemGray]
+    
+    private func fetchSymbols() -> [IconCollection] {
+        guard let path = Bundle.main.path(forResource: "sfsymbols", ofType: "json"),
+              let collections = try? JSONDecoder().decode([IconCollection].self, from: Data(contentsOf: URL(fileURLWithPath: path)))
         else {
             #if DEBUG
-            assertionFailure("[SymbolPicker] Failed to load bundle resource file.")
+            assertionFailure("[IconPicker] Failed to load bundle resource file.")
             #endif
             return []
         }
-        return content
-            .split(separator: "\n")
-            .map { String($0) }
+        return collections
     }
     
-    @Binding public var symbol: String
-    @State private var searchText = ""
-    
-    public init(symbol: Binding<String>) {
+    public init(symbol: Binding<String>, color: Binding<UIColor>) {
         _symbol = symbol
+        _color = color
         
-        symbols = fetchSymbols()
+        collections = fetchSymbols()
     }
 
     var body: some View {
         NavigationStack {
-            symbolGrid
-                .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
-                .navigationTitle("Choose Icon")
-                .navigationBarTitleDisplayMode(.inline)
+            ScrollView {
+                Wrapper {
+                    SpotIcon(symbol: symbol, color: Color(color), size: 96)
+                }
+                    
+                Wrapper {
+                    colorGrid
+                }
+                    
+                Wrapper {
+                    symbolGrid
+                }
+            }
+            .scrollIndicators(.hidden)
+            .padding(.horizontal)
+            .navigationTitle("Icon")
+            .navigationBarTitleDisplayMode(.inline)
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Symbols")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
+                            .font(.system(size: 24))
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
+            }
+        }
+    }
+    
+    private var colorGrid: some View {
+        let colorBinding = Binding(
+            get: { Color(self.color) },
+            set: { self.color = UIColor($0) }
+        )
+        
+        return LazyVGrid(columns: [GridItem(.adaptive(minimum: 48, maximum: 64))]) {
+            ForEach(systemColorOptions, id: \.self) { color in
+                Circle()
+                    .fill(Color(color))
+                    .frame(width: 48, height: 48)
+                    .onTapGesture {
+                        withAnimation { self.color = color }
+                    }
+                    .overlay {
+                        if self.color == color {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 21, weight: .bold))
+                                .foregroundStyle(.background)
+                        }
+                    }
+            }
+            
+            ColorPicker("Icon Color", selection: colorBinding)
+                .labelsHidden()
+                .scaleEffect(1.8)
         }
     }
     
     private var symbolGrid: some View {
-        ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 64, maximum: 64))]) {
-                ForEach(symbols.filter { searchText.isEmpty ? true : $0.localizedCaseInsensitiveContains(searchText) }, id: \.self) { thisSymbol in
-                    Button {
-                        symbol = thisSymbol
-                        dismiss()
-                    } label: {
-                        icon(thisSymbol, selected: thisSymbol == symbol)
+        VStack(alignment: .leading) {
+            ForEach(collections) { collection in
+                Text(collection.title)
+                    .font(.subheading)
+                
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 48, maximum: 64))]) {
+                    ForEach(collection.contents.filter { searchText.isEmpty ? true : $0.localizedCaseInsensitiveContains(searchText) }, id: \.self) { thisSymbol in
+                        Button {
+                            withAnimation(.linear(duration: 0.15)) { symbol = thisSymbol }
+                        } label: {
+                            Image(systemName: thisSymbol)
+                                .font(.system(size: 24))
+                                .frame(width: 48, height: 48)
+                                .background(thisSymbol == symbol ? Color.secondary.opacity(0.2) : Color.clear)
+                                .foregroundStyle(thisSymbol == symbol ? .secondary : .secondary)
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
-                    .hoverEffect(.lift)
                 }
-            }
-            
-            if (symbols.filter { searchText.isEmpty ? true : $0.localizedCaseInsensitiveContains(searchText) }.isEmpty) {
-                ContentUnavailableView.search(text: searchText)
+                .padding(.bottom, 8)
             }
         }
     }
-    
-    private func icon(_ name: String, selected: Bool) -> some View {
-        Image(systemName: name)
-            .font(.system(size: 24))
-            .frame(maxWidth: .infinity, minHeight: 64)
-            .cornerRadius(8)
-    }
 }
 
-struct IconPicker_Previews: PreviewProvider {
-    static var previews: some View {
-        IconPicker(symbol: .constant(""))
-    }
+#Preview {
+    @Previewable @State var symbol = ""
+    @Previewable @State var color = UIColor.systemIndigo
+    
+    VStack {}
+        .popover(isPresented: .constant(true)) {
+            IconPicker(symbol: $symbol, color: $color)
+                .presentationDetents([.fraction(0.999)])
+                .presentationBackground(.thickMaterial)
+        }
 }

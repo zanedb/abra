@@ -72,7 +72,7 @@ struct SongInfo: View {
                         ForEach(spots) { spot in
                             Button(
                                 spot.name,
-                                systemImage: spot.iconName,
+                                systemImage: spot.symbol,
                                 action: { addToSpot(spot) }
                             )
                         }
@@ -80,7 +80,7 @@ struct SongInfo: View {
                         Image(
                             systemName: stream.spot == nil
                                 ? (type == .place ? "mappin.and.ellipse" : "car.fill")
-                                : stream.spot!.iconName
+                                : stream.spot!.symbol
                         )
                         Text(stream.spot == nil ? "Select" : stream.spot!.name)
                             .lineLimit(1)
