@@ -21,50 +21,47 @@ struct SongRow: View {
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 96, height: 96)
-                .cornerRadius(3.0)
+                .clipShape(.rect(cornerRadius: 3))
                 .padding(.trailing, 5)
             
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .top) {
                     Text(stream.title)
-                        .fontWeight(.bold)
-                        .font(.system(size: 17))
-                        .padding(.bottom, 3)
+                        .font(.system(size: 17, weight: .bold))
                         .lineLimit(2)
                     
                     Spacer()
                     
                     Text(stream.relativeDateTime)
-                        .foregroundColor(Color.gray)
                         .font(.system(size: 13))
+                        .foregroundColor(.secondary)
                 }
+                .padding(.bottom, 3)
+                
                 Text(stream.artist)
-                    .foregroundColor(.gray)
                     .font(.system(size: 14))
+                    .foregroundColor(.secondary)
                     .padding(.bottom, 3)
                 
                 Spacer()
                 
                 Text(stream.cityState)
-                    .foregroundColor(Color.gray)
                     .font(.system(size: 14))
+                    .foregroundColor(.secondary)
             }
-            Spacer()
         }
         .frame(height: 96)
         .contextMenu {
-            if stream.appleMusicURL != nil {
-                Link(destination: stream.appleMusicURL!) {
+            if let appleMusicURL = stream.appleMusicURL {
+                Link(destination: appleMusicURL) {
                     Label("Open in Apple Music", systemImage: "arrow.up.forward.app.fill")
                 }
-                ShareLink(item: stream.appleMusicURL!) {
+                ShareLink(item: appleMusicURL) {
                     Label("Share", systemImage: "square.and.arrow.up")
                 }
                 Divider()
             }
-            Button(role: .destructive, action: { deleteStream() }, label: {
-                Label("Remove", systemImage: "trash")
-            })
+            Button("Remove", systemImage: "trash", role: .destructive, action: deleteStream)
         }
     }
     
@@ -99,22 +96,20 @@ struct SongRowMini: View {
             VStack(alignment: .leading) {
                 HStack {
                     Text(stream.title)
-                        .font(.body)
                         .lineLimit(1)
-                        .padding(.trailing, stream.isExplicit ? -3.0 : 0)
                     if stream.isExplicit {
                         Image(systemName: "e.square.fill")
-                            .padding(.horizontal, 0)
-                            .foregroundColor(Color.gray)
-                            .accessibilityLabel("Explicit")
                             .imageScale(.small)
+                            .foregroundColor(.secondary)
+                            .padding(.leading, -3.0)
+                            .accessibilityLabel("Explicit")
                     }
                 }
                 .padding(.trailing, 16)
                 
                 Text(stream.artist)
                     .font(.subheadline)
-                    .foregroundColor(Color.gray)
+                    .foregroundColor(.secondary)
                     .lineLimit(1)
             }
             
@@ -122,19 +117,20 @@ struct SongRowMini: View {
         }
         .frame(maxHeight: 44)
         .contextMenu {
-            if stream.appleMusicURL != nil {
-                Link(destination: stream.appleMusicURL!) {
+            if let appleMusicURL = stream.appleMusicURL {
+                Link(destination: appleMusicURL) {
                     Label("Open in Apple Music", systemImage: "arrow.up.forward.app.fill")
                 }
-                ShareLink(item: stream.appleMusicURL!) {
+                ShareLink(item: appleMusicURL) {
                     Label("Share", systemImage: "square.and.arrow.up")
                 }
-                
                 Divider()
-                    
+            }
+            
+            if let appleMusicID = stream.appleMusicID {
                 Button("Play", systemImage: "play.fill", action: {
                     Task {
-                        await music.play(ids: [stream.appleMusicID ?? ""])
+                        await music.play(id: appleMusicID)
                     }
                 })
             }
@@ -143,23 +139,23 @@ struct SongRowMini: View {
 }
 
 #Preview {
-    ModelContainerPreview(PreviewSampleData.inMemoryContainer) {
-        VStack(alignment: .leading) {
-            SongRow(stream: .preview)
-                .padding()
+    VStack(alignment: .leading) {
+        SongRow(stream: .preview)
+            .padding()
             
-            Text("Discovered")
-                .font(.subheadline)
-                .bold()
-                .foregroundColor(.gray)
-                .padding(.horizontal)
-                .padding(.top, 12)
-            EditableList(Binding(get: { [ShazamStream.preview, ShazamStream.preview] }, set: { _ in })) { $stream in
-                SongRowMini(stream: stream)
-            }
-            .listStyle(.plain)
+        Text("Discovered")
+            .font(.subheadline)
+            .bold()
+            .foregroundColor(.gray)
+            .padding(.horizontal)
+            .padding(.top, 12)
+        EditableList(Binding(get: { [ShazamStream.preview, ShazamStream.preview] }, set: { _ in })) { $stream in
+            SongRowMini(stream: stream)
         }
-        .environment(ShazamProvider())
-        .environment(SheetProvider())
+        .listStyle(.plain)
     }
+    .modelContainer(PreviewSampleData.container)
+    .environment(ShazamProvider())
+    .environment(SheetProvider())
+    .environment(MusicProvider())
 }
