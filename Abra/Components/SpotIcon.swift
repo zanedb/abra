@@ -12,9 +12,11 @@ struct SpotIcon: View {
     
     var body: some View {
         Image(systemName: symbol == "" ? "plus.circle.fill" : symbol)
-            .font(.system(size: symbol == "" ? 24 : 28)) // 12 on minimized
-            .frame(width: size, height: size)
+            .resizable()
+            .scaledToFit()
+            .frame(width: size / 2, height: size / 2)
             .foregroundColor(.white)
+            .frame(width: size, height: size)
             .background(symbol == "" ? .gray.opacity(0.20) : color)
             .clipShape(Circle())
             .padding(.trailing, 5)
@@ -23,7 +25,9 @@ struct SpotIcon: View {
 
 #Preview {
     HStack {
-        SpotIcon(symbol: "plus.circle.fill", color: .red)
-        SpotIcon(symbol: "plus.circle.fill", color: .red)
+        SpotIcon(symbol: "key.fill", color: .red, size: 144)
+        SpotIcon(symbol: "plus.circle.fill", color: .red, size: 144)
+        SpotIcon(symbol: "bicycle", color: .red, size: 80)
+        SpotIcon(symbol: "play", color: .red)
     }
 }
