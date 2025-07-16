@@ -21,9 +21,34 @@ struct ShazamAnnotationView: View {
     }
 }
 
+struct ShazamClusterAnnotationView: View {
+    var cluster: MKClusterAnnotation
+    
+    var body: some View {
+        ZStack {
+            KFImage((cluster.memberAnnotations.last as? ShazamAnnotation)?.shazamStream.artworkURL ?? ShazamStream.preview.artworkURL)
+                .resizable()
+                .frame(width: 36, height: 36)
+                .clipShape(Circle())
+                .blur(radius: 4)
+
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Material.regular)
+                .frame(width: 36, height: 36)
+                .clipShape(Circle())
+
+            Text("\(cluster.memberAnnotations.count)")
+                .foregroundStyle(Color.accentColor)
+                .font(.system(size: cluster.memberAnnotations.count > 1000 ? 11 : 14, weight: .semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+    }
+}
+
 struct ClusterAnnotationView: View {
     var cluster: ShazamClusterAnnotation
-//    @State var callout: Bool = false
+    @State var callout: Bool = false
 
     var body: some View {
         ZStack {
@@ -44,16 +69,18 @@ struct ClusterAnnotationView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
-//        .onLongPressGesture {
-//            callout.toggle()
-//        }
-//        .overlay {
-//            if callout {
-//                ClusterCalloutView(action: { print("do it!") }, count: cluster.count)
-//                    .padding(.bottom, 8)
-//                    .offset(y: -75)
-//            }
-//        }
+        .onTapGesture {
+            withAnimation {
+                 callout.toggle()
+            }
+        }
+        .overlay {
+            if callout {
+                ClusterCalloutView(action: { print("do it!") }, count: cluster.count)
+                    .padding(.bottom, 8)
+                    .offset(y: -75)
+            }
+        }
     }
 }
 
@@ -114,6 +141,7 @@ struct ClusterCalloutView: View {
 #Preview("Real Thing") {
     @Previewable @State var position = MapCameraPosition.automatic
 
-    MapView(detent: .constant(.height(65)), sheetSelection: .constant(nil), groupSelection: .constant(nil), shazams: [.preview, .preview, .preview])
+    MapView(detent: .constant(.height(65)), shazams: [.preview, .preview, .preview])
+        .environment(SheetProvider())
         .modelContainer(PreviewSampleData.container)
 }
