@@ -6,8 +6,8 @@
 import ActivityKit
 import os
 import ShazamKit
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 enum ShazamError: Error {
     case sessionNotPrepared
@@ -41,7 +41,7 @@ enum ShazamStatus: Equatable {
 }
 
 /// Shazam API wrapper
-@Observable final class ShazamProvider {    
+@Observable final class ShazamProvider {
     var status: ShazamStatus = .idle
 
     private let session = SHManagedSession()
@@ -120,40 +120,33 @@ enum ShazamStatus: Equatable {
         }
         
         matchingTask = Task {
-            for await result in session.results {
-                if Task.isCancelled {
-                    break
+            let result = await session.result()
+            switch result {
+            case .match(let match):
+                if let mediaItem = match.mediaItems.first {
+                    logger.info("Match found: \(mediaItem.title ?? "unknown")")
+                    status = .matched(mediaItem)
+                    
+                    Task {
+                        do {
+                            try await addToLibrary(mediaItems: match.mediaItems)
+                        } catch {
+                            logger.error("Failed to add to library: \(error.localizedDescription)")
+                        }
+                    }
                 }
                 
-                await MainActor.run {
-                    switch result {
-                    case .match(let match):
-                        if let mediaItem = match.mediaItems.first {
-                            logger.info("Match found: \(mediaItem.title ?? "unknown")")
-                            status = .matched(mediaItem)
-                                        
-                            Task {
-                                do {
-                                    try await addToLibrary(mediaItems: match.mediaItems)
-                                } catch {
-                                    logger.error("Failed to add to library: \(error.localizedDescription)")
-                                }
-                            }
-                        }
-                                    
-                    case .noMatch:
-                        logger.info("No match found")
-                        status = .error(.noMatch)
-                                    
-                    case .error(let error, _):
-                        logger.error("Matching error: \(error.localizedDescription)")
-                        status = .error(.matchFailed(error))
-                    }
-                                
-                    timeoutTask?.cancel()
-                    stopMatching()
-                }
+            case .noMatch:
+                logger.info("No match found")
+                status = .error(.noMatch)
+                
+            case .error(let error, _):
+                logger.error("Matching error: \(error.localizedDescription)")
+                status = .error(.matchFailed(error))
             }
+    
+            timeoutTask?.cancel()
+            stopMatching()
         }
     }
     
