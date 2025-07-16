@@ -10,7 +10,6 @@
 		2F1727442C719B2700EEA500 /* Spot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1727432C719B2700EEA500 /* Spot.swift */; };
 		2F30A7C72DA77EB500DFE607 /* VariableBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */; };
 		2F3DAB722DA785CB001004B9 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F3DAB712DA785CB001004B9 /* Kingfisher */; };
-		2F3DAB742DA79C63001004B9 /* SongInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB732DA79C61001004B9 /* SongInfo.swift */; };
 		2F3DAB772DA89C69001004B9 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB762DA89C67001004B9 /* OnboardingView.swift */; };
 		2F3DAB792DA8C361001004B9 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB782DA8C360001004B9 /* Utils.swift */; };
 		2F3DAB7F2DA9CEF1001004B9 /* RoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB7E2DA9CEEF001004B9 /* RoundedButton.swift */; };
@@ -106,7 +105,6 @@
 /* Begin PBXFileReference section */
 		2F1727432C719B2700EEA500 /* Spot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spot.swift; sourceTree = "<group>"; };
 		2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableBlur.swift; sourceTree = "<group>"; };
-		2F3DAB732DA79C61001004B9 /* SongInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongInfo.swift; sourceTree = "<group>"; };
 		2F3DAB762DA89C67001004B9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		2F3DAB782DA8C360001004B9 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		2F3DAB7E2DA9CEEF001004B9 /* RoundedButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedButton.swift; sourceTree = "<group>"; };
@@ -352,7 +350,6 @@
 				2FC675622A3FACD200FD7638 /* SearchBar.swift */,
 				2FE766D12A30515E00952513 /* SongRow.swift */,
 				2FB9AF002A3193F5003C7A21 /* SongSheet.swift */,
-				2F3DAB732DA79C61001004B9 /* SongInfo.swift */,
 				2FAF74B62E0C55AA003D246C /* SongDetail.swift */,
 				2F8919EF2A4442BA0012DFF6 /* SpotsList.swift */,
 				2FE893742E25D12000244DEF /* SpotIcon.swift */,
@@ -572,7 +569,6 @@
 				2FE766D22A30515E00952513 /* SongRow.swift in Sources */,
 				2FA7D81C2AC0E9780039AD5C /* ModelContainerPreview.swift in Sources */,
 				2F8919F02A4442BA0012DFF6 /* SpotsList.swift in Sources */,
-				2F3DAB742DA79C63001004B9 /* SongInfo.swift in Sources */,
 				2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */,
 				2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */,
 				2FAF74B72E0C55AD003D246C /* SongDetail.swift in Sources */,
