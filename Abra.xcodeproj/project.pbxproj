@@ -59,6 +59,7 @@
 		2FE893732E25BF9200244DEF /* sfsymbols.json in Resources */ = {isa = PBXBuildFile; fileRef = 2FE893722E25BF8F00244DEF /* sfsymbols.json */; };
 		2FE893752E25D12100244DEF /* SpotIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE893742E25D12000244DEF /* SpotIcon.swift */; };
 		2FE893782E25D92100244DEF /* Wrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE893772E25D92100244DEF /* Wrapper.swift */; };
+		2FE8937C2E26EBA700244DEF /* SpotSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE8937B2E26EBA200244DEF /* SpotSelector.swift */; };
 		2FEACDF72C7317AF00F79E2D /* LibraryProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEACDF62C7317AF00F79E2D /* LibraryProvider.swift */; };
 		2FEACDFB2C7320B000F79E2D /* Thumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */; };
 		2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FF310C92A4A6DE900DA2A80 /* Searching.swift */; };
@@ -154,6 +155,7 @@
 		2FE893722E25BF8F00244DEF /* sfsymbols.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = sfsymbols.json; sourceTree = "<group>"; };
 		2FE893742E25D12000244DEF /* SpotIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotIcon.swift; sourceTree = "<group>"; };
 		2FE893772E25D92100244DEF /* Wrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wrapper.swift; sourceTree = "<group>"; };
+		2FE8937B2E26EBA200244DEF /* SpotSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotSelector.swift; sourceTree = "<group>"; };
 		2FEACDF62C7317AF00F79E2D /* LibraryProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryProvider.swift; sourceTree = "<group>"; };
 		2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thumbnail.swift; sourceTree = "<group>"; };
 		2FF310C92A4A6DE900DA2A80 /* Searching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Searching.swift; sourceTree = "<group>"; };
@@ -354,6 +356,7 @@
 				2FAF74B62E0C55AA003D246C /* SongDetail.swift */,
 				2F8919EF2A4442BA0012DFF6 /* SpotsList.swift */,
 				2FE893742E25D12000244DEF /* SpotIcon.swift */,
+				2FE8937B2E26EBA200244DEF /* SpotSelector.swift */,
 				2FC1E0942A622A7B00EF92D4 /* IconDesigner.swift */,
 				2F8908872C73106D0002850C /* Photos.swift */,
 				2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */,
@@ -561,6 +564,7 @@
 				2F8908882C73106D0002850C /* Photos.swift in Sources */,
 				2FEACDF72C7317AF00F79E2D /* LibraryProvider.swift in Sources */,
 				2F9D49532A79CECE002CB9E5 /* SpotView.swift in Sources */,
+				2FE8937C2E26EBA700244DEF /* SpotSelector.swift in Sources */,
 				2FA7D81E2AC0EA240039AD5C /* PreviewSampleData.swift in Sources */,
 				2F4BE1F82D80B6DB006AFFC2 /* ActivityAttributes.swift in Sources */,
 				2F6093702A2EDFB30092A6DD /* AbraApp.swift in Sources */,

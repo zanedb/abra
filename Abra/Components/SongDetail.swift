@@ -10,7 +10,7 @@ struct SongDetail: View {
     @Environment(\.modelContext) var modelContext
     @Environment(SheetProvider.self) private var view
     
-    private var stream: ShazamStream
+    @Bindable var stream: ShazamStream
     
     @Query var identicalShazamStreams: [ShazamStream]
     @Query var spotEvents: [Event]
@@ -42,9 +42,10 @@ struct SongDetail: View {
     }
     
     private var identicalShazamStream: ShazamStream? {
-        identicalShazamStreams.first // TODO: determine if .first makes sense
+        identicalShazamStreams.last // Show most recent
     }
     
+    @State private var showingSpotSelector = false
     @State private var eventAlertShown = false
     @State private var eventName = ""
     
@@ -52,7 +53,15 @@ struct SongDetail: View {
         VStack(alignment: .leading) {
             HStack {
                 Text("Discovered")
-                    .subheading()
+                    .font(.subheading)
+                
+                Spacer()
+                
+                Menu("Edit") {
+                    Button("Location", systemImage: "location.fill", action: editLocation)
+                    Button("Spot", systemImage: "mappin.and.ellipse", action: selectSpot)
+                }
+                .font(.system(size: 13))
             }
         
             ZStack(alignment: .leading) {
@@ -62,36 +71,56 @@ struct SongDetail: View {
                         cornerRadius: 14
                     ))
                 
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            spotSelector
-                                .padding(.bottom, 4)
-                            
-                            if stream.spot != nil {
-                                eventSelector
+                        if let spot = stream.spot {
+                            Button(action: {
+                                view.show(spot)
+                            }) {
+                                SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: 40, renderingMode: .hierarchical)
+                                
+                                Text(spot.name)
+                                    .lineLimit(1)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(Color(spot.color))
                             }
-                            
-                            if !identicalShazamStreams.isEmpty {
-                                previouslyDiscovered
-                            }
+                        } else {
+                            Button("Select", systemImage: "mappin.and.ellipse", action: selectSpot)
                         }
                         
                         Spacer()
                         
                         VStack(alignment: .trailing, spacing: 4) {
                             Text(stream.timestamp, style: .time)
-                                .font(.system(size: 13))
-                                .bold()
-                                .foregroundColor(.secondary)
+                                .font(.system(size: 13, weight: .medium))
                             Text(stream.timestamp, style: .date)
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
                     }
+                    
+                    if !identicalShazamStreams.isEmpty || stream.spot != nil {
+                        HStack {
+                            if !identicalShazamStreams.isEmpty {
+                                previouslyDiscovered
+                            }
+                            
+                            Spacer()
+                            
+                            if stream.spot != nil {
+                                eventSelector
+                            }
+                        }
+                    }
                 }
                 .padding()
             }
+        }
+        .popover(isPresented: $showingSpotSelector) {
+            SpotSelector(selection: $stream.spot, newSpotCallback: { createSpot(type) })
+                .presentationDetents([.fraction(0.50), .fraction(0.999)])
+                .presentationBackground(.thickMaterial)
+                .presentationBackgroundInteraction(.enabled)
         }
         .alert("Add an event", isPresented: $eventAlertShown) {
             TextField("Name", text: $eventName)
@@ -99,36 +128,6 @@ struct SongDetail: View {
             Button("OK", action: newEvent)
         } message: {
             Text("[This UI is temporary.]")
-        }
-    }
-    
-    private var spotSelector: some View {
-        Menu {
-            Button(
-                "New \(type == .place ? "Spot" : "Vehicle")",
-                systemImage: "plus",
-                action: { newSpot(type) }
-            )
-            
-            Divider()
-            
-            ForEach(spots) { spot in
-                Button(
-                    spot.name,
-                    systemImage: stream.spot == spot ? "checkmark" : spot.iconName,
-                    action: { addToSpot(spot) }
-                )
-            }
-        } label: {
-            Image(
-                systemName: stream.spot == nil
-                    ? (type == .place ? "mappin.and.ellipse" : "car.fill")
-                    : stream.spot!.iconName
-            )
-            Text(stream.spot == nil ? "Select" : stream.spot!.name)
-                .lineLimit(1)
-                .fontWeight(.medium)
-                .padding(.leading, -3)
         }
     }
     
@@ -170,21 +169,11 @@ struct SongDetail: View {
         }
     }
     
-    private func newSpot(_ type: SpotType) {
-        // Dismiss song sheet
-        let selected = view.stream
-        view.stream = nil
-           
-        // Create new Spot, insert into modelContext, and open for immediate editing
-        let spot = Spot(locationFrom: selected!, type: type, streams: [selected!], modelContext: modelContext)
-        modelContext.insert(spot)
-        view.spot = spot
+    private func selectSpot() {
+        showingSpotSelector.toggle()
     }
     
-    private func addToSpot(_ spot: Spot) {
-        // Set or clear spot
-        stream.spot = stream.spot == spot ? nil : spot
-    }
+    private func editLocation() {}
     
     private func newEvent() {
         let event = Event(name: eventName, spot: stream.spot!, shazamStreams: [stream])
@@ -194,6 +183,14 @@ struct SongDetail: View {
     private func addToEvent(_ event: Event) {
         // Set or clear event
         stream.event = stream.event == event ? nil : event
+    }
+    
+    private func createSpot(_ type: SpotType) {
+        showingSpotSelector = false
+        // Create new Spot, insert into modelContext, and open for immediate editing
+        let spot = Spot(locationFrom: stream, type: type, streams: [stream], modelContext: modelContext)
+        modelContext.insert(spot)
+        view.show(spot)
     }
 }
 

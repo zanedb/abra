@@ -80,6 +80,11 @@ extension Spot {
             "Unknown"
         }
     }
+    
+    /// Returns a description, i.e. "San Francisco, CA" or "Vehicle"
+    public var description: String {
+        type == .place ? cityState : "Vehicle"
+    }
 
     /// Plays the Spot's contents; optionally shuffle
     /// In the future, will play a station based on Spot's Shazams

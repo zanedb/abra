@@ -74,8 +74,7 @@ struct SpotView: View {
                 if !minimized {
                     List(spot.shazamStreamsByEvent(selectedEvent)) { stream in
                         Button(action: {
-                            view.stream = stream
-                            view.spot = nil
+                            view.show(stream)
                         }) {
                             SongRowMini(stream: stream)
                         }
@@ -142,7 +141,7 @@ struct SpotView: View {
                     .font(minimized ? .title2 : .title)
                     .frame(maxWidth: minimized ? 220 : 180, alignment: .leading)
                     .bold()
-                Text(spot.type == .place ? spot.cityState : "Vehicle")
+                Text(spot.description)
                     .font(.subheadline)
                     .foregroundColor(.gray)
 //                Picker(spot.type == .place ? spot.cityState : "Vehicle", selection: $spot.type) {

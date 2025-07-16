@@ -87,7 +87,7 @@ struct MapView: View {
 
         if selection!.count == 1 {
             if let sstream = context.model(for: selection!.first!) as? ShazamStream {
-                view.stream = sstream // Open sheet
+                view.show(sstream) // Open sheet
                 view.detent = .fraction(0.50) // Resize detent
             }
         } else {

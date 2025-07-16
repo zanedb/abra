@@ -60,7 +60,7 @@ struct SheetView: View {
                     ForEach(timeSections) { section in
                         Section(header: Text("\(section.id)")) {
                             ForEach(section, id: \.self) { shazam in
-                                Button(action: { view.stream = shazam }) {
+                                Button(action: { view.show(shazam) }) {
                                     SongRow(stream: shazam)
                                 }
                                 .listRowBackground(Color.clear)
@@ -74,7 +74,7 @@ struct SheetView: View {
                         .listRowSeparator(.hidden)
                 } else {
                     ForEach(filtered, id: \.id) { shazam in
-                        Button(action: { view.stream = shazam }) {
+                        Button(action: { view.show(shazam) }) {
                             SongRow(stream: shazam)
                         }
                         .listRowBackground(Color.clear)
@@ -121,7 +121,7 @@ struct SheetView: View {
         // Create and show ShazamStream
         let stream = ShazamStream(mediaItem: mediaItem, location: location.currentLocation!, placemark: location.currentPlacemark, modelContext: modelContext)
         modelContext.insert(stream)
-        view.stream = stream
+        view.show(stream)
     }
     
     private func handleShazamAPIError(_ error: ShazamError) {

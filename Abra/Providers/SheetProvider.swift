@@ -41,4 +41,14 @@ import SwiftUI
     }
 
     var isPresented: Bool { now != .none }
+    
+    func show(_ spot: Spot) {
+        self.spot = spot
+        stream = nil
+    }
+    
+    func show(_ stream: ShazamStream) {
+        self.stream = stream
+        spot = nil
+    }
 }
