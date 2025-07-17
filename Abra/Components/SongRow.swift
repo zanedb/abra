@@ -45,9 +45,24 @@ struct SongRow: View {
                 
                 Spacer()
                 
-                Text(stream.cityState)
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 4) {
+                    if let spot = stream.spot {
+                        HStack(spacing: 4) {
+                            Image(systemName: spot.symbol)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 12, height: 12)
+                                .foregroundColor(Color(spot.color))
+                            Text(spot.name)
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    Text(stream.cityState)
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .frame(height: 96)
