@@ -8,6 +8,7 @@ import SwiftData
 import SwiftUI
 
 struct SongView: View {
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
     @Environment(SheetProvider.self) private var view
@@ -47,6 +48,7 @@ struct SongView: View {
             // Save location if it wasn't initially ready
             if let currentLoc = location.currentLocation, stream.latitude == -1 && stream.longitude == -1 {
                 stream.updateLocation(currentLoc, placemark: location.currentPlacemark)
+                stream.spotIt(context: modelContext)
             }
         }
     }
