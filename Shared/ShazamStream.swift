@@ -46,14 +46,14 @@ import SwiftData
         self.longitude = longitude
     }
     
-    init(mediaItem: SHMediaItem, location: CLLocation, placemark: CLPlacemark?, modelContext: ModelContext) {
+    init(mediaItem: SHMediaItem, location: CLLocation?, placemark: CLPlacemark?, modelContext: ModelContext) {
         self.title = mediaItem.title ?? "Unknown Title"
         self.artist = mediaItem.artist ?? "Unknown Artist"
         self.isExplicit = mediaItem.explicitContent
         self.timestamp = .now
         self.artworkURL = mediaItem.artworkURL ?? URL(string: "https://zane.link/abra-unavailable")!
-        self.latitude = location.coordinate.latitude
-        self.longitude = location.coordinate.longitude
+        self.latitude = location?.coordinate.latitude ?? -1
+        self.longitude = location?.coordinate.longitude ?? -1
         
         // Optional properties
         self.isrc = mediaItem.isrc
@@ -61,8 +61,8 @@ import SwiftData
         self.shazamLibraryID = mediaItem.id
         self.appleMusicID = mediaItem.appleMusicID
         self.appleMusicURL = mediaItem.appleMusicURL
-        self.altitude = location.altitude
-        self.speed = location.speed
+        self.altitude = location?.altitude
+        self.speed = location?.speed
         self.thoroughfare = placemark?.thoroughfare
         self.city = placemark?.locality
         self.state = placemark?.administrativeArea
@@ -147,6 +147,19 @@ extension ShazamStream {
         let location2 = CLLocation(latitude: other.latitude, longitude: other.longitude)
         
         return location1.distance(from: location2)
+    }
+    
+    /// Updates location, using Placemark data as well if possible
+    public func updateLocation(_ location: CLLocation, placemark: CLPlacemark? = nil) {
+        self.latitude = location.coordinate.latitude
+        self.longitude = location.coordinate.longitude
+        self.altitude = location.altitude
+        self.speed = location.speed
+        self.thoroughfare = placemark?.thoroughfare
+        self.city = placemark?.locality
+        self.state = placemark?.administrativeArea
+        self.country = placemark?.country
+        self.countryCode = placemark?.isoCountryCode
     }
     
     /// Find Spots that are super close by and save to automagically

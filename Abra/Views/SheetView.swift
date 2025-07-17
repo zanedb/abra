@@ -110,22 +110,8 @@ struct SheetView: View {
     }
     
     private func createShazamStream(_ mediaItem: SHMediaItem) {
-        // Handle lack of available location
-        guard location.currentLocation != nil else {
-            toast.show(
-                message: "Location unavailable",
-                type: .error,
-                symbol: "location.slash.fill",
-                action: {
-                    // On permissions issue, tapping takes you right to app settings!
-                    openURL(URL(string: UIApplication.openSettingsURLString)!)
-                }
-            )
-            return
-        }
-        
         // Create and show ShazamStream
-        let stream = ShazamStream(mediaItem: mediaItem, location: location.currentLocation!, placemark: location.currentPlacemark, modelContext: modelContext)
+        let stream = ShazamStream(mediaItem: mediaItem, location: location.currentLocation, placemark: location.currentPlacemark, modelContext: modelContext)
         modelContext.insert(stream)
         view.show(stream)
     }

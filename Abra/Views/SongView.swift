@@ -13,6 +13,7 @@ struct SongView: View {
     @Environment(SheetProvider.self) private var view
     @Environment(LibraryProvider.self) private var library
     @Environment(MusicProvider.self) private var music
+    @Environment(LocationProvider.self) private var location
     
     var stream: ShazamStream
     
@@ -41,6 +42,12 @@ struct SongView: View {
         } action: { minimized = ($0.height < 100) ? true : false }
         .task {
             await music.authorize()
+        }
+        .onChange(of: location.currentPlacemark) {
+            // Save location if it wasn't initially ready
+            if let currentLoc = location.currentLocation, stream.latitude == -1 && stream.longitude == -1 {
+                stream.updateLocation(currentLoc, placemark: location.currentPlacemark)
+            }
         }
     }
     
