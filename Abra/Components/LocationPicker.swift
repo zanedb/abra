@@ -61,9 +61,6 @@ struct LocationPicker: View {
             .onChange(of: searchText) {
                 locationProvider.update(queryFragment: searchText)
             }
-            .onAppear {
-                locationProvider.requestLocation()
-            }
         }
     }
     

@@ -154,6 +154,7 @@ final class SpotAnnotationView: MKAnnotationView {
         containerView.backgroundColor = spotAnnotation.spot.color.withAlphaComponent(0.2)
         iconImageView.tintColor = spotAnnotation.spot.color
         
+        let symbol = spotAnnotation.spot.symbol.isEmpty ? "plus.circle.fill" : spotAnnotation.spot.symbol
         let config = UIImage.SymbolConfiguration(
             pointSize: size * 0.4,
             weight: .medium,
@@ -161,7 +162,7 @@ final class SpotAnnotationView: MKAnnotationView {
         )
         
         iconImageView.image = UIImage(
-            systemName: spotAnnotation.spot.symbol,
+            systemName: symbol,
             withConfiguration: config
         )
     }
