@@ -13,7 +13,6 @@ import SwiftUI
 @Observable final class SheetProvider {
     var stream: ShazamStream?
     var spot: Spot?
-
     var detent: PresentationDetent = .fraction(0.50)
 
     enum ViewState: Equatable {
@@ -45,10 +44,12 @@ import SwiftUI
     func show(_ spot: Spot) {
         self.spot = spot
         stream = nil
+        detent = .fraction(0.50)
     }
     
     func show(_ stream: ShazamStream) {
         self.stream = stream
         spot = nil
+        detent = .fraction(0.50)
     }
 }

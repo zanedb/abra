@@ -5,7 +5,6 @@
 //  The model class of ShazamStream (formerly SStream).
 //
 
-import ClusterMap
 import Foundation
 import MapKit
 import ShazamKit
@@ -77,21 +76,10 @@ import SwiftData
     }
 }
 
-extension ShazamStream: CoordinateIdentifiable {
-    public var coordinate: CLLocationCoordinate2D {
-        get {
-            CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-        }
-        set(newValue) {
-            //
-        }
-    }
-}
-
 extension ShazamStream {
-//    public var coordinate: CLLocationCoordinate2D {
-//        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-//    }
+    public var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
     
     public var cityState: String {
         if city != nil && state != nil {
@@ -152,6 +140,13 @@ extension ShazamStream {
         default:
             return .still
         }
+    }
+    
+    public func distance(from other: ShazamStream) -> Double {
+        let location1 = CLLocation(latitude: latitude, longitude: longitude)
+        let location2 = CLLocation(latitude: other.latitude, longitude: other.longitude)
+        
+        return location1.distance(from: location2)
     }
     
     /// Find Spots that are super close by and save to automagically

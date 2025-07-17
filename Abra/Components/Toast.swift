@@ -81,7 +81,8 @@ struct Toast: View {
 #Preview("Animated") {
     @Previewable @State var toast = ToastProvider()
 
-    MapView(detent: .constant(.height(65)), shazams: [.preview])
+    MapView(modelContext: PreviewSampleData.container.mainContext)
+        .edgesIgnoringSafeArea(.all)
         .environment(SheetProvider())
         .modelContainer(PreviewSampleData.container)
         .withToastProvider(toast)
@@ -92,7 +93,8 @@ struct Toast: View {
 }
 
 #Preview("Non-Animated") {
-    MapView(detent: .constant(.height(65)), shazams: [.preview])
+    MapView(modelContext: PreviewSampleData.container.mainContext)
+        .edgesIgnoringSafeArea(.all)
         .environment(SheetProvider())
         .modelContainer(PreviewSampleData.container)
         .overlay {

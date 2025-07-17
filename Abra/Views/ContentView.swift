@@ -9,11 +9,11 @@ import SwiftUI
 import SwiftUIIntrospect
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var context
     @Environment(\.scenePhase) private var scenePhase
     
     @AppStorage("hasCompletedOnboarding") var onboarded: Bool = false
     
-    @State var searchText: String = ""
     @State var detent: PresentationDetent = .fraction(0.50)
     
     @State private var sheet = SheetProvider()
@@ -23,17 +23,9 @@ struct ContentView: View {
     @State private var library = LibraryProvider()
     @State private var music = MusicProvider()
     
-    @Query(sort: \ShazamStream.timestamp, order: .reverse)
-    var shazams: [ShazamStream]
-    
-    var filtered: [ShazamStream] {
-        guard searchText.isEmpty == false else { return shazams }
-        
-        return shazams.filter { $0.title.lowercased().contains(searchText.lowercased()) || $0.artist.lowercased().contains(searchText.lowercased()) }
-    }
-    
     var body: some View {
-        MapView(detent: $detent, shazams: filtered)
+        MapView(modelContext: context)
+            .edgesIgnoringSafeArea(.all)
             .environment(sheet)
             .sheet(isPresented: Binding(
                 get: { onboarded || isPreview },
@@ -42,7 +34,7 @@ struct ContentView: View {
                 inspector
                     .popover(isPresented: Binding(
                         get: { shazam.isMatching },
-                        set: { _ in }
+                        set: { _ in shazam.stopMatching() }
                     )) {
                         searching
                     }
@@ -93,7 +85,7 @@ struct ContentView: View {
     }
     
     private var inspector: some View {
-        SheetView(searchText: $searchText, filtered: filtered)
+        SheetView()
             .environment(sheet)
             .environment(shazam)
             .environment(location)

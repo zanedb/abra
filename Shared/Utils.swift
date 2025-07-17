@@ -154,3 +154,18 @@ func extractShazamErrorCode(from text: String) -> String {
 var isPreview: Bool {
     return ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
 }
+
+/// This is not ideal.. see https://forums.swift.org/t/how-to-use-observation-to-actually-observe-changes-to-a-property/67591/12
+/// Really I should be doing something closer to this
+/// https://github.com/Any-Distance/any-distance-ios/blob/a24ddc1f877a2021200ee192cce2f0ceb2c72d93/ADAC/ADAC/Screens/Progress/ActivityProgressView.swift#L55
+/// Except Combine doesn't play nicely with @Observable
+/// But ultimately in iOS 26 I think this will be easier
+public func withObservationTracking<T: Sendable>(of value: @Sendable @escaping @autoclosure () -> T, execute: @Sendable @escaping (T) -> Void) {
+    Observation.withObservationTracking {
+        execute(value())
+    } onChange: {
+        RunLoop.current.perform {
+            withObservationTracking(of: value(), execute: execute)
+        }
+    }
+}

@@ -1,13 +1,13 @@
 {
-  "originHash" : "c1c8f8673fa62a879812b1067e58753a69ff9780e6db82a3f2296cf08b589edc",
+  "originHash" : "de800855f420a5b452216a53628d85f126e61a428ad726d02dd44678b059cfe1",
   "pins" : [
     {
-      "identity" : "clustermap",
+      "identity" : "kingfisher",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/vospennikov/ClusterMap.git",
+      "location" : "https://github.com/onevcat/Kingfisher.git",
       "state" : {
-        "revision" : "f3e60a742e6d3c149ce5d0c7424f373ef1b38140",
-        "version" : "2.1.1"
+        "revision" : "4c6b067f96953ee19526e49e4189403a2be21fb3",
+        "version" : "8.3.1"
       }
     },
     {

@@ -3,145 +3,253 @@
 //  Abra
 //
 
-import Kingfisher
 import MapKit
 import SwiftUI
+import UIKit
 
-struct ShazamAnnotationView: View {
-    var artworkURL: URL
+// MARK: - Annotation Classes
 
-    var body: some View {
-        KFImage(artworkURL)
-            .resizable()
-            .placeholder { ProgressView() }
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 36, height: 36)
-            .clipShape(Circle())
-            .shadow(radius: 3, x: 2, y: 2)
+class ShazamAnnotation: NSObject, MKAnnotation {
+    let shazamStream: ShazamStream
+    let coordinate: CLLocationCoordinate2D
+    let title: String?
+
+    init(shazamStream: ShazamStream) {
+        self.shazamStream = shazamStream
+        self.coordinate = shazamStream.coordinate
+        self.title = shazamStream.title
+        super.init()
     }
 }
 
-struct ShazamClusterAnnotationView: View {
-    var cluster: MKClusterAnnotation
+class SpotAnnotation: NSObject, MKAnnotation {
+    let spot: Spot
+    let coordinate: CLLocationCoordinate2D
+    let title: String?
+
+    init(spot: Spot) {
+        self.spot = spot
+        self.coordinate = spot.coordinate
+        self.title = spot.name
+        super.init()
+    }
+}
+
+// MARK: - Annotation Views
+
+final class ShazamAnnotationView: MKAnnotationView {
+    private let imageView = UIImageView()
+    private let size: CGFloat = 36
+
+    override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+
+        displayPriority = .defaultLow
+        collisionMode = .circle
+
+        setupUI()
+        loadImage()
+    }
+
+    @available(*, unavailable)
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var annotation: MKAnnotation? {
+        didSet {
+            loadImage()
+        }
+    }
+
+    private func setupUI() {
+        backgroundColor = .clear
+        frame = CGRect(x: 0, y: 0, width: size, height: size)
+
+        imageView.frame = bounds
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = size / 2
+        imageView.backgroundColor = .systemBackground
+
+        addSubview(imageView)
+    }
+
+    private func loadImage() {
+        guard let shazamAnnotation = annotation as? ShazamAnnotation else { return }
+
+        imageView.kf.setImage(
+            with: shazamAnnotation.shazamStream.artworkURL,
+            placeholder: UIImage(systemName: "exclamationmark.circle.fill"),
+            options: [
+                .transition(.fade(0.2)),
+                .cacheOriginalImage
+            ]
+        )
+    }
+}
+
+final class SpotAnnotationView: MKAnnotationView {
+    private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
+    private let containerView = UIView()
+    private let iconImageView = UIImageView()
+    private let size: CGFloat = 48
+
+    override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+
+        displayPriority = .defaultHigh
+        collisionMode = .circle
+
+        setupUI()
+    }
+
+    @available(*, unavailable)
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var annotation: MKAnnotation? {
+        didSet {
+            updateSpotIcon()
+        }
+    }
     
-    var body: some View {
-        ZStack {
-            KFImage((cluster.memberAnnotations.last as? ShazamAnnotation)?.shazamStream.artworkURL ?? ShazamStream.preview.artworkURL)
-                .resizable()
-                .frame(width: 36, height: 36)
-                .clipShape(Circle())
-                .blur(radius: 4)
+    private func setupUI() {
+        backgroundColor = .clear
+        frame = CGRect(x: 0, y: 0, width: size, height: size)
+        
+        blurView.frame = bounds
+        blurView.layer.cornerRadius = size / 2
+        blurView.clipsToBounds = true
+        addSubview(blurView)
 
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Material.regular)
-                .frame(width: 36, height: 36)
-                .clipShape(Circle())
+        containerView.frame = bounds
+        containerView.layer.cornerRadius = size / 2
+        containerView.clipsToBounds = true
+        addSubview(containerView)
 
-            Text("\(cluster.memberAnnotations.count)")
-                .foregroundStyle(Color.accentColor)
-                .font(.system(size: cluster.memberAnnotations.count > 1000 ? 11 : 14, weight: .semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+        let iconSize: CGFloat = size * 0.5 // Icon is 50% of container size
+        iconImageView.frame = CGRect(
+            x: (size - iconSize) / 2,
+            y: (size - iconSize) / 2,
+            width: iconSize,
+            height: iconSize
+        )
+        iconImageView.contentMode = .scaleAspectFit
+        iconImageView.tintColor = .systemGray // Will be set in updateSpotIcon()
+        containerView.addSubview(iconImageView)
+
+        updateSpotIcon()
+    }
+
+    private func updateSpotIcon() {
+        guard let spotAnnotation = annotation as? SpotAnnotation else {
+            containerView.backgroundColor = .systemGray5
+            iconImageView.tintColor = .systemGray
+            iconImageView.image = UIImage(systemName: "questionmark")
+            return
         }
+
+        containerView.backgroundColor = spotAnnotation.spot.color.withAlphaComponent(0.2)
+        iconImageView.tintColor = spotAnnotation.spot.color
+        
+        let config = UIImage.SymbolConfiguration(
+            pointSize: size * 0.4,
+            weight: .medium,
+            scale: .default
+        )
+        
+        iconImageView.image = UIImage(
+            systemName: spotAnnotation.spot.symbol,
+            withConfiguration: config
+        )
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        containerView.backgroundColor = .systemGray5
+        iconImageView.tintColor = .systemGray
+        iconImageView.image = nil
     }
 }
 
-struct ClusterAnnotationView: View {
-    var cluster: ShazamClusterAnnotation
-    @State var callout: Bool = false
+// MARK: - Cluster View
 
-    var body: some View {
-        ZStack {
-            KFImage(cluster.artworkURL ?? ShazamStream.preview.artworkURL)
-                .resizable()
-                .frame(width: 36, height: 36)
-                .clipShape(Circle())
-                .blur(radius: 4)
+final class ShazamClusterAnnotationView: MKAnnotationView {
+    private let containerView = UIView()
+    private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
+    private let countLabel = UILabel()
 
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Material.regular)
-                .frame(width: 36, height: 36)
-                .clipShape(Circle())
+    override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
 
-            Text("\(cluster.count)")
-                .foregroundStyle(Color.accentColor)
-                .font(.system(size: cluster.count > 1000 ? 11 : 14, weight: .semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
-        .onTapGesture {
-            withAnimation {
-                 callout.toggle()
+        displayPriority = .defaultHigh
+        collisionMode = .circle
+
+        setupUI()
+    }
+
+    @available(*, unavailable)
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var annotation: MKAnnotation? {
+        didSet {
+            guard annotation is MKClusterAnnotation else {
+//                assertionFailure("Using ShazamClusterAnnotationViewRepresentable with wrong annotation type")
+                return
             }
+
+            updateView()
         }
-        .overlay {
-            if callout {
-                ClusterCalloutView(action: { print("do it!") }, count: cluster.count)
-                    .padding(.bottom, 8)
-                    .offset(y: -75)
-            }
+    }
+
+    private func setupUI() {
+        backgroundColor = .clear
+
+        containerView.backgroundColor = .clear
+        addSubview(containerView)
+
+        blurEffectView.layer.cornerRadius = 20
+        blurEffectView.clipsToBounds = true
+        containerView.addSubview(blurEffectView)
+
+        countLabel.textAlignment = .center
+        countLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        countLabel.textColor = .label
+        containerView.addSubview(countLabel)
+
+        frame = CGRect(x: 0, y: 0, width: 40, height: 40)
+        containerView.frame = bounds
+        blurEffectView.frame = bounds
+        countLabel.frame = bounds
+    }
+
+    private func updateView() {
+        guard let cluster = annotation as? MKClusterAnnotation else {
+            // Set default state if no cluster annotation yet
+            countLabel.text = ""
+            return
         }
+
+        let count = cluster.memberAnnotations.count
+        countLabel.text = "\(count)"
+
+        // Adjust size based on count
+        let size: CGFloat = count > 99 ? 50 : count > 9 ? 45 : 40
+        frame = CGRect(x: 0, y: 0, width: size, height: size)
+        containerView.frame = bounds
+        blurEffectView.frame = bounds
+        blurEffectView.layer.cornerRadius = size / 2
+        countLabel.frame = bounds
     }
 }
 
-struct ClusterCalloutView: View {
-    let action: () -> Void
-    var count: Int
-
-    var body: some View {
-        VStack {
-            HStack {
-                Text("\(count) Shazams selected")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-
-                Spacer()
-            }
-
-            Divider()
-
-            Button(action: action) {
-                HStack {
-                    Text("Group in a playlist")
-                        .font(.subheadline)
-                        .foregroundColor(.accentColor)
-
-                    Spacer()
-
-                    Image(systemName: "list.bullet")
-                        .font(.system(size: 14))
-                        .foregroundColor(.accentColor)
-                }
-            }
-        }
-        .padding(12)
-        .background(Material.regularMaterial)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.15), radius: 3, x: 0, y: 1)
-        .frame(width: 230)
-    }
-}
-
-#Preview("Annotations Only") {
-    @Previewable @State var cluster = ShazamClusterAnnotation(coordinate: .init(latitude: 32.6514, longitude: -161.4333), streamIds: [ShazamStream.preview.id, ShazamStream.preview.id])
-
-    HStack {
-        Spacer()
-
-        ShazamAnnotationView(artworkURL: ShazamStream.preview.artworkURL)
-
-        Spacer()
-
-        ClusterAnnotationView(cluster: cluster)
-
-        Spacer()
-    }
-}
-
-#Preview("Real Thing") {
-    @Previewable @State var position = MapCameraPosition.automatic
-
-    MapView(detent: .constant(.height(65)), shazams: [.preview, .preview, .preview])
+#Preview {
+    MapView(modelContext: PreviewSampleData.container.mainContext)
+        .edgesIgnoringSafeArea(.all)
         .environment(SheetProvider())
         .modelContainer(PreviewSampleData.container)
 }

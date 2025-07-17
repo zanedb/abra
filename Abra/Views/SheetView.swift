@@ -16,12 +16,18 @@ struct SheetView: View {
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
     
-    @Binding var searchText: String
+    @Query(sort: \ShazamStream.timestamp, order: .reverse)
+    var shazams: [ShazamStream]
     
-    var filtered: [ShazamStream]
+    var filtered: [ShazamStream] {
+        guard searchText.isEmpty == false else { return shazams }
+        
+        return shazams.filter { $0.title.lowercased().contains(searchText.lowercased()) || $0.artist.lowercased().contains(searchText.lowercased()) }
+    }
     
     @SectionedQuery(\.timeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var timeSections: SectionedResults<String, ShazamStream>
     
+    @State var searchText: String = ""
     @State private var minimizedOpacity: CGFloat = 0
     
     var body: some View {
