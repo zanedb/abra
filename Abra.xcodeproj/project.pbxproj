@@ -575,6 +575,7 @@
 				2F1727442C719B2700EEA500 /* Spot.swift in Sources */,
 				2FA7D81A2AC0E60F0039AD5C /* ShazamStream.swift in Sources */,
 				2F63DEE02E0D2AF800DAA30F /* SheetProvider.swift in Sources */,
+				2F6A2BF42E297DC400032845 /* LocationPicker.swift in Sources */,
 				2F30A7C72DA77EB500DFE607 /* VariableBlur.swift in Sources */,
 				2FDBA45C2E0DDFBA00552D44 /* ViewModifiers.swift in Sources */,
 				2F3DAB772DA89C69001004B9 /* OnboardingView.swift in Sources */,
@@ -641,7 +642,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 0.6.5;
+				MARKETING_VERSION = 0.65.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abra.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -671,7 +672,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 0.6.5;
+				MARKETING_VERSION = 0.65.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abra.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -830,7 +831,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6.5;
+				MARKETING_VERSION = 0.65.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abra;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -868,7 +869,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6.5;
+				MARKETING_VERSION = 0.65.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abra;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
