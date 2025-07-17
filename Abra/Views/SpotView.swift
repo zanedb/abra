@@ -141,13 +141,18 @@ struct SpotView: View {
                     .font(minimized ? .title2 : .title)
                     .frame(maxWidth: minimized ? 220 : 180, alignment: .leading)
                     .bold()
-                Text(spot.description)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-//                Picker(spot.type == .place ? spot.cityState : "Vehicle", selection: $spot.type) {
-//                    Text("Place").tag(SpotType.place)
-//                    Text("Vehicle").tag(SpotType.vehicle)
-//                }
+                Menu {
+                    Button("Place", systemImage: spot.type == .place ? "checkmark" : "", action: { spot.type = .place })
+                    Button("Vehicle", systemImage: spot.type == .vehicle ? "checkmark" : "", action: { spot.type = .vehicle })
+                } label: {
+                    Text(spot.description)
+                        .font(.system(size: 15))
+                        .foregroundColor(.gray)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .imageScale(.small)
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
