@@ -30,6 +30,7 @@
 		2F6093A42A2EEDFE0092A6DD /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6093A32A2EEDFE0092A6DD /* MapView.swift */; };
 		2F63DEE02E0D2AF800DAA30F /* SheetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F63DEDF2E0D2AF600DAA30F /* SheetProvider.swift */; };
 		2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F659BC12A403A0000EA43F9 /* SongView.swift */; };
+		2F6A2BF42E297DC400032845 /* LocationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6A2BF32E297DC200032845 /* LocationPicker.swift */; };
 		2F736BB92DBD8D030078F1BB /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BB82DBD8D020078F1BB /* Toast.swift */; };
 		2F736BBB2DBD9E120078F1BB /* ShazamProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */; };
 		2F736BBD2DC04ED20078F1BB /* LocationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */; };
@@ -125,6 +126,7 @@
 		2F6093A32A2EEDFE0092A6DD /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		2F63DEDF2E0D2AF600DAA30F /* SheetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetProvider.swift; sourceTree = "<group>"; };
 		2F659BC12A403A0000EA43F9 /* SongView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongView.swift; sourceTree = "<group>"; };
+		2F6A2BF32E297DC200032845 /* LocationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPicker.swift; sourceTree = "<group>"; };
 		2F736BB82DBD8D020078F1BB /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
 		2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamProvider.swift; sourceTree = "<group>"; };
 		2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationProvider.swift; sourceTree = "<group>"; };
@@ -349,6 +351,7 @@
 				2FE893742E25D12000244DEF /* SpotIcon.swift */,
 				2FE8937B2E26EBA200244DEF /* SpotSelector.swift */,
 				2FC1E0942A622A7B00EF92D4 /* IconDesigner.swift */,
+				2F6A2BF32E297DC200032845 /* LocationPicker.swift */,
 				2F8908872C73106D0002850C /* Photos.swift */,
 				2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */,
 			);

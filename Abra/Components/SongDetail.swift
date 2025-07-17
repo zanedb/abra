@@ -46,6 +46,7 @@ struct SongDetail: View {
     }
     
     @State private var showingSpotSelector = false
+    @State private var showingLocationPicker = false
     @State private var eventAlertShown = false
     @State private var eventName = ""
     
@@ -111,6 +112,7 @@ struct SongDetail: View {
                                 eventSelector
                             }
                         }
+                        .padding(.top, 4)
                     }
                 }
                 .padding()
@@ -118,6 +120,12 @@ struct SongDetail: View {
         }
         .popover(isPresented: $showingSpotSelector) {
             SpotSelector(selection: $stream.spot, newSpotCallback: { createSpot(type) })
+                .presentationDetents([.fraction(0.50), .fraction(0.999)])
+                .presentationBackground(.thickMaterial)
+                .presentationBackgroundInteraction(.enabled)
+        }
+        .popover(isPresented: $showingLocationPicker) {
+            LocationPicker(lat: $stream.latitude, lng: $stream.longitude)
                 .presentationDetents([.fraction(0.50), .fraction(0.999)])
                 .presentationBackground(.thickMaterial)
                 .presentationBackgroundInteraction(.enabled)
@@ -173,7 +181,9 @@ struct SongDetail: View {
         showingSpotSelector.toggle()
     }
     
-    private func editLocation() {}
+    private func editLocation() {
+        showingLocationPicker.toggle()
+    }
     
     private func newEvent() {
         let event = Event(name: eventName, spot: stream.spot!, shazamStreams: [stream])

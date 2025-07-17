@@ -132,6 +132,7 @@ struct ContentView: View {
             .environment(sheet)
             .environment(library)
             .environment(music)
+            .environment(location)
             .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $sheet.detent)
             .presentationInspector()
             .edgesIgnoringSafeArea(.bottom)
