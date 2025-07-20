@@ -18,13 +18,7 @@ struct SpotView: View {
     
     @State private var minimized: Bool = false
     @State private var showingIconDesigner: Bool = false
-    @State private var showingHeader: Bool
     @State private var selectedEvent: Event?
-    
-    init(spot: Spot) {
-        self.spot = spot
-        _showingHeader = State(initialValue: spot.name != "" && spot.symbol != "")
-    }
     
     private var songCount: Int {
         spot.shazamStreamsByEvent(selectedEvent).count
@@ -34,44 +28,35 @@ struct SpotView: View {
         spot.events?.count ?? 0
     }
     
-    private var headerTitle: String {
-        "\(songCount) Song\(songCount != 1 ? "s" : "")"
-    }
-    
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
-                if showingHeader {
-                    heading
-                        .padding(.top, -40)
+                heading
+                    .padding(.top, -40)
                     
-                    if !minimized {
-                        if eventCount > 0 {
-                            Text("\(eventCount) Event\(eventCount != 1 ? "s" : "")")
-                                .font(.subheadline)
-                                .bold()
-                                .foregroundColor(.gray)
-                                .padding(.horizontal)
-                                .padding(.top, 12)
-                            
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack {
-                                    events
-                                }
-                                .padding(.horizontal)
-                            }
-                        }
-                        
-                        Text(headerTitle)
+                if !minimized {
+                    if eventCount > 0 {
+                        Text("\(eventCount) Event\(eventCount != 1 ? "s" : "")")
                             .font(.subheadline)
                             .bold()
                             .foregroundColor(.gray)
                             .padding(.horizontal)
                             .padding(.top, 12)
+                            
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack {
+                                events
+                            }
+                            .padding(.horizontal)
+                        }
                     }
-                }
-                
-                if !minimized {
+                        
+                    Text("\(songCount) Song\(songCount != 1 ? "s" : "")")
+                        .font(.subheading)
+                        .foregroundColor(.gray)
+                        .padding(.horizontal)
+                        .padding(.top, 12)
+
                     List(spot.shazamStreamsByEvent(selectedEvent)) { stream in
                         Button(action: {
                             view.show(stream)
@@ -84,14 +69,7 @@ struct SpotView: View {
                     .listStyle(.plain)
                 }
             }
-            .navigationTitle(showingHeader ? "" : headerTitle)
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if !showingHeader {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button("+ Save Spot", action: edit)
-                    }
-                }
                 ToolbarItem(placement: .confirmationAction) {
                     HStack(spacing: -2) {
                         Button(action: play) {
@@ -113,6 +91,7 @@ struct SpotView: View {
                 IconDesigner(symbol: $spot.symbol, color: $spot.color, animation: animation, id: spot.persistentModelID)
                     .presentationDetents([.fraction(0.999)])
                     .presentationBackground(.thickMaterial)
+                    .presentationCornerRadius(14)
             }
             .onDisappear {
                 // Destroy Spot if not saved
@@ -154,6 +133,7 @@ struct SpotView: View {
                         .foregroundColor(.gray)
                 }
             }
+            .padding(.leading, 6)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal)
@@ -187,12 +167,6 @@ struct SpotView: View {
             }
         }
     }
-
-    private func edit() {
-        withAnimation {
-            showingHeader.toggle()
-        }
-    }
     
     private func play() {
         Task {
@@ -203,7 +177,7 @@ struct SpotView: View {
 
 #Preview {
     @Previewable @State var view = SheetProvider()
-    @Previewable var spot = Spot(name: "Me", type: .place, symbol: "play", latitude: ShazamStream.preview.latitude, longitude: ShazamStream.preview.longitude, shazamStreams: [.preview, .preview])
+    @Previewable var spot = Spot(name: "Me", type: .place, symbol: "play.fill", latitude: ShazamStream.preview.latitude, longitude: ShazamStream.preview.longitude, shazamStreams: [.preview, .preview])
 
     Map(initialPosition: .automatic)
         .ignoresSafeArea(.all)
