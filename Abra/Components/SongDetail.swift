@@ -123,12 +123,14 @@ struct SongDetail: View {
                 .presentationDetents([.fraction(0.50), .fraction(0.999)])
                 .presentationBackground(.thickMaterial)
                 .presentationBackgroundInteraction(.enabled)
+                .presentationCornerRadius(14)
         }
         .popover(isPresented: $showingLocationPicker) {
             LocationPicker(lat: $stream.latitude, lng: $stream.longitude)
                 .presentationDetents([.fraction(0.50), .fraction(0.999)])
                 .presentationBackground(.thickMaterial)
                 .presentationBackgroundInteraction(.enabled)
+                .presentationCornerRadius(14)
         }
         .alert("Add an event", isPresented: $eventAlertShown) {
             TextField("Name", text: $eventName)
@@ -211,6 +213,7 @@ struct SongDetail: View {
                 .environment(SheetProvider())
                 .environment(LibraryProvider())
                 .environment(MusicProvider())
+                .environment(LocationProvider())
         }
         .modelContainer(PreviewSampleData.container)
 }
