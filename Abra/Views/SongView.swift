@@ -19,23 +19,57 @@ struct SongView: View {
     var stream: ShazamStream
     
     @State private var minimized: Bool = false
+    @State private var offsetY: CGFloat = 0
+    
+    private var scrolled: Bool {
+        offsetY > -50
+    }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        NavigationStack {
             ScrollView {
                 SongSheet(stream: stream, mini: minimized)
                     .padding()
-                    .padding(.top, 8)
-                    .overlay(alignment: .top) {
-                        toolbar
-                    }
+                    .padding(.top, -48)
                 
                 SongDetail(stream: stream)
                     .padding(.horizontal)
-                
+                    
                 Photos(stream: stream)
                 
-                Spacer()
+            }
+            .onScrollGeometryChange(for: CGFloat.self, of: { geometry in
+                geometry.contentOffset.y
+            }) { oldValue, newValue in
+                if oldValue != newValue {
+                    offsetY = newValue
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    if scrolled {
+                        Text(stream.title)
+                            .font(.bigTitle)
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    HStack(spacing: -2) {
+                        if let appleMusicURL = stream.appleMusicURL {
+                            ShareLink(item: appleMusicURL) {
+                                Image(systemName: "square.and.arrow.up.circle.fill")
+                                    .foregroundColor(.gray)
+                                    .font(.system(size: 24))
+                                    .symbolRenderingMode(.hierarchical)
+                            }
+                        }
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                                .font(.system(size: 24))
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                    }
+                }
             }
         }
         .onGeometryChange(for: CGRect.self) { proxy in
@@ -53,27 +87,9 @@ struct SongView: View {
         }
     }
     
-    private var toolbar: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 4) {
-            Spacer()
                 
-            if stream.appleMusicURL != nil {
-                ShareLink(item: stream.appleMusicURL!) {
-                    Label("Share", systemImage: "square.and.arrow.up.circle.fill")
-                        .labelStyle(.iconOnly)
-                        .foregroundColor(.gray)
-                        .font(.system(size: 32))
-                        .symbolRenderingMode(.hierarchical)
                 }
-            }
                 
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.gray)
-                    .font(.system(size: 32))
-                    .symbolRenderingMode(.hierarchical)
             }
         }
         .padding()
@@ -87,5 +103,7 @@ struct SongView: View {
                 .environment(SheetProvider())
                 .environment(LibraryProvider())
                 .environment(MusicProvider())
+                .environment(LocationProvider())
         }
 }
+
