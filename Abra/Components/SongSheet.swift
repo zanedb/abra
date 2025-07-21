@@ -43,8 +43,7 @@ struct SongSheet: View {
             
             VStack(alignment: .leading, spacing: 0) {
                 Text(stream.title)
-                    .fontWeight(.bold)
-                    .font(.system(size: 18))
+                    .font(.bigTitle)
                     .padding(.bottom, 2)
                     .lineLimit(2)
                     .frame(maxWidth: mini ? 220 : 180, alignment: .leading)

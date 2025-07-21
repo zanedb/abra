@@ -41,4 +41,9 @@ extension Font {
     static var subheading: Font {
         .system(size: 15, weight: .medium)
     }
+    
+    /// Big Title, used in SongView
+    static var bigTitle: Font {
+        .system(size: 18, weight: .bold)
+    }
 }

@@ -22,8 +22,7 @@ struct SpotsList: View {
                 HStack(spacing: 0) {
                     Text("Spots")
                         .foregroundColor(.gray)
-                        .bold()
-                        .font(.system(size: 15))
+                        .font(.subheading)
                 }
                 .padding(.bottom, 8)
                 
@@ -53,10 +52,10 @@ struct SpotsList: View {
                     .foregroundColor(.primary)
                     .lineLimit(1)
             }
-            .frame(width: 54)
+            .frame(width: 56)
         }
         .padding(.vertical, 12)
-        .padding(.horizontal, 4)
+        .padding(.horizontal, 6)
         .contextMenu {
             Button(action: { spot.play(music, shuffle: true) }) {
                 Label("Shuffle", systemImage: "shuffle")
