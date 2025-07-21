@@ -10,6 +10,7 @@ struct SongRow: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var modelContext
     @Environment(ShazamProvider.self) private var shazam
+    @Environment(MusicProvider.self) private var music
     
     var stream: ShazamStream
     
@@ -69,13 +70,23 @@ struct SongRow: View {
         .contextMenu {
             if let appleMusicURL = stream.appleMusicURL {
                 Link(destination: appleMusicURL) {
-                    Label("Open in Apple Music", systemImage: "arrow.up.forward.app.fill")
+                    Label("Open in Apple Music", systemImage: "arrow.up.forward.app")
                 }
                 ShareLink(item: appleMusicURL) {
                     Label("Share", systemImage: "square.and.arrow.up")
                 }
                 Divider()
             }
+            
+            if let appleMusicID = stream.appleMusicID {
+                Button("Play", systemImage: "play.fill", action: {
+                    Task {
+                        await music.play(id: appleMusicID)
+                    }
+                })
+                Divider()
+            }
+            
             Button("Remove", systemImage: "trash", role: .destructive, action: deleteStream)
         }
     }
@@ -134,7 +145,7 @@ struct SongRowMini: View {
         .contextMenu {
             if let appleMusicURL = stream.appleMusicURL {
                 Link(destination: appleMusicURL) {
-                    Label("Open in Apple Music", systemImage: "arrow.up.forward.app.fill")
+                    Label("Open in Apple Music", systemImage: "arrow.up.forward.app")
                 }
                 ShareLink(item: appleMusicURL) {
                     Label("Share", systemImage: "square.and.arrow.up")
