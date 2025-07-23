@@ -75,7 +75,11 @@ struct SongSheet: View {
                 }
                 .opacity(mini ? 0 : 1)
                 
-                Button(action: openAppleMusic) {
+                Button(action: {
+                    if let url = stream.appleMusicURL {
+                        openURL(url)
+                    }
+                }) {
                     Image(systemName: "smallcircle.filled.circle")
                         .padding(.trailing, -5)
                     Text(albumTitle)
@@ -97,8 +101,8 @@ struct SongSheet: View {
     }
     
     private var playButton: some View {
-        Button(action: playPause) {
-            Image(systemName: (music.currentTrackID == stream.appleMusicID) && music.isPlaying ? "pause.fill" : "play.fill")
+        Button(action: { music.playPause(id: stream.appleMusicID!) }) {
+            Image(systemName: music.nowPlaying == stream.appleMusicID ? "pause.fill" : "play.fill")
                 .font(.system(size: 40))
                 .foregroundStyle(.thickMaterial)
                 .shadow(radius: 2)
@@ -136,45 +140,6 @@ struct SongSheet: View {
                     openURL(URL(string: UIApplication.openSettingsURLString)!)
                 }
             )
-        }
-    }
-    
-    private func playPause() {
-        guard let id = stream.appleMusicID else { return }
-        
-        if music.errorMessage != nil {
-            return toast.show(
-                message: "Music unauthorized",
-                type: .error,
-                symbol: "exclamationmark.circle.fill",
-                action: {
-                    // On permissions issue, tapping takes you right to app settings!
-                    openURL(URL(string: UIApplication.openSettingsURLString)!)
-                }
-            )
-        }
-        
-        if music.isPlaying {
-            // If the PlayButton is on a different SongView, start new playback
-            if music.currentTrackID != id {
-                Task {
-                    await music.play(id: id)
-                }
-                
-                return
-            }
-            
-            music.stopPlayback()
-        } else {
-            Task {
-                await music.play(id: id)
-            }
-        }
-    }
-    
-    private func openAppleMusic() {
-        if let url = stream.appleMusicURL {
-            openURL(url)
         }
     }
 }

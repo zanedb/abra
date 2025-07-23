@@ -14,6 +14,8 @@ struct SongRow: View {
     
     var stream: ShazamStream
     
+    private var nowPlaying: Bool { music.nowPlaying == stream.appleMusicID }
+    
     var body: some View {
         HStack {
             KFImage(stream.artworkURL)
@@ -68,26 +70,25 @@ struct SongRow: View {
         }
         .frame(height: 96)
         .contextMenu {
+            Button("Remove", systemImage: "trash", role: .destructive, action: deleteStream)
+            
             if let appleMusicURL = stream.appleMusicURL {
+                Divider()
                 Link(destination: appleMusicURL) {
                     Label("Open in Apple Music", systemImage: "arrow.up.forward.app")
                 }
                 ShareLink(item: appleMusicURL) {
                     Label("Share", systemImage: "square.and.arrow.up")
                 }
-                Divider()
             }
             
             if let appleMusicID = stream.appleMusicID {
-                Button("Play", systemImage: "play.fill", action: {
-                    Task {
-                        await music.play(id: appleMusicID)
-                    }
-                })
                 Divider()
+                Button(
+                    nowPlaying ? "Pause" : "Play",
+                    systemImage: nowPlaying ? "pause.fill" : "play.fill",
+                    action: { music.playPause(id: appleMusicID) })
             }
-            
-            Button("Remove", systemImage: "trash", role: .destructive, action: deleteStream)
         }
     }
     
@@ -107,6 +108,8 @@ struct SongRowMini: View {
     @Environment(MusicProvider.self) private var music
     
     var stream: ShazamStream
+    
+    private var nowPlaying: Bool { music.nowPlaying == stream.appleMusicID }
     
     var body: some View {
         HStack {
@@ -154,11 +157,10 @@ struct SongRowMini: View {
             }
             
             if let appleMusicID = stream.appleMusicID {
-                Button("Play", systemImage: "play.fill", action: {
-                    Task {
-                        await music.play(id: appleMusicID)
-                    }
-                })
+                Button(
+                    nowPlaying ? "Pause" : "Play",
+                    systemImage: nowPlaying ? "pause.fill" : "play.fill",
+                    action: { music.playPause(id: appleMusicID) })
             }
         }
     }

@@ -28,6 +28,14 @@ struct SpotView: View {
         spot.events?.count ?? 0
     }
     
+    private var trackIDs: [String] {
+        spot.shazamStreamsByEvent(selectedEvent).compactMap(\.appleMusicID)
+    }
+    
+    private var isPlaying: Bool {
+        trackIDs.contains(music.nowPlaying ?? "NIL")
+    }
+    
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
@@ -72,8 +80,8 @@ struct SpotView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     HStack(spacing: -2) {
-                        Button(action: play) {
-                            Image(systemName: "play.circle.fill")
+                        Button(action: { music.playPause(ids: trackIDs) }) {
+                            Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
                                 .foregroundColor(.gray)
                                 .font(.system(size: 24))
                                 .symbolRenderingMode(.hierarchical)
@@ -165,12 +173,6 @@ struct SpotView: View {
                     Label("Remove", systemImage: "trash")
                 })
             }
-        }
-    }
-    
-    private func play() {
-        Task {
-            await music.play(ids: spot.shazamStreamsByEvent(selectedEvent).compactMap(\.appleMusicID))
         }
     }
 }

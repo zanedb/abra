@@ -13,8 +13,8 @@ import StoreKit
     
     var authorizationStatus: MusicAuthorization.Status?
     
-    private(set) var isPlaying = false
-    private(set) var currentTrackID: String?
+    private(set) var nowPlaying: String?
+    private(set) var lastPlayed: String?
     private(set) var errorMessage: String?
     
     init() {
@@ -38,7 +38,32 @@ import StoreKit
     
     @objc private func playbackStateChanged() {
         Task { @MainActor in
-            isPlaying = musicPlayer.playbackState == .playing
+            nowPlaying = musicPlayer.playbackState == .playing ? musicPlayer.nowPlayingItem?.playbackStoreID : nil
+            lastPlayed = musicPlayer.nowPlayingItem?.playbackStoreID
+        }
+    }
+    
+    /// Play/pause according to whether ID is currently being played
+    func playPause(id: String) {
+        playPause(ids: [id])
+    }
+    
+    /// Play/pause according to whether IDs are currently being played
+    func playPause(ids: [String]) {
+        if let now = nowPlaying {
+            if !ids.contains(now) {
+                Task {
+                    await play(ids: ids)
+                }
+                    
+                return
+            }
+                
+            stopPlayback()
+        } else {
+            Task {
+                await play(ids: ids)
+            }
         }
     }
     
@@ -47,13 +72,9 @@ import StoreKit
     }
     
     func play(ids: [String]) async {
-        if currentTrackID == ids.first {
+        if lastPlayed == ids.first {
             // Resume if currently playing song is requested
             musicPlayer.play()
-            
-            Task { @MainActor in
-                isPlaying = true
-            }
                 
             return
         }
@@ -66,7 +87,6 @@ import StoreKit
             if let error = error {
                 Task { @MainActor in
                     self.errorMessage = error.localizedDescription
-                    self.isPlaying = false
                 }
                 return
             }
@@ -74,17 +94,12 @@ import StoreKit
             self.musicPlayer.play()
             Task { @MainActor in
                 self.errorMessage = nil
-                self.currentTrackID = ids.first
-                self.isPlaying = true
             }
         }
     }
     
     func stopPlayback() {
         musicPlayer.pause()
-        Task { @MainActor in
-            isPlaying = false
-        }
     }
     
     func authorize() async {
