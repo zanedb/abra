@@ -14,6 +14,8 @@ struct SongRow: View {
     
     var stream: ShazamStream
     
+    @State private var confirmationShown = false
+    
     private var nowPlaying: Bool { music.nowPlaying == stream.appleMusicID }
     
     var body: some View {
@@ -70,7 +72,7 @@ struct SongRow: View {
         }
         .frame(height: 96)
         .contextMenu {
-            Button("Remove", systemImage: "trash", role: .destructive, action: deleteStream)
+            Button("Remove", systemImage: "trash", role: .destructive, action: { confirmationShown = true })
             
             if let appleMusicURL = stream.appleMusicURL {
                 Divider()
@@ -89,6 +91,9 @@ struct SongRow: View {
                     systemImage: nowPlaying ? "pause.fill" : "play.fill",
                     action: { music.playPause(id: appleMusicID) })
             }
+        }
+        .confirmationDialog("This song will be deleted from your Abra and Shazam libraries.", isPresented: $confirmationShown, titleVisibility: .visible) {
+            Button("Delete Song", role: .destructive, action: deleteStream)
         }
     }
     

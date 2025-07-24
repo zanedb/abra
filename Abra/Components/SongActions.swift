@@ -12,6 +12,8 @@ struct SongActions: View {
     
     @Bindable var stream: ShazamStream
     
+    @State private var confirmationShown = false
+    
     private var songLink: URL? {
         guard let url = stream.appleMusicURL?.absoluteString else { return nil }
         return URL(string: "https://song.link/\(url)")
@@ -49,10 +51,13 @@ struct SongActions: View {
                 Divider()
                     .padding(.leading, 60)
                 
-                row("Remove", icon: "trash.fill", action: remove, role: .destructive)
+                row("Remove", icon: "trash.fill", action: { confirmationShown = true }, role: .destructive)
             }
         }
         .padding()
+        .confirmationDialog("This song will be deleted from your Abra and Shazam libraries.", isPresented: $confirmationShown, titleVisibility: .visible) {
+            Button("Delete Song", role: .destructive, action: remove)
+        }
     }
 
     private func row(_ title: String, icon: String, action: @escaping () -> Void, role: ButtonRole? = .none) -> some View {

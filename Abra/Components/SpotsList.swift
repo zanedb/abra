@@ -14,6 +14,8 @@ struct SpotsList: View {
     @Query(sort: \Spot.updatedAt, order: .reverse)
     private var spots: [Spot]
     
+    @State private var confirmationShown = false
+    
     var body: some View {
         if spots == [] {
             EmptyView()
@@ -64,9 +66,12 @@ struct SpotsList: View {
                 Label("Play", systemImage: "play.fill")
             }
             Divider()
-            Button(role: .destructive, action: { deleteSpot(spot) }, label: {
+            Button(role: .destructive, action: { confirmationShown = true }, label: {
                 Label("Remove", systemImage: "trash")
             })
+        }
+        .confirmationDialog("This spot will be removed from your Abra library, though the contents will not be removed.", isPresented: $confirmationShown, titleVisibility: .visible) {
+            Button("Delete Spot", role: .destructive, action: { confirmationShown = false; deleteSpot(spot) })
         }
     }
     
