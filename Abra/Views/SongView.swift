@@ -37,6 +37,7 @@ struct SongView: View {
                     
                 Photos(stream: stream)
                 
+                SongActions(stream: stream)
             }
             .onScrollGeometryChange(for: CGFloat.self, of: { geometry in
                 geometry.contentOffset.y
@@ -86,14 +87,6 @@ struct SongView: View {
             }
         }
     }
-    
-                
-                }
-                
-            }
-        }
-        .padding()
-    }
 }
 
 #Preview {
@@ -106,4 +99,3 @@ struct SongView: View {
                 .environment(LocationProvider())
         }
 }
-

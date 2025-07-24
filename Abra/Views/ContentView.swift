@@ -130,6 +130,7 @@ struct ContentView: View {
     private func song(_ stream: ShazamStream) -> some View {
         SongView(stream: stream)
             .environment(sheet)
+            .environment(shazam)
             .environment(library)
             .environment(music)
             .environment(location)
