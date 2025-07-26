@@ -12,11 +12,6 @@ struct SongActions: View {
     
     @Bindable var stream: ShazamStream
     
-    
-    private var songLink: URL? {
-        guard let url = stream.appleMusicURL?.absoluteString else { return nil }
-        return URL(string: "https://song.link/\(url)")
-    }
     @State private var showingConfirmation = false
     @State private var showingPlaylistPicker = false
 
@@ -29,7 +24,7 @@ struct SongActions: View {
                 ))
 
             VStack(alignment: .leading, spacing: 0) {
-                if let link = songLink {
+                if let link = stream.songLink {
                     ShareLink(item: link) {
                         Image(systemName: "square.and.arrow.up")
                             .frame(width: 36, height: 36)

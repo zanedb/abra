@@ -142,6 +142,12 @@ extension ShazamStream {
         }
     }
     
+    /// Song.link URL
+    public var songLink: URL? {
+        guard let url = appleMusicURL?.absoluteString else { return nil }
+        return URL(string: "https://song.link/\(url)")
+    }
+    
     public func distance(from other: ShazamStream) -> Double {
         let location1 = CLLocation(latitude: latitude, longitude: longitude)
         let location2 = CLLocation(latitude: other.latitude, longitude: other.longitude)
