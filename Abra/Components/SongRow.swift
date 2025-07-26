@@ -124,7 +124,7 @@ struct SongRowMini: View {
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 48, height: 48)
-                .cornerRadius(3.0)
+                .clipShape(.rect(cornerRadius: 3))
                 .padding(.trailing, 5)
                 
             VStack(alignment: .leading) {

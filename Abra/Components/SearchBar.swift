@@ -26,15 +26,20 @@ struct SearchBar: UIViewRepresentable {
         return Coordinator(text: $text)
     }
     
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
+    
     class Coordinator: NSObject, UISearchBarDelegate {
-        @Binding var text: String
-        
+        private var textBinding: Binding<String>
+                
         init(text: Binding<String>) {
-            _text = text
+            self.textBinding = text
+            super.init()
         }
-        
+                
         func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-            text = searchText
+            textBinding.wrappedValue = searchText
         }
     }
 }

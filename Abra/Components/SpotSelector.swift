@@ -59,7 +59,7 @@ struct SpotSelector: View {
             .listStyle(.inset)
             .navigationTitle("Select Spot")
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Spots")
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find in Spots")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: { dismiss() }) {

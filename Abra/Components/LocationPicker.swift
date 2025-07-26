@@ -47,7 +47,7 @@ struct LocationPicker: View {
             .listStyle(.inset)
             .navigationTitle("Select Location")
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Places")
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find Places")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: { dismiss() }) {

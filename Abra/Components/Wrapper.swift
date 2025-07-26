@@ -16,9 +16,7 @@ struct Wrapper<Content: View>: View {
         ZStack {
             Rectangle()
                 .fill(.background)
-                .clipShape(RoundedRectangle(
-                    cornerRadius: 14
-                ))
+                .clipShape(.rect(cornerRadius: 14))
 
             content
                 .padding()

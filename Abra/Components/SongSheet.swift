@@ -32,7 +32,7 @@ struct SongSheet: View {
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
                 .frame(width: imageSize, height: imageSize)
-                .cornerRadius(3.0)
+                .clipShape(.rect(cornerRadius: 3))
                 .padding(.trailing, 5)
                 .padding(.leading, mini ? 4 : 0)
                 .overlay {

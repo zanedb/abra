@@ -148,7 +148,7 @@ struct IconDesigner: View {
                 .frame(width: 48, height: 48)
                 .background(thisSymbol == symbol ? Color.secondary.opacity(0.2) : Color.clear)
                 .foregroundStyle(thisSymbol == symbol ? .secondary : .secondary)
-                .cornerRadius(8)
+                .clipShape(.rect(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
