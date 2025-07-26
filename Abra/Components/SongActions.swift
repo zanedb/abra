@@ -12,12 +12,13 @@ struct SongActions: View {
     
     @Bindable var stream: ShazamStream
     
-    @State private var confirmationShown = false
     
     private var songLink: URL? {
         guard let url = stream.appleMusicURL?.absoluteString else { return nil }
         return URL(string: "https://song.link/\(url)")
     }
+    @State private var showingConfirmation = false
+    @State private var showingPlaylistPicker = false
 
     var body: some View {
         ZStack(alignment: .leading) {
@@ -46,16 +47,25 @@ struct SongActions: View {
                         .padding(.leading, 60)
                 }
                 
-                row("Add to Playlist", icon: "music.note.list", action: addToPlaylist)
+                if stream.appleMusicID != nil {
+                    row("Add to Playlist", icon: "music.note.list", action: { showingPlaylistPicker.toggle() })
                 
-                Divider()
-                    .padding(.leading, 60)
+                    Divider()
+                        .padding(.leading, 60)
+                }
                 
-                row("Remove", icon: "trash.fill", action: { confirmationShown = true }, role: .destructive)
+                row("Remove", icon: "trash.fill", action: { showingConfirmation = true }, role: .destructive)
             }
         }
         .padding()
-        .confirmationDialog("This song will be deleted from your Abra and Shazam libraries.", isPresented: $confirmationShown, titleVisibility: .visible) {
+        .popover(isPresented: $showingPlaylistPicker) {
+            PlaylistPicker(stream: stream)
+                .presentationDetents([.fraction(0.50), .fraction(0.999)])
+                .presentationBackground(.thickMaterial)
+                .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.999)))
+                .presentationCornerRadius(14)
+        }
+        .confirmationDialog("This song will be deleted from your Abra and Shazam libraries.", isPresented: $showingConfirmation, titleVisibility: .visible) {
             Button("Delete Song", role: .destructive, action: remove)
         }
     }
@@ -66,7 +76,7 @@ struct SongActions: View {
                 .frame(width: 36, height: 36)
                 .background(.ultraThickMaterial)
                 .clipShape(Circle())
-
+            
             Text(title)
             
             Spacer()
@@ -74,8 +84,6 @@ struct SongActions: View {
         .padding(.horizontal)
         .padding(.vertical, 10)
     }
-    
-    private func addToPlaylist() {}
     
     private func remove() {
         withAnimation {
