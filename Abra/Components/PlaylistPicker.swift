@@ -3,18 +3,22 @@
 //  Abra
 //
 
+import Kingfisher
 import MediaPlayer
 import MusicKit
 import SwiftUI
 
 struct PlaylistPicker: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @Environment(\.toastProvider) private var toast
     
     var stream: ShazamStream
     
     @State private var searchText = ""
     @State private var loading: MPMediaEntityPersistentID? = nil
+    @State private var showingNewPlaylist = false
+    @State private var newPlaylistID: MPMediaEntityPersistentID?
     
     private var allPlaylists: [MPMediaPlaylist] = []
     private var playlists: [MPMediaPlaylist] {
@@ -32,6 +36,11 @@ struct PlaylistPicker: View {
     var body: some View {
         NavigationStack {
             ScrollView {
+                Button(action: { showingNewPlaylist.toggle() }) {
+                    newPlaylistRow
+                }
+                .buttonStyle(.plain)
+                
                 LazyVStack(alignment: .leading, spacing: 0) {
                     Text(playlists.isEmpty ? "" : "All Playlists")
                         .font(.subheading)
@@ -63,7 +72,41 @@ struct PlaylistPicker: View {
                     }
                 }
             }
+            .sheet(isPresented: $showingNewPlaylist) {
+                NewPlaylist(initial: stream, playlistID: $newPlaylistID)
+                    .presentationDetents([.fraction(0.999)])
+                    .presentationCornerRadius(14)
+            }
+            .onChange(of: newPlaylistID) {
+                if let id = newPlaylistID {
+                    showingNewPlaylist = false
+                    dismiss()
+                    toast.show(message: "Created playlist", type: .success, action: {
+                        openURL(URL(string: "music://playlist/\(id)")!)
+                    })
+                }
+            }
         }
+    }
+    
+    private var newPlaylistRow: some View {
+        HStack {
+            Image(systemName: "music.note.list")
+                .frame(width: 48, height: 48)
+                .background(.ultraThinMaterial)
+                .clipShape(.rect(cornerRadius: 6))
+                .foregroundStyle(.red)
+                .padding(.trailing, 4)
+            
+            VStack(alignment: .leading) {
+                Text("New Playlist")
+                    .font(.headline)
+            }
+            
+            Spacer()
+        }
+        .padding(.horizontal)
+        .contentShape(Rectangle())
     }
     
     private func PlaylistRow(_ playlist: MPMediaPlaylist) -> some View {
@@ -132,6 +175,8 @@ struct PlaylistPicker: View {
     VStack {}
         .popover(isPresented: .constant(true)) {
             PlaylistPicker(stream: stream)
+                .environment(SheetProvider())
+                .environment(MusicProvider())
                 .presentationDetents([.fraction(0.999)])
                 .presentationBackground(.thickMaterial)
                 .modelContainer(PreviewSampleData.container)

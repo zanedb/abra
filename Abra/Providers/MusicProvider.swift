@@ -138,8 +138,8 @@ import StoreKit
     ///   - streams: Collection of ShazamStreams to add to the playlist
     ///   - name: Name for the playlist
     ///   - description: Optional description for the playlist
-    /// - Returns: URL to the created playlist, or nil if creation fails
-    func createPlaylist(from streams: [ShazamStream], name: String, description: String? = nil) async throws -> URL? {
+    /// - Returns: persistentID of the created playlist
+    func createPlaylist(from streams: [ShazamStream], name: String, description: String? = nil) async throws -> MPMediaEntityPersistentID {
         // Ensure user has authorized access to Apple Music
         if authorizationStatus != .authorized {
             await authorize()
@@ -161,12 +161,12 @@ import StoreKit
 
             let playlist = try await MPMediaLibrary.default().getPlaylist(with: UUID(), creationMetadata: creationMetadata)
 
+            // Sometime in the future, it may be optimal to fetch MPMediaItem(s) and use .add() instead
             for id in trackIDs {
                 try await playlist.addItem(withProductID: id)
             }
             
-            // Generate and return the URL to the playlist
-            return URL(string: "music://playlist/\(playlist.persistentID)")
+            return playlist.persistentID
         } catch {
             Task { @MainActor in
                 self.errorMessage = "Failed to create playlist: \(error.localizedDescription)"
