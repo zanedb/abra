@@ -3,39 +3,26 @@
 //  Abra
 //
 
-import SwiftUI
 import MediaPlayer
+import SwiftUI
 
 struct NewPlaylist: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(MusicProvider.self) private var music
     
-    init(initial: ShazamStream, playlistID: Binding<MPMediaEntityPersistentID?>) {
-        _streams = .init(wrappedValue: [initial])
-        _playlistID = playlistID
-        initializedFromStream = true
-    }
-    
-    init(initial: Spot, playlistID: Binding<MPMediaEntityPersistentID?>) {
-        _streams = .init(wrappedValue: initial.shazamStreams ?? [])
-        _playlistID = playlistID
-        initializedFromStream = false
-    }
-    
-    private var initializedFromStream: Bool
-    private var allSpotStreams: [ShazamStream] {
-        initializedFromStream ? streams.first?.spot?.shazamStreams ?? streams : []
-    }
-    
+    var initial: [ShazamStream] = []
     @Binding var playlistID: MPMediaEntityPersistentID?
     
     @State var title: String = ""
-    @State var includingSpotStreams = false
-    @State var streams: [ShazamStream] = []
     @State var loading = false
+    @State var includingSpotStreams = false
     
-    var actualStreams: [ShazamStream] {
-        includingSpotStreams ? allSpotStreams : streams
+    private var spotStreams: [ShazamStream] {
+        initial.first?.spot?.shazamStreams ?? initial
+    }
+
+    private var streams: [ShazamStream] {
+        includingSpotStreams ? spotStreams : initial
     }
     
     var body: some View {
@@ -52,13 +39,14 @@ struct NewPlaylist: View {
                 Divider()
                     .padding(.horizontal)
                 
-                if initializedFromStream {
-                    Toggle("Include All Songs from \(streams.first?.spot?.name ?? "Spot")", isOn: $includingSpotStreams)
-                    .padding(.horizontal)
-                    .padding(.bottom)
+                Toggle(isOn: $includingSpotStreams) {
+                    Text("Include All Songs from \(streams.first?.spot?.name ?? "Spot")")
+                        .font(.subheading.weight(.regular))
                 }
+                .padding(.horizontal)
+                .padding(.bottom)
                 
-                List(actualStreams) { stream in
+                List(streams) { stream in
                     SongRowMini(stream: stream)
                 }
                 .listStyle(.inset)
@@ -83,17 +71,25 @@ struct NewPlaylist: View {
     }
     
     private var PlaylistImage: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .fill(.indigo)
-            .frame(width: 176, height: 176)
-            .padding()
+        ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(.foreground)
+            
+            Text(title.isEmpty ? "Playlist Title" : title)
+                .foregroundStyle(.background)
+                .font(.bigTitle)
+                .padding(20)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .frame(width: 176, height: 176)
+        .padding()
     }
     
     private func createPlaylist() {
         loading = true
         Task {
             do {
-                playlistID = try await music.createPlaylist(from: actualStreams, name: title)
+                playlistID = try await music.createPlaylist(from: streams, name: title)
             } catch {
                 print(error)
             }
@@ -102,12 +98,11 @@ struct NewPlaylist: View {
 }
 
 #Preview {
-    @Previewable @State var initial: ShazamStream = .preview
-//    @Previewable @State var initial: Spot = .preview
+    @Previewable @State var initial: Spot = .preview
     
     VStack {}
         .popover(isPresented: .constant(true)) {
-            NewPlaylist(initial: initial, playlistID: .constant(nil))
+            NewPlaylist(initial: initial.shazamStreams ?? [], playlistID: .constant(nil))
                 .environment(SheetProvider())
                 .environment(MusicProvider())
                 .modelContainer(PreviewSampleData.container)
