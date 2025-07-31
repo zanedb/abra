@@ -170,7 +170,7 @@ struct SpotView: View {
             }
             .contextMenu {
                 Button(role: .destructive, action: { modelContext.delete(event) }, label: {
-                    Label("Remove", systemImage: "trash")
+                    Label("Delete", systemImage: "trash")
                 })
             }
         }

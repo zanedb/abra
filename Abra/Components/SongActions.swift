@@ -49,7 +49,7 @@ struct SongActions: View {
                         .padding(.leading, 60)
                 }
                 
-                row("Remove", icon: "trash.fill", action: { showingConfirmation = true }, role: .destructive)
+                row("Delete", icon: "trash.fill", action: { showingConfirmation = true }, role: .destructive)
             }
         }
         .padding()

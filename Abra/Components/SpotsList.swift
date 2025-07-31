@@ -44,9 +44,7 @@ struct SpotsList: View {
     }
     
     private func spotView(_ spot: Spot) -> some View {
-        Button {
-            view.spot = spot
-        } label: {
+        Button { view.show(spot) } label: {
             VStack(alignment: .center) {
                 SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: 48)
                 Text(spot.name)
@@ -60,7 +58,7 @@ struct SpotsList: View {
         .padding(.horizontal, 6)
         .contextMenu {
             Button(role: .destructive, action: { confirmationShown = true }, label: {
-                Label("Remove", systemImage: "trash")
+                Label("Delete", systemImage: "trash")
             })
             Divider()
             Button(action: { spot.play(music, shuffle: true) }) {
@@ -70,7 +68,7 @@ struct SpotsList: View {
                 Label("Play", systemImage: "play.fill")
             }
         }
-        .confirmationDialog("This spot will be removed from your Abra library, though the contents will not be removed.", isPresented: $confirmationShown, titleVisibility: .visible) {
+        .confirmationDialog("This spot will be deleted from your Abra library, though the contents will not be deleted.", isPresented: $confirmationShown, titleVisibility: .visible) {
             Button("Delete Spot", role: .destructive, action: { confirmationShown = false; deleteSpot(spot) })
         }
     }

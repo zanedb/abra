@@ -73,7 +73,7 @@ struct PlaylistPicker: View {
                 }
             }
             .sheet(isPresented: $showingNewPlaylist) {
-                NewPlaylist(initial: stream, playlistID: $newPlaylistID)
+                NewPlaylist(initial: [stream], playlistID: $newPlaylistID)
                     .presentationDetents([.fraction(0.999)])
                     .presentationCornerRadius(14)
             }

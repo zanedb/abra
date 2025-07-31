@@ -72,7 +72,7 @@ struct SongRow: View {
         }
         .frame(height: 96)
         .contextMenu {
-            Button("Remove", systemImage: "trash", role: .destructive, action: { confirmationShown = true })
+            Button("Delete", systemImage: "trash", role: .destructive, action: { confirmationShown = true })
             
             if let appleMusicURL = stream.appleMusicURL {
                 Divider()
