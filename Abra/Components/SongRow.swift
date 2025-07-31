@@ -59,18 +59,21 @@ struct SongRow: View {
                                 .frame(width: 12, height: 12)
                                 .foregroundColor(Color(spot.color))
                             Text(spot.name)
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
+                                .font(.system(size: 13))
                         }
                     }
                     
                     Text(stream.cityState)
-                        .font(.system(size: 14))
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
+                        .font(.system(size: 13))
                 }
             }
         }
         .frame(height: 96)
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .contentShape(Rectangle())
         .contextMenu {
             Button("Delete", systemImage: "trash", role: .destructive, action: { confirmationShown = true })
             
@@ -139,7 +142,6 @@ struct SongRowMini: View {
                             .accessibilityLabel("Explicit")
                     }
                 }
-                .padding(.trailing, 16)
                 
                 Text(stream.artist)
                     .font(.subheadline)
@@ -168,13 +170,13 @@ struct SongRowMini: View {
                     action: { music.playPause(id: appleMusicID) })
             }
         }
+        .contentShape(Rectangle())
     }
 }
 
 #Preview {
     VStack(alignment: .leading) {
         SongRow(stream: .preview)
-            .padding()
             
         Text("Discovered")
             .font(.subheadline)

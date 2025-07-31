@@ -16,83 +16,82 @@ struct SheetView: View {
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
     
-    @Query(sort: \ShazamStream.timestamp, order: .reverse)
-    var shazams: [ShazamStream]
+    @SectionedQuery(\.timeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var timeSectionedStreams: SectionedResults<String, ShazamStream>
     
-    var filtered: [ShazamStream] {
-        guard searchText.isEmpty == false else { return shazams }
+    @Query(sort: \ShazamStream.timestamp, order: .reverse) private var allShazams: [ShazamStream]
+    @Query(sort: \Spot.updatedAt, order: .reverse) private var allSpots: [Spot]
+    
+    var shazams: [ShazamStream] {
+        guard searchText.isEmpty == false else { return allShazams }
         
-        return shazams.filter { $0.title.lowercased().contains(searchText.lowercased()) || $0.artist.lowercased().contains(searchText.lowercased()) }
+        return allShazams.filter {
+            $0.title.localizedCaseInsensitiveContains(searchText) || $0.artist.localizedCaseInsensitiveContains(searchText) || $0.cityState.localizedCaseInsensitiveContains(searchText)
+        }
     }
     
-    @SectionedQuery(\.timeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var timeSections: SectionedResults<String, ShazamStream>
+    var spots: [Spot] {
+        guard searchText.isEmpty == false else { return allSpots }
+        
+        return allSpots.filter {
+            $0.name.localizedCaseInsensitiveContains(searchText) || $0.description.localizedCaseInsensitiveContains(searchText)
+        }
+    }
     
-    @State var searchText: String = ""
-    @State private var minimizedOpacity: CGFloat = 0
+    @State private var searchText: String = ""
+    @State private var searchHidden: Bool = false
+    @State private var searchFocused: Bool = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(alignment: .center) {
-                SearchBar(text: $searchText, placeholder: "Search Shazams")
-                    
-                Button(action: { Task { await shazam.startMatching() } }) {
-                    Image(systemName: "shazam.logo.fill")
-                        .symbolRenderingMode(.multicolor)
-                        .tint(.blue)
-                        .fontWeight(.medium)
-                        .font(.system(size: 36))
-                }
-            }
-            .padding(.trailing)
-            .padding(.leading, 8)
-            .padding(.top, 8)
-            .padding(.bottom, 4)
-            
-            Divider()
-                .opacity(minimizedOpacity)
-            
-            List {
-                if searchText.isEmpty && filtered.isEmpty {
-                    ContentUnavailableView {} description: { Text("Your library is empty.") }
-                        .padding()
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                } else if searchText.isEmpty {
+        NavigationStack {
+            ScrollView {
+                if searchText.isEmpty {
                     SpotsList()
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                        .padding(.top, 8)
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
+                        .scrollTransition(.animated.threshold(.visible(0.05))) { content, phase in
+                            content
+                                .opacity(phase.isIdentity ? 1 : 0)
+                        }
                     
-                    ForEach(timeSections) { section in
-                        Section(header: Text("\(section.id)")) {
-                            ForEach(section, id: \.self) { shazam in
-                                Button(action: { view.show(shazam) }) {
-                                    SongRow(stream: shazam)
-                                }
-                                .listRowBackground(Color.clear)
-                            }
-                        }
-                        .listSectionSeparator(.hidden, edges: .bottom)
-                    }
-                } else if !searchText.isEmpty && filtered.isEmpty {
-                    ContentUnavailableView.search(text: searchText)
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
+                    SongsList
                 } else {
-                    ForEach(filtered, id: \.id) { shazam in
-                        Button(action: { view.show(shazam) }) {
-                            SongRow(stream: shazam)
-                        }
-                        .listRowBackground(Color.clear)
+                    if spots.isEmpty && shazams.isEmpty {
+                        ContentUnavailableView.search(text: searchText)
+                            .padding()
+                    } else {
+                        SearchResults
                     }
                 }
             }
-            .listStyle(.inset)
-            .scrollContentBackground(.hidden)
-            .opacity(minimizedOpacity)
-            .overlay(alignment: .top) {
-                VariableBlurView(maxBlurRadius: 1, direction: .blurredTopClearBottom)
-                    .frame(height: 4)
+            .searchable(text: $searchText, isPresented: $searchFocused, prompt: "Shazams, Spots, Cities, and More")
+            .onScrollGeometryChange(for: CGFloat.self, of: { geometry in
+                geometry.contentOffset.y
+            }) { oldValue, newValue in
+                if oldValue != newValue && newValue > -120 && newValue < 0 {
+                    withAnimation { searchHidden = newValue > -57 }
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Text("Abra")
+                        .font(.title2)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    HStack(spacing: 2) {
+                        Button(action: { if searchHidden { searchFocused = true } }) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 14))
+                                .tint(searchHidden ? .gray : .clear)
+                        }
+                        Button(action: { Task { await shazam.startMatching() } }) {
+                            Image(systemName: "shazam.logo.fill")
+                                .tint(.blue)
+                                .fontWeight(.medium)
+                                .font(.system(size: 24))
+                                .symbolRenderingMode(.multicolor)
+                        }
+                    }
+                }
             }
         }
         .onChange(of: shazam.status) {
@@ -104,9 +103,65 @@ struct SheetView: View {
                 handleShazamAPIError(error)
             }
         }
-        .onGeometryChange(for: CGRect.self) { proxy in
-            proxy.frame(in: .global)
-        } action: { minimizedOpacity = ($0.height > 100) ? 1 : 0 }
+    }
+    
+    private var SongsList: some View {
+        LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+            ForEach(timeSectionedStreams) { section in
+                Section {
+                    ForEach(section, id: \.self) { shazam in
+                        Button(action: { view.show(shazam) }) {
+                            SongRow(stream: shazam)
+                        }
+                        .buttonStyle(.plain)
+                        
+                        if shazam != section.last {
+                            Divider()
+                                .padding(.leading, 125)
+                        }
+                    }
+                } header: {
+                    Text("\(section.id)")
+                        .foregroundColor(.gray)
+                        .font(.subheading)
+                        .padding(.horizontal)
+                        .padding(.vertical, 4)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(.ultraThickMaterial)
+                }
+            }
+        }
+    }
+    
+    private var SearchResults: some View {
+        LazyVStack(alignment: .leading) {
+            Section {
+                ForEach(spots, id: \.id) { spot in
+                    Button(action: { view.show(spot) }) {
+                        SpotRow(spot: spot)
+                            .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    Divider()
+                        .padding(.leading, 60)
+                }
+            }
+            
+            Section {
+                ForEach(shazams, id: \.id) { stream in
+                    Button(action: { view.show(stream) }) {
+                        SongRowMini(stream: stream)
+                            .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    Divider()
+                        .padding(.leading, 60)
+                }
+            }
+        }
+        .padding(.horizontal)
     }
     
     private func createShazamStream(_ mediaItem: SHMediaItem) {

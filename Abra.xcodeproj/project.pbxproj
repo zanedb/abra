@@ -10,6 +10,7 @@
 		2F1727442C719B2700EEA500 /* Spot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1727432C719B2700EEA500 /* Spot.swift */; };
 		2F25ED1D2E2EF0E600BD2FEE /* SongActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F25ED1C2E2EF0E200BD2FEE /* SongActions.swift */; };
 		2F30A7C72DA77EB500DFE607 /* VariableBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */; };
+		2F3C12D12E3B31930080C310 /* SpotRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3C12D02E3B31920080C310 /* SpotRow.swift */; };
 		2F3DAB722DA785CB001004B9 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F3DAB712DA785CB001004B9 /* Kingfisher */; };
 		2F3DAB772DA89C69001004B9 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB762DA89C67001004B9 /* OnboardingView.swift */; };
 		2F3DAB792DA8C361001004B9 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB782DA8C360001004B9 /* Utils.swift */; };
@@ -108,6 +109,7 @@
 		2F1727432C719B2700EEA500 /* Spot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spot.swift; sourceTree = "<group>"; };
 		2F25ED1C2E2EF0E200BD2FEE /* SongActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongActions.swift; sourceTree = "<group>"; };
 		2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableBlur.swift; sourceTree = "<group>"; };
+		2F3C12D02E3B31920080C310 /* SpotRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotRow.swift; sourceTree = "<group>"; };
 		2F3DAB762DA89C67001004B9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		2F3DAB782DA8C360001004B9 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		2F3DAB7E2DA9CEEF001004B9 /* RoundedButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedButton.swift; sourceTree = "<group>"; };
@@ -355,6 +357,7 @@
 				2FAF74B62E0C55AA003D246C /* SongDetail.swift */,
 				2F25ED1C2E2EF0E200BD2FEE /* SongActions.swift */,
 				2F8919EF2A4442BA0012DFF6 /* SpotsList.swift */,
+				2F3C12D02E3B31920080C310 /* SpotRow.swift */,
 				2FE893742E25D12000244DEF /* SpotIcon.swift */,
 				2FE8937B2E26EBA200244DEF /* SpotSelector.swift */,
 				2FC1E0942A622A7B00EF92D4 /* IconDesigner.swift */,
@@ -555,6 +558,7 @@
 				2F6093A42A2EEDFE0092A6DD /* MapView.swift in Sources */,
 				2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */,
 				2F3DAB7F2DA9CEF1001004B9 /* RoundedButton.swift in Sources */,
+				2F3C12D12E3B31930080C310 /* SpotRow.swift in Sources */,
 				2F6093A22A2EEC960092A6DD /* ContentView.swift in Sources */,
 				2F736BBF2DC05A6C0078F1BB /* ToastProvider.swift in Sources */,
 				2FE893782E25D92100244DEF /* Wrapper.swift in Sources */,

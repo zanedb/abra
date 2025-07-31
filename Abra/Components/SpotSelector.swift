@@ -35,17 +35,20 @@ struct SpotSelector: View {
                         }
                     }
                     
-                    Section("Spots") {
+                    Section {
                         ForEach(spots, id: \.id) { spot in
                             Button(action: { setSpot(spot) }) {
-                                SpotRow(spot)
+                                SpotRow(spot: spot)
                             }
                         }
+                    } header: {
+                        Text("Spots")
+                            .font(.subheading)
                     }
                 } else {
                     ForEach(searchResults, id: \.id) { spot in
                         Button(action: { setSpot(spot) }) {
-                            SpotRow(spot)
+                            SpotRow(spot: spot)
                         }
                     }
                     
@@ -78,10 +81,10 @@ struct SpotSelector: View {
             Image(systemName: "mappin.and.ellipse.circle.fill")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 40, height: 40)
+                .frame(width: 48, height: 48)
                 .foregroundStyle(.green)
                 .symbolRenderingMode(.hierarchical)
-                .padding(.trailing, 4)
+                .padding(.trailing, 5)
             
             VStack(alignment: .leading) {
                 Text("New Spot")
@@ -95,31 +98,14 @@ struct SpotSelector: View {
             Image(systemName: "mappin.slash.circle.fill")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 40, height: 40)
+                .frame(width: 48, height: 48)
                 .foregroundStyle(.red)
                 .symbolRenderingMode(.hierarchical)
-                .padding(.trailing, 4)
+                .padding(.trailing, 5)
             
             VStack(alignment: .leading) {
                 Text("No Spot")
                     .font(.headline)
-            }
-        }
-    }
-    
-    private func SpotRow(_ spot: Spot) -> some View {
-        HStack {
-            SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: 40, renderingMode: .hierarchical)
-                .padding(.trailing, 4)
-            
-            VStack(alignment: .leading) {
-                Text(spot.name)
-                    .font(.headline)
-                    .lineLimit(1)
-                Text(spot.description)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
             }
         }
     }

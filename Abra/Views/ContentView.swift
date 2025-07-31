@@ -90,7 +90,7 @@ struct ContentView: View {
             .environment(shazam)
             .environment(location)
             .environment(music)
-            .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $detent)
+            .presentationDetents([.height(96), .fraction(0.50), .fraction(0.999)], selection: $detent)
             .presentationInspector()
             .interactiveDismissDisabled()
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
