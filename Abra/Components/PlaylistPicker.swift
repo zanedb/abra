@@ -21,8 +21,17 @@ struct PlaylistPicker: View {
     @State private var newPlaylistID: MPMediaEntityPersistentID?
     
     private var allPlaylists: [MPMediaPlaylist] = []
+    private var recents: [MPMediaPlaylist] = []
+    
     private var playlists: [MPMediaPlaylist] {
         searchText.isEmpty ? allPlaylists : allPlaylists.filter { $0.name!.localizedCaseInsensitiveContains(searchText) }
+    }
+    
+    private var recentsIDs: [MPMediaEntityPersistentID] {
+        guard let data = UserDefaults.standard.data(forKey: "recentlyAddedPlaylistIDs"),
+              let ids = try? PropertyListDecoder().decode([MPMediaEntityPersistentID].self, from: data)
+        else { return [] }
+        return ids
     }
     
     init(stream: ShazamStream) {
@@ -31,33 +40,23 @@ struct PlaylistPicker: View {
         allPlaylists = MPMediaQuery.playlists().collections as? [MPMediaPlaylist] ?? []
         // Filter out smart, Genius, onTheGo playlists
         allPlaylists = allPlaylists.filter { $0.playlistAttributes.rawValue == 0 }
+        
+        recents = allPlaylists.filter { recentsIDs.contains($0.persistentID) }.sorted { recentsIDs.firstIndex(of: $0.persistentID)! < recentsIDs.firstIndex(of: $1.persistentID)! }
     }
     
     var body: some View {
         NavigationStack {
             ScrollView {
                 Button(action: { showingNewPlaylist.toggle() }) {
-                    newPlaylistRow
+                    NewPlaylistRow
                 }
                 .buttonStyle(.plain)
                 
-                LazyVStack(alignment: .leading, spacing: 0) {
-                    Text(playlists.isEmpty ? "" : "All Playlists")
-                        .font(.subheading)
-                        .padding()
-                    
-                    ForEach(playlists, id: \.persistentID) { playlist in
-                        Button(action: { addToPlaylist(playlist) }) {
-                            PlaylistRow(playlist)
-                        }
-                        .buttonStyle(.plain)
-                        
-                        if playlist != playlists.last {
-                            Divider()
-                                .padding(.leading, 76)
-                        }
-                    }
+                if searchText.isEmpty && !recents.isEmpty {
+                    PlaylistList(recents, heading: "Recents")
                 }
+                
+                PlaylistList(playlists, heading: playlists.isEmpty ? "" : "All Playlists")
             }
             .navigationTitle("Add to a Playlist")
             .navigationBarTitleDisplayMode(.inline)
@@ -82,6 +81,7 @@ struct PlaylistPicker: View {
                     showingNewPlaylist = false
                     dismiss()
                     toast.show(message: "Created playlist", type: .success, action: {
+                        // Note: this doesn't actually work. I don't think there is a URL scheme for this.
                         openURL(URL(string: "music://playlist/\(id)")!)
                     })
                 }
@@ -89,7 +89,27 @@ struct PlaylistPicker: View {
         }
     }
     
-    private var newPlaylistRow: some View {
+    private func PlaylistList(_ playlists: [MPMediaPlaylist], heading: String = "") -> some View {
+        LazyVStack(alignment: .leading, spacing: 0) {
+            Text(heading)
+                .font(.subheading)
+                .padding()
+            
+            ForEach(playlists, id: \.persistentID) { playlist in
+                Button(action: { addToPlaylist(playlist) }) {
+                    PlaylistRow(playlist)
+                }
+                .buttonStyle(.plain)
+                    
+                if playlist != playlists.last {
+                    Divider()
+                        .padding(.leading, 76)
+                }
+            }
+        }
+    }
+    
+    private var NewPlaylistRow: some View {
         HStack {
             Image(systemName: "music.note.list")
                 .frame(width: 48, height: 48)
@@ -164,6 +184,19 @@ struct PlaylistPicker: View {
                 toast.show(message: "Cannot access playlist", type: .error)
             } else {
                 toast.show(message: "1 song added", type: .success)
+                
+                // Ensure playlist isn't already in list
+                var playlistIDs = recentsIDs
+                guard !playlistIDs.contains(playlist.persistentID) else { return }
+                
+                // Store a maximum of 3 recent playlists
+                playlistIDs.insert(playlist.persistentID, at: 0)
+                let firstThree = Array(playlistIDs.prefix(3))
+                
+                // Encode in UserDefaults
+                if let encoded = try? PropertyListEncoder().encode(firstThree) {
+                    UserDefaults.standard.set(encoded, forKey: "recentlyAddedPlaylistIDs")
+                }
             }
         }
     }
