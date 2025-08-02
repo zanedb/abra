@@ -80,7 +80,7 @@ struct PlaylistPicker: View {
                 if let id = newPlaylistID {
                     showingNewPlaylist = false
                     dismiss()
-                    toast.show(message: "Created playlist", type: .success, action: {
+                    toast.show(message: "Playlist created", type: .success, symbol: "music.note.list", action: {
                         // Note: this doesn't actually work. I don't think there is a URL scheme for this.
                         openURL(URL(string: "music://playlist/\(id)")!)
                     })
@@ -183,7 +183,10 @@ struct PlaylistPicker: View {
             if error != nil {
                 toast.show(message: "Cannot access playlist", type: .error)
             } else {
-                toast.show(message: "1 song added", type: .success)
+                toast.show(message: "Song added", type: .success, symbol: "music.note.list", action: {
+                    // Again, doesn't work, but does open Apple Music
+                    openURL(URL(string: "music://playlist/")!)
+                })
                 
                 // Ensure playlist isn't already in list
                 var playlistIDs = recentsIDs

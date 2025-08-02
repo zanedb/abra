@@ -23,9 +23,9 @@ struct Toast: View {
 
         switch type {
         case .error:
-            return "exclamationmark.circle"
+            return "exclamationmark.circle.fill"
         case .success:
-            return "checkmark.circle"
+            return "checkmark.circle.fill"
         case .warning:
             return "exclamationmark.triangle"
         case .info:
@@ -46,33 +46,54 @@ struct Toast: View {
         }
     }
 
+    @State private var hapticTrigger = false
+
     var body: some View {
         HStack {
             Image(systemName: systemImage)
+                .imageScale(.large)
                 .font(.system(size: 15))
-                .foregroundStyle(color.opacity(0.8))
-                .shadow(color: .gray, radius: 0.1)
+                .frame(width: 16, height: 12)
+                .foregroundStyle(color)
 
             Text(message)
                 .font(.system(size: 14, weight: .medium))
                 .lineLimit(1)
+
+            if action != nil {
+                Image(systemName: "chevron.right")
+                    .imageScale(.small)
+                    .foregroundStyle(.secondary)
+                    .font(.system(size: 12))
+                    .padding(.leading, -4)
+            }
         }
-        .padding(.leading, 16)
-        .padding(.trailing, 18)
-        .padding(.vertical, 13)
+        .padding()
         .background {
             RoundedRectangle(cornerRadius: 14)
                 .fill(Material.thick)
-                .shadow(color: color.opacity(0.3), radius: 2, x: 0, y: 1.5)
         }
         .position(x: UIScreen.main.bounds.width / 2, y: 26)
         .transition(.asymmetric(
-            insertion: .push(from: .top).animation(.easeInOut(duration: 0.5)),
-            removal: .push(from: .bottom).animation(.easeInOut(duration: 0.75))
+            insertion: .opacity.animation(.easeInOut(duration: 0.25)),
+            removal: .opacity.animation(.easeInOut(duration: 0.25))
         ))
         .onTapGesture {
             if let action = action {
                 action()
+            }
+        }
+        .task(id: message) { hapticTrigger.toggle() }
+        .sensoryFeedback(trigger: hapticTrigger) { oldValue, newValue in
+            switch type {
+            case .error:
+                return .error
+            case .success:
+                return .success
+            case .warning:
+                return .warning
+            case .info:
+                return .selection
             }
         }
     }
@@ -81,23 +102,17 @@ struct Toast: View {
 #Preview("Animated") {
     @Previewable @State var toast = ToastProvider()
 
-    MapView(modelContext: PreviewSampleData.container.mainContext)
-        .edgesIgnoringSafeArea(.all)
-        .environment(SheetProvider())
-        .modelContainer(PreviewSampleData.container)
+    ContentView()
         .withToastProvider(toast)
         .withToastOverlay(using: toast)
         .onAppear {
-            toast.show(message: "Location unavailable", type: .error, symbol: "location.slash.fill", action: { toast.dismiss() })
+            toast.show(message: "Location unavailable", type: .error, symbol: "location.slash.fill")
         }
 }
 
 #Preview("Non-Animated") {
-    MapView(modelContext: PreviewSampleData.container.mainContext)
-        .edgesIgnoringSafeArea(.all)
-        .environment(SheetProvider())
-        .modelContainer(PreviewSampleData.container)
+    ContentView()
         .overlay {
-            Toast(message: "Couldn’t save location", type: .error, sfSymbol: "location.slash.fill")
+            Toast(message: "No match found", type: .info, sfSymbol: "shazam.logo.fill")
         }
 }
