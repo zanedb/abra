@@ -14,7 +14,8 @@ struct SpotsList: View {
     @Query(sort: \Spot.updatedAt, order: .reverse)
     private var spots: [Spot]
     
-    @State private var confirmationShown = false
+    @State private var pendingDeletion: Spot? = nil
+    @State private var confirmationShown: Bool = false
     
     var body: some View {
         if spots == [] {
@@ -57,7 +58,7 @@ struct SpotsList: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 6)
         .contextMenu {
-            Button(role: .destructive, action: { confirmationShown = true }, label: {
+            Button(role: .destructive, action: { pendingDeletion = spot; confirmationShown = true }, label: {
                 Label("Delete", systemImage: "trash")
             })
             Divider()
@@ -69,7 +70,7 @@ struct SpotsList: View {
             }
         }
         .confirmationDialog("This spot will be deleted from your Abra library, though the contents will not be deleted.", isPresented: $confirmationShown, titleVisibility: .visible) {
-            Button("Delete Spot", role: .destructive, action: { confirmationShown = false; deleteSpot(spot) })
+            Button("Delete Spot", role: .destructive, action: deleteSpot)
         }
     }
     
@@ -80,9 +81,13 @@ struct SpotsList: View {
         }
     }
     
-    private func deleteSpot(_ spot: Spot) {
+    private func deleteSpot() {
+        confirmationShown = false
+        guard let pending = pendingDeletion else { return }
+        pendingDeletion = nil
+        
         withAnimation {
-            modelContext.delete(spot)
+            modelContext.delete(pending)
             try? modelContext.save()
         }
     }
