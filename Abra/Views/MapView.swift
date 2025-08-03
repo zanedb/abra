@@ -80,16 +80,16 @@ struct MapView: UIViewRepresentable {
         print("UI view did update")
 
         // Quick hash check - bail early if nothing changed
-        var hasher = Hasher()
-        shazams.hash(into: &hasher)
-        spots.hash(into: &hasher)
-        let newDataHash = hasher.finalize()
-
-        if context.coordinator.lastDataHash == newDataHash {
-            print("No data changes detected, skipping update")
-            return
-        }
-        context.coordinator.lastDataHash = newDataHash
+//        var hasher = Hasher()
+//        shazams.hash(into: &hasher)
+//        spots.hash(into: &hasher)
+//        let newDataHash = hasher.finalize()
+//
+//        if context.coordinator.lastDataHash == newDataHash {
+//            print("No data changes detected, skipping update")
+//            return
+//        }
+//        context.coordinator.lastDataHash = newDataHash
 
         // Get current annotations (excluding user location and clusters)
         let currentAnnotations = mapView.annotations.filter {
