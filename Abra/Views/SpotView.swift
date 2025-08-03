@@ -82,11 +82,15 @@ struct SpotView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     HStack(spacing: -2) {
-                        Button(action: { music.playPause(ids: trackIDs) }) {
+                        Menu {
+                            Button("Shuffle", systemImage: "shuffle", action: { spot.play(music, shuffle: true) })
+                        } label: {
                             Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
                                 .foregroundColor(.gray)
                                 .font(.system(size: 24))
                                 .symbolRenderingMode(.hierarchical)
+                        } primaryAction: {
+                            music.playPause(ids: trackIDs)
                         }
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark.circle.fill")
