@@ -67,7 +67,9 @@ struct SpotView: View {
 
                     List(spot.shazamStreamsByEvent(selectedEvent)) { stream in
                         Button(action: {
-                            view.show(stream)
+                            if let appleMusicID = stream.appleMusicID {
+                                music.playPause(id: appleMusicID)
+                            }
                         }) {
                             SongRowMini(stream: stream)
                         }

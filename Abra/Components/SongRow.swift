@@ -92,7 +92,8 @@ struct SongRow: View {
                 Button(
                     nowPlaying ? "Pause" : "Play",
                     systemImage: nowPlaying ? "pause.fill" : "play.fill",
-                    action: { music.playPause(id: appleMusicID) })
+                    action: { music.playPause(id: appleMusicID) }
+                )
             }
         }
         .confirmationDialog("This song will be deleted from your Abra and Shazam libraries.", isPresented: $confirmationShown, titleVisibility: .visible) {
@@ -117,7 +118,8 @@ struct SongRowMini: View {
     
     var stream: ShazamStream
     
-    private var nowPlaying: Bool { music.nowPlaying == stream.appleMusicID }
+    private var nowPlaying: Bool { music.nowPlaying != nil && music.nowPlaying == stream.appleMusicID }
+    private var lastPlayed: Bool { music.lastPlayed != nil && music.lastPlayed == stream.appleMusicID }
     
     var body: some View {
         HStack {
@@ -129,6 +131,12 @@ struct SongRowMini: View {
                 .frame(width: 48, height: 48)
                 .clipShape(.rect(cornerRadius: 3))
                 .padding(.trailing, 5)
+                .overlay {
+                    if nowPlaying || lastPlayed {
+                        NowPlayingAnimation(on: nowPlaying)
+                            .transition(.opacity.animation(.easeInOut(duration: 0.25)))
+                    }
+                }
                 
             VStack(alignment: .leading) {
                 HStack {
@@ -163,14 +171,66 @@ struct SongRowMini: View {
                 Divider()
             }
             
-            if let appleMusicID = stream.appleMusicID {
-                Button(
-                    nowPlaying ? "Pause" : "Play",
-                    systemImage: nowPlaying ? "pause.fill" : "play.fill",
-                    action: { music.playPause(id: appleMusicID) })
-            }
+            Button("View", systemImage: "arrow.up.right", action: { view.show(stream) })
         }
         .contentShape(Rectangle())
+    }
+}
+
+struct NowPlayingAnimation: View {
+    let on: Bool
+    
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(0 ..< 5) { index in
+                AnimatedBar(
+                    isAnimating: on,
+                    delay: Double(index) * 0.1
+                )
+            }
+        }
+        .frame(width: 48, height: 48)
+        .background(.black.opacity(0.4))
+        .clipShape(.rect(cornerRadius: 3))
+        .padding(.trailing, 5)
+    }
+}
+
+struct AnimatedBar: View {
+    let isAnimating: Bool
+    let delay: Double
+    
+    @State private var height: CGFloat = 2
+    
+    var body: some View {
+        RoundedRectangle(cornerRadius: 1)
+            .fill(.white)
+            .frame(width: 2, height: height)
+            .animation(
+                isAnimating ?
+                    Animation.easeInOut(duration: 0.6)
+                    .repeatForever(autoreverses: true)
+                    .delay(delay) :
+                    Animation.easeInOut(duration: 0.3),
+                value: height
+            )
+            .onAppear {
+                updateHeight()
+            }
+            .onChange(of: isAnimating) {
+                updateHeight()
+            }
+    }
+    
+    private func updateHeight() {
+        if isAnimating {
+            // Random heights for the bars when animating
+            let heights: [CGFloat] = [8, 12, 16, 10, 6]
+            height = heights[Int(delay * 10) % heights.count]
+        } else {
+            // Collapsed state
+            height = 2
+        }
     }
 }
 
