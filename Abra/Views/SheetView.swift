@@ -49,11 +49,11 @@ struct SheetView: View {
                     SpotsList()
                         .padding(.horizontal)
                         .padding(.vertical, 8)
-                        .scrollTransition(.animated.threshold(.visible(0.05))) { content, phase in
+                        .scrollTransition(.animated.threshold(.visible(0.4))) { content, phase in
                             content
                                 .opacity(phase.isIdentity ? 1 : 0)
                         }
-                    
+                        
                     SongsList
                 } else {
                     if spots.isEmpty && shazams.isEmpty {
@@ -64,7 +64,7 @@ struct SheetView: View {
                     }
                 }
             }
-            .searchable(text: $searchText, isPresented: $searchFocused, prompt: "Shazams, Spots, Cities, and More")
+            .searchable(text: $searchText, isPresented: $searchFocused, prompt: "Shazams, Spots, Places, and More")
             .onScrollGeometryChange(for: CGFloat.self, of: { geometry in
                 geometry.contentOffset.y
             }) { oldValue, newValue in
@@ -111,11 +111,12 @@ struct SheetView: View {
         LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
             ForEach(timeSectionedStreams) { section in
                 Section {
-                    ForEach(section, id: \.self) { shazam in
+                    ForEach(section) { shazam in
                         Button(action: { view.show(shazam) }) {
                             SongRow(stream: shazam)
                         }
                         .buttonStyle(.plain)
+                        .padding(.bottom, shazam == section.last ? 12 : 0)
                         
                         if shazam != section.last {
                             Divider()
