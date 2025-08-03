@@ -147,13 +147,30 @@ struct SongSheet: View {
 #Preview {
     @State @Previewable var preview: ShazamStream = .preview
     
-    ModelContainerPreview(PreviewSampleData.inMemoryContainer) {
-        SongSheet(stream: preview)
-            .onAppear {
-                preview.appleMusicURL = URL(string: "https://music.apple.com/us/album/id1411801429")!
-                preview.appleMusicID = "1411801429"
-            }
-            .environment(MusicProvider())
-            .padding()
-    }
+    SongSheet(stream: preview)
+        .onAppear {
+            preview.appleMusicURL = URL(string: "https://music.apple.com/us/album/id1411801429")!
+            preview.appleMusicID = "1411801429"
+        }
+        .environment(MusicProvider())
+        .padding()
+}
+
+#Preview("SongView") {
+    @State @Previewable var preview: ShazamStream = .preview
+    
+    EmptyView()
+        .inspector(isPresented: .constant(true)) {
+            SongView(stream: preview)
+                .onAppear {
+                    preview.appleMusicURL = URL(string: "https://music.apple.com/us/album/id1411801429")!
+                    preview.appleMusicID = "1411801429"
+                }
+                .environment(SheetProvider())
+                .environment(LibraryProvider())
+                .environment(MusicProvider())
+                .environment(LocationProvider())
+                .environment(ShazamProvider())
+                .presentationBackground(.thickMaterial)
+        }
 }
