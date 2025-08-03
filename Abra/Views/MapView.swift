@@ -180,6 +180,10 @@ struct MapView: UIViewRepresentable {
                     let spot = Spot(locationFrom: streams.first!, type: .place, streams: streams, modelContext: parent.modelContext)
                     parent.modelContext.insert(spot)
                     parent.sheet.show(spot)
+                    
+                    Task {
+                        spot.appendNearbyShazamStreams(parent.modelContext)
+                    }
                 }
             default:
                 return

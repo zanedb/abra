@@ -68,11 +68,6 @@ import SwiftData
         self.state = placemark?.administrativeArea
         self.country = placemark?.country
         self.countryCode = placemark?.isoCountryCode
-        
-        // If Spot exists with similar latitude/longitude, set it automatically
-        Task {
-            spotIt(context: modelContext)
-        }
     }
 }
 
@@ -168,8 +163,8 @@ extension ShazamStream {
         self.countryCode = placemark?.isoCountryCode
     }
     
-    /// Find Spots that are super close by and save to automagically
-    /// Queries for lat/long within three decimal sig figs of precision
+    /// Find Spots that are super close by and save to automagically.
+    /// Queries for lat/long within three decimal sig figs of precision.
     public func spotIt(context: ModelContext) {
         let precision = 0.001
         let halfPrecision = precision / 2

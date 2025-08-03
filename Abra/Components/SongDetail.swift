@@ -200,6 +200,10 @@ struct SongDetail: View {
         let spot = Spot(locationFrom: stream, type: type, streams: [stream], modelContext: modelContext)
         modelContext.insert(spot)
         view.show(spot)
+        
+        Task {
+            spot.appendNearbyShazamStreams(modelContext)
+        }
     }
 }
 

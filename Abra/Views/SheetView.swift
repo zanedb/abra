@@ -168,7 +168,13 @@ struct SheetView: View {
         // Create and show ShazamStream
         let stream = ShazamStream(mediaItem: mediaItem, location: location.currentLocation, placemark: location.currentPlacemark, modelContext: modelContext)
         modelContext.insert(stream)
+        try? modelContext.save()
         view.show(stream)
+        
+        // If Spot exists with similar latitude/longitude, set it automatically
+        Task {
+            stream.spotIt(context: modelContext)
+        }
     }
     
     private func handleShazamAPIError(_ error: ShazamError) {
