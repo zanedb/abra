@@ -40,6 +40,7 @@ struct SheetView: View {
     @State private var searchText: String = ""
     @State private var searchHidden: Bool = false
     @State private var searchFocused: Bool = false
+    @State private var hapticTrigger = false
     
     var body: some View {
         NavigationStack {
@@ -103,6 +104,7 @@ struct SheetView: View {
                 handleShazamAPIError(error)
             }
         }
+        .sensoryFeedback(.success, trigger: hapticTrigger)
     }
     
     private var SongsList: some View {
@@ -170,6 +172,7 @@ struct SheetView: View {
         modelContext.insert(stream)
         try? modelContext.save()
         view.show(stream)
+        hapticTrigger.toggle()
         
         // If Spot exists with similar latitude/longitude, set it automatically
         Task {
