@@ -74,45 +74,42 @@ struct SongDetail: View {
                 
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .top) {
-                        if let spot = stream.spot {
-                            Button(action: {
-                                view.show(spot)
-                            }) {
-                                SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: 40, renderingMode: .hierarchical)
-                                
-                                Text(spot.name)
-                                    .lineLimit(1)
-                                    .fontWeight(.medium)
-                                    .foregroundStyle(Color(spot.color))
-                            }
-                        } else {
-                            Button("Select", systemImage: "mappin.and.ellipse", action: selectSpot)
-                        }
-                        
-                        Spacer()
-                        
-                        VStack(alignment: .trailing, spacing: 4) {
+                        VStack(alignment: .leading, spacing: 4) {
                             Text(stream.timestamp, style: .time)
                                 .font(.system(size: 13, weight: .medium))
                             Text(stream.timestamp, style: .date)
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
+                            
+                            Text(stream.cityState) // TODO: neighborhood/address info here
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
                         }
-                    }
-                    
-                    if !identicalShazamStreams.isEmpty || stream.spot != nil {
-                        HStack {
+                        
+                        Spacer()
+                        
+                        VStack(alignment: .trailing) {
+                            if let spot = stream.spot {
+                                Button(action: {
+                                    view.show(spot)
+                                }) {
+                                    SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: 24, renderingMode: .hierarchical)
+                                    
+                                    Text(spot.name)
+                                        .lineLimit(1)
+                                        .fontWeight(.medium)
+                                        .foregroundStyle(Color(spot.color))
+                                }
+                            } else {
+                                Button("Select", systemImage: "mappin.and.ellipse", action: selectSpot)
+                            }
+                            
                             if !identicalShazamStreams.isEmpty {
+                                Spacer()
+                                
                                 previouslyDiscovered
                             }
-                            
-                            Spacer()
-                            
-                            if stream.spot != nil {
-                                eventSelector
-                            }
                         }
-                        .padding(.top, 4)
                     }
                 }
                 .padding()
@@ -132,13 +129,13 @@ struct SongDetail: View {
                 .presentationBackgroundInteraction(.enabled)
                 .presentationCornerRadius(14)
         }
-        .alert("Add an event", isPresented: $eventAlertShown) {
+        /*.alert("Add an event", isPresented: $eventAlertShown) {
             TextField("Name", text: $eventName)
             Button("Cancel", role: .cancel) {}
             Button("OK", action: newEvent)
         } message: {
             Text("[This UI is temporary.]")
-        }
+        }*/
     }
     
     private var eventSelector: some View {
@@ -214,6 +211,7 @@ struct SongDetail: View {
                 .environment(LibraryProvider())
                 .environment(MusicProvider())
                 .environment(LocationProvider())
+                .environment(ShazamProvider())
         }
         .modelContainer(PreviewSampleData.container)
 }

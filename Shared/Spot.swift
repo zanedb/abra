@@ -61,10 +61,6 @@ enum SpotType: Codable {
         self.state = locationFrom.state
         self.country = locationFrom.country
         self.countryCode = locationFrom.countryCode
-
-        Task {
-            appendNearbyShazamStreams(modelContext)
-        }
     }
 }
 
