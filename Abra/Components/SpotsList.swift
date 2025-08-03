@@ -58,16 +58,10 @@ struct SpotsList: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 6)
         .contextMenu {
-            Button(role: .destructive, action: { pendingDeletion = spot; confirmationShown = true }, label: {
-                Label("Delete", systemImage: "trash")
-            })
+            Button("Delete", systemImage: "trash", role: .destructive, action: { pendingDeletion = spot; confirmationShown = true })
             Divider()
-            Button(action: { spot.play(music, shuffle: true) }) {
-                Label("Shuffle", systemImage: "shuffle")
-            }
-            Button(action: { spot.play(music) }) {
-                Label("Play", systemImage: "play.fill")
-            }
+            Button("Shuffle", systemImage: "shuffle", action: { spot.play(music, shuffle: true) })
+            Button("Play", systemImage: "play.fill", action: { spot.play(music) })
         }
         .confirmationDialog("This spot will be deleted from your Abra library, though the contents will not be deleted.", isPresented: $confirmationShown, titleVisibility: .visible) {
             Button("Delete Spot", role: .destructive, action: deleteSpot)

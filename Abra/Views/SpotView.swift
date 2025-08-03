@@ -130,18 +130,18 @@ struct SpotView: View {
                     .font(minimized ? .title2 : .title)
                     .frame(maxWidth: minimized ? 220 : 180, alignment: .leading)
                     .bold()
-                Menu {
-                    Button("Place", systemImage: spot.type == .place ? "checkmark" : "", action: { spot.type = .place })
-                    Button("Vehicle", systemImage: spot.type == .vehicle ? "checkmark" : "", action: { spot.type = .vehicle })
-                } label: {
+//                Menu {
+//                    Button("Place", systemImage: spot.type == .place ? "checkmark" : "", action: { spot.type = .place })
+//                    Button("Vehicle", systemImage: spot.type == .vehicle ? "checkmark" : "", action: { spot.type = .vehicle })
+//                } label: {
                     Text(spot.description)
                         .font(.system(size: 15))
                         .foregroundColor(.gray)
-                    Image(systemName: "chevron.up.chevron.down")
-                        .imageScale(.small)
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                }
+//                    Image(systemName: "chevron.up.chevron.down")
+//                        .imageScale(.small)
+//                        .font(.subheadline)
+//                        .foregroundColor(.gray)
+//                }
             }
             .padding(.leading, 6)
             .frame(maxWidth: .infinity, alignment: .leading)

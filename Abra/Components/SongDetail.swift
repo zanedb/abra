@@ -197,7 +197,7 @@ struct SongDetail: View {
     private func createSpot(_ type: SpotType) {
         showingSpotSelector = false
         // Create new Spot, insert into modelContext, and open for immediate editing
-        let spot = Spot(locationFrom: stream, type: type, streams: [stream], modelContext: modelContext)
+        let spot = Spot(locationFrom: stream, type: .place, streams: [stream], modelContext: modelContext)
         modelContext.insert(spot)
         view.show(spot)
         
