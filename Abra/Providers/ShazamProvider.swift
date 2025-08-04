@@ -141,7 +141,7 @@ enum ShazamStatus: Equatable {
                 status = .error(.noMatch)
                 
             case .error(let error, _):
-                logger.error("Matching error: \(error.localizedDescription)")
+                logger.error("Matching error: \(error)")
                 status = .error(.matchFailed(error))
             }
     

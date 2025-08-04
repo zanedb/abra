@@ -139,14 +139,18 @@ struct EditableList<
     }
 }
 
-/// Extract error code from localizedDescription with some goofy regex
-func extractShazamErrorCode(from text: String) -> String {
-    guard let range = text.range(of: "com.apple.ShazamKit error \\d+", options: .regularExpression),
-          let codeRange = text[range].range(of: "\\d+$", options: .regularExpression)
-    else {
-        return ""
+/// Extract error message from body with some goofy regex
+func extractShazamErrorCode(from error: any Error) -> String? {
+    let errorString = String(describing: error)
+    let regex = try! NSRegularExpression(pattern: #"Code=\d+\s+"([^"]*)"#)
+    let range = NSRange(location: 0, length: errorString.utf16.count)
+    
+    guard let match = regex.firstMatch(in: errorString, range: range),
+          let stringRange = Range(match.range(at: 1), in: errorString) else {
+        return nil
     }
-    return String(text[codeRange])
+    
+    return String(errorString[stringRange])
 }
 
 /// Determine if app is running in Preview environment
