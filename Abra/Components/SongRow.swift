@@ -9,6 +9,7 @@ import SwiftUI
 struct SongRow: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var modelContext
+    @Environment(SheetProvider.self) var view
     @Environment(ShazamProvider.self) private var shazam
     @Environment(MusicProvider.self) private var music
     
@@ -85,6 +86,11 @@ struct SongRow: View {
                 ShareLink(item: appleMusicURL) {
                     Label("Share", systemImage: "square.and.arrow.up")
                 }
+            }
+            
+            if let spot = stream.spot {
+                Divider()
+                Button("Show in Spot", systemImage: "arrow.up.forward", action: { view.show(spot) })
             }
             
             if let appleMusicID = stream.appleMusicID {
