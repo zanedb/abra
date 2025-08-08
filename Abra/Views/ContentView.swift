@@ -64,7 +64,7 @@ struct ContentView: View {
                 if !onboarded && !isPreview {
                     VisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
                         .edgesIgnoringSafeArea(.all)
-                        .transition(.opacity.animation(.easeInOut(duration: 0.25)))
+                        .transition(.opacity.animation(.easeInOut(duration: 0.5)))
                         
                     OnboardingView()
                         .environment(shazam)
@@ -93,14 +93,7 @@ struct ContentView: View {
             .presentationDetents([.height(96), .fraction(0.50), .fraction(0.999)], selection: $detent)
             .presentationInspector()
             .interactiveDismissDisabled()
-            .introspect(.sheet, on: .iOS(.v18)) { sheetView in
-                sheetView.prefersEdgeAttachedInCompactHeight = true // Disable full-width in landscape
-                sheetView.widthFollowsPreferredContentSizeWhenEdgeAttached = true // Use landscape width
-                sheetView.prefersScrollingExpandsWhenScrolledToEdge = false // Allow scrolling in .medium
-                sheetView.setValue(1, forKey: "horizontalAlignment") // Leading-aligned sheet in landscape/iPad (width-dependent)
-                sheetView.setValue(true, forKey: "wantsBottomAttached")
-                sheetView.setValue(10, forKey: "marginInRegularWidthRegularHeight")
-            }
+            .prefersEdgeAttachedInCompactHeight(allowScrollingInMediumDetent: true)
     }
     
     private var searching: some View {

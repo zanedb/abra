@@ -16,10 +16,27 @@ struct InspectorSheetPresentation: ViewModifier {
 }
 
 struct EdgeAttachedInCompactHeight: ViewModifier {
+    var allowScrollingInMediumDetent: Bool = false
+    
     func body(content: Content) -> some View {
         content
             .introspect(.sheet, on: .iOS(.v18)) { sheetView in
+                sheetView.presentedViewController.preferredContentSize = CGSize(width: 400, height: sheetView.frameOfPresentedViewInContainerView.height)
+                
+                // Disable full-width in landscape
                 sheetView.prefersEdgeAttachedInCompactHeight = true
+                sheetView.widthFollowsPreferredContentSizeWhenEdgeAttached = true
+                
+                // Leading-aligned sheet in landscape/iPad (width-dependent)
+                sheetView.setValue(true, forKey: "tucksIntoUnsafeAreaInCompactHeight")
+                sheetView.setValue(1, forKey: "horizontalAlignment")
+                sheetView.setValue(true, forKey: "wantsBottomAttached")
+                sheetView.setValue(10, forKey: "marginInRegularWidthRegularHeight")
+                
+                // Optionally alow scrolling in medium detent (used on main "inspector")
+                if allowScrollingInMediumDetent {
+                    sheetView.prefersScrollingExpandsWhenScrolledToEdge = false
+                }
             }
     }
 }
@@ -30,9 +47,9 @@ extension View {
         modifier(InspectorSheetPresentation())
     }
     
-    /// Only attach view to bottom edge, thereby disabling full-width presentation in landscape.
-    func prefersEdgeAttachedInCompactHeight() -> some View {
-        modifier(EdgeAttachedInCompactHeight())
+    /// Attach view to bottom leading edge, thereby disabling full-width presentation in landscape.
+    func prefersEdgeAttachedInCompactHeight(allowScrollingInMediumDetent: Bool = false) -> some View {
+        modifier(EdgeAttachedInCompactHeight(allowScrollingInMediumDetent: allowScrollingInMediumDetent))
     }
 }
 
