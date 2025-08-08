@@ -7,6 +7,7 @@ import Combine
 import SwiftUI
 
 struct OnboardingView: View {
+    @Environment(\.openURL) private var openURL
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
 
@@ -59,26 +60,40 @@ struct OnboardingView: View {
 
     var permissions: some View {
         VStack(alignment: .leading) {
-            Text("Before you begin..")
+            Text("Welcome! 🙂‍↔️")
                 .font(.system(size: 34, weight: .black))
                 .shadow(color: .theme, radius: 12)
             Text("Abra needs a few permissions to be useful.")
                 .font(.system(size: 17))
                 .padding(.bottom)
-
+            
             RoundedButton(
                 label: locAuth ? "" : "Location",
                 systemImage: locAuth ? "checkmark" : "location.fill",
                 color: locAuth ? .green : .blue,
-                action: { location.requestPermission() }
+                onFirstTap: {
+                    location.requestPermission()
+                },
+                onSubsequentTaps: {
+                    if !locAuth {
+                        openURL(URL(string: UIApplication.openSettingsURLString)!)
+                    }
+                }
             )
 
             RoundedButton(
                 label: micAuth ? "" : "Microphone",
                 systemImage: micAuth ? "checkmark" : "microphone.fill",
                 color: micAuth ? .green : .orange,
-                action: {
-                    Task { micAuth = await shazam.checkMicrophoneAuthorization() }
+                onFirstTap: {
+                    Task {
+                        micAuth = await shazam.checkMicrophoneAuthorization()
+                    }
+                },
+                onSubsequentTaps: {
+                    if !micAuth {
+                        openURL(URL(string: UIApplication.openSettingsURLString)!)
+                    }
                 }
             )
         }
