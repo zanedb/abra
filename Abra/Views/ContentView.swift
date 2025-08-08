@@ -115,6 +115,10 @@ struct ContentView: View {
                 alignment: .topTrailing
             )
             .onAppear {
+                // If location was "allow once" request again
+                if location.authorizationStatus == .notDetermined && onboarded {
+                    location.requestPermission()
+                }
                 // We‘ll need this soon
                 location.requestLocation()
             }
