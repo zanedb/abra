@@ -22,8 +22,6 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
 }
 
 @Observable final class LibraryProvider {
-    var hasIgnoredPhotosRequest: Bool = false
-    
     typealias PHAssetLocalIdentifier = String
     
     enum AuthorizationError: Error {
@@ -32,10 +30,6 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
     
     enum QueryError: Error {
         case phAssetNotFound
-    }
-    
-    init() {
-        hasIgnoredPhotosRequest = UserDefaults.standard.bool(forKey: "hasIgnoredPhotosRequest")
     }
     
     // Whether the user has granted us library access
@@ -48,6 +42,7 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
     var imageCachingManager = PHCachingImageManager()
     
     func requestAuthorization(date: Date, handleError: ((AuthorizationError?) -> Void)? = nil) {
+        UserDefaults.standard.set(true, forKey: "hasRequestedPhotosAuthorization")
         PHPhotoLibrary.requestAuthorization { [weak self] status in
             self?.authorizationStatus = status
             
@@ -131,10 +126,5 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
         }
         
         return asset
-    }
-    
-    func ignorePhotosRequest() {
-        UserDefaults.standard.set(true, forKey: "hasIgnoredPhotosRequest")
-        hasIgnoredPhotosRequest = true
     }
 }

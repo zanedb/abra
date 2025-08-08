@@ -10,7 +10,12 @@ struct Photos: View {
     @Environment(LibraryProvider.self) private var library
     @Environment(\.openURL) private var openURL
 
-    @State private var showError = false
+    @AppStorage("hasRequestedPhotosAuthorization") var requestedAuthorization: Bool = false
+    @AppStorage("hasIgnoredPhotosRequest") var ignoredRequest: Bool = false
+
+    private var authorized: Bool {
+        library.authorizationStatus == .authorized || library.authorizationStatus == .limited
+    }
 
     var stream: ShazamStream
 
@@ -18,18 +23,23 @@ struct Photos: View {
         // Make sure photo library access is granted
         // If not, we'll show the permission grant view
         guard library.authorizationStatus != .authorized || library.authorizationStatus != .limited else { return }
+        guard requestedAuthorization else { return } // Don't prompt if user hasn't interacted yet
         library.requestAuthorization(date: stream.timestamp,
                                      handleError: { error in
                                          guard error != nil else { return }
-                                         showError = true
+                                         print("Photos error occurred")
                                      })
     }
 
     var body: some View {
         VStack(alignment: .leading) {
-            if showError {
-                heading
-                permissionView
+            if !authorized {
+                if ignoredRequest {
+                    EmptyView()
+                } else {
+                    heading
+                    permissionView
+                }
             } else {
                 if library.results.isEmpty {
                     EmptyView()
@@ -75,47 +85,26 @@ struct Photos: View {
                     cornerRadius: 14
                 ))
 
-            // MARK: this creates an X button that closes the card permanently
-
-            // I'm disabling this for now because it is annoying to reset
-            // Also, there's no settings UI yet so no it's irreversible
-            // And I want people to use it! Sorry!
-//            VStack {
-//                HStack {
-//                    Spacer()
-//                    Button(action: {
-//                        library.ignorePhotosRequest()
-//                    }) {
-//                        Image(systemName: "xmark")
-//                    }
-//                        .tint(.primary)
-//                }
-//                Spacer()
-//            }
-//                .frame(maxHeight: 172)
-//                .padding(.top, 24)
-//                .padding(.trailing)
-
             VStack {
-                Text("We can show relevant photos if you grant full library access.")
+                Text("We can show photos from this moment if you grant library access.")
                     .font(.subheadline)
                     .multilineTextAlignment(.center)
                     .padding(.top, 1)
 
                 Button(action: {
-                    if showError {
-                        // Go to app-specific settings
+                    if requestedAuthorization {
+                        // If we've already prompted, go to app-specific settings
                         openURL(URL(string: UIApplication.openSettingsURLString)!)
                     } else {
                         library.requestAuthorization(date: stream.timestamp,
                                                      handleError: { error in
                                                          guard error != nil else { return }
-                                                         showError = true
+                                                         print("Photos error occurred")
                                                      })
                     }
                 }, label: {
                     HStack {
-                        Image(systemName: showError ? "xmark.app" : "hand.raised.app")
+                        Image(systemName: requestedAuthorization ? "xmark.app" : "hand.raised.app")
                             .font(.system(size: 24))
                         Text("Full Photo Library")
                     }
@@ -123,6 +112,19 @@ struct Photos: View {
                 .padding(.top, 8)
             }
             .frame(maxWidth: 256)
+        }
+        .overlay {
+            // MARK: "Ignore" button disabled until Settings view is implemented
+            // Show ignore button if user has interacted with permission prompt
+//            HStack(alignment: .top) {
+//                Spacer()
+//                Button(action: {
+//                    ignoredRequest = true
+//                }) {
+//                    Image(systemName: "xmark")
+//                }
+//                .tint(.primary)
+//            }
         }
         .padding(.horizontal)
     }
