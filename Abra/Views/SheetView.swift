@@ -75,7 +75,7 @@ struct SheetView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Text("Abra")
-                        .font(.title2)
+                        .font(.title2.weight(.medium))
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     HStack(spacing: 2) {
