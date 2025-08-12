@@ -14,10 +14,10 @@ struct Control: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: kind) {
             ControlWidgetButton(action: StartShazamSessionIntent()) {
-                Label("Recognize Music", systemImage: "shazam.logo")
+                Label("Recognize Music", image: "abra.logo")
             }
         }
             .displayName("Recognize Music")
-            .description("Use Shazam to recognize and add currently playing music")
+            .description("Use Shazam to recognize currently playing music.")
     }
 }
