@@ -25,7 +25,17 @@ struct OnboardingView: View {
     var body: some View {
         Group {
             if locAuth && micAuth {
+                plus
+                    .ignoresSafeArea()
+                    .opacity(phase >= 0 ? 1 : 0)
+                    .foregroundColor(phase < 7 ? .primary : .secondary)
+
+                addAControl
+                    .opacity(phase >= 2 ? 1 : 0)
+                    .foregroundColor(phase < 7 ? .primary : .secondary)
+
                 arrow
+                    .opacity(phase >= 7 ? 1 : 0)
                     .transition(
                         .asymmetric(
                             insertion: .opacity.animation(.easeInOut(duration: 3)),
@@ -60,13 +70,12 @@ struct OnboardingView: View {
 
     var permissions: some View {
         VStack(alignment: .leading) {
-            Text("Welcome! 🙂‍↔️")
+            Text("Hi there! 🙂‍↔️")
                 .font(.system(size: 34, weight: .black))
                 .shadow(color: .theme, radius: 12)
-            Text("Abra needs a few permissions to be useful.")
-                .font(.system(size: 17))
+            Text("Abra needs permission to locate Shazams.")
                 .padding(.bottom)
-            
+
             RoundedButton(
                 label: locAuth ? "" : "Location",
                 systemImage: locAuth ? "checkmark" : "location.fill",
@@ -107,61 +116,87 @@ struct OnboardingView: View {
             Text("Add Abra’s Control widget for quick access.")
                 .padding(.bottom)
 
-            HStack {
-                Spacer()
+            VStack(alignment: .leading, spacing: 24) {
+                Divider()
 
-                Image(systemName: "plus")
-                    .foregroundColor(phase == 0 ? .primary : .gray)
-                    .opacity(phase >= 0 ? 1 : 0)
+                HStack(spacing: 8) {
+                    Image("AppIconDisplayable")
+                        .resizable()
+                        .background(.black.opacity(0.75))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .frame(width: 32, height: 32, alignment: .center)
 
-                Spacer()
-
-                Group {
-                    Image(systemName: "plus.circle.fill")
-                    Text("Add a Control")
-                        .font(.system(size: 14, weight: .bold))
+                    Text("Abra")
+                        .font(.subheadline.weight(.medium))
                 }
-                .foregroundColor(phase == 1 ? .primary : .gray)
-                .opacity(phase >= 1 ? 1 : 0)
-
-                Spacer()
 
                 VStack {
-                    Image(systemName: "shazam.logo")
+                    Image("abra.logo")
                         .font(.system(size: 34))
+                        .foregroundStyle(.white)
+                        .padding(8)
+                        .background(Circle().fill(.secondary))
                     Text("Recognize\nMusic")
                         .font(.caption2)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
                 }
-                .foregroundColor(phase >= 2 && phase < 5 ? .primary : .gray)
-                .opacity(phase >= 2 ? 1 : 0)
+                .shadow(color: phase == 5 ? .theme : .clear, radius: 12)
 
-                Spacer()
+                Divider()
             }
-            .onAppear {
-                timer = Timer.publish(every: 2, on: .main, in: .common)
-                    .autoconnect()
-                    .sink { _ in
-                        withAnimation(.easeInOut(duration: 1)) {
-                            phase = (phase + 1)
-                        }
-                    }
-            }
-            .onDisappear {
-                timer?.cancel()
-            }
+            .opacity(phase >= 3 ? 1 : 0)
 
             Spacer()
 
-            if phase > 5 {
-                RoundedButton(
-                    label: "I’m ready",
-                    systemImage: "checkmark",
-                    color: .primary,
-                    action: { UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding") }
-                )
+            RoundedButton(
+                label: "I’m ready",
+                systemImage: "checkmark",
+                color: .primary,
+                action: { UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding") }
+            )
+            .padding(.top)
+            .opacity(phase > 20 ? 1 : 0)
+            .disabled(phase <= 20)
+        }
+        .statusBar(hidden: true)
+        .onAppear {
+            timer = Timer.publish(every: 0.75, on: .main, in: .common)
+                .autoconnect()
+                .sink { _ in
+                    withAnimation(.easeInOut(duration: 1)) {
+                        phase = (phase + 1)
+                    }
+                }
+        }
+        .onDisappear {
+            timer?.cancel()
+        }
+    }
+
+    var plus: some View {
+        ZStack(alignment: .topLeading) {
+            Color.clear
+
+            Image(systemName: "plus")
+                .font(.system(size: 20))
+                .padding(.leading, 36)
+                .padding(.top, 24)
+        }
+    }
+
+    var addAControl: some View {
+        ZStack(alignment: .bottom) {
+            Color.clear
+
+            HStack {
+                Image(systemName: "plus.circle.fill")
+                    .imageScale(.small)
+                Text("Add a Control")
+                    .font(.callout.weight(.medium))
             }
+            .padding(.bottom, 36)
         }
     }
 
@@ -175,13 +210,13 @@ struct OnboardingView: View {
                     .offset(offset)
                     .onAppear {
                         withAnimation(.easeInOut(duration: 1)
-                            .speed(0.5).repeatCount(3))
+                            .speed(0.5).repeatCount(7))
                         {
                             offset = CGSize(width: 0, height: 0)
                         }
                     }
 
-                Text("Swipe down for Control Center, then..")
+                Text("Now, swipe down for Control Center")
                     .frame(maxWidth: 128)
                     .multilineTextAlignment(.trailing)
                     .font(.caption)
