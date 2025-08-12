@@ -55,6 +55,16 @@ struct SheetView: View {
                         }
                         
                     SongsList
+                    
+                    if spots.isEmpty && shazams.isEmpty {
+                        Text("Let‘s Discover")
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 72)
+                        Text("Tap the Shazam icon to start recognizing.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 } else {
                     if spots.isEmpty && shazams.isEmpty {
                         ContentUnavailableView.search(text: searchText)
