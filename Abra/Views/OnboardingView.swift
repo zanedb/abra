@@ -10,50 +10,58 @@ struct OnboardingView: View {
     @Environment(\.openURL) private var openURL
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
+    @Environment(MusicProvider.self) private var music
 
     // Control animation properties
-    @State private var phase = -1
+    @State private var phase = 0
     @State private var timer: AnyCancellable?
     @State var offset = CGSize(width: 0, height: 16)
 
-    // Permissions state
+    // Permissions
     @State private var micAuth: Bool = false
     private var locAuth: Bool {
         location.authorizationStatus == .authorizedWhenInUse || location.authorizationStatus == .authorizedAlways
     }
 
+    private var musicAuth: Bool {
+        music.authorizationStatus == .authorized
+    }
+
+    enum OnboardingState {
+        case permissions
+        case control
+    }
+
+    private var step: OnboardingState {
+        if !locAuth || !micAuth || !musicAuth {
+            return .permissions
+        } else {
+            return .control
+        }
+    }
+
     var body: some View {
         Group {
-            if locAuth && micAuth {
+            if step == .control {
                 plus
                     .ignoresSafeArea()
-                    .opacity(phase >= 0 ? 1 : 0)
-                    .foregroundColor(phase < 7 ? .primary : .secondary)
 
                 addAControl
-                    .opacity(phase >= 2 ? 1 : 0)
-                    .foregroundColor(phase < 7 ? .primary : .secondary)
 
                 arrow
-                    .opacity(phase >= 7 ? 1 : 0)
-                    .transition(
-                        .asymmetric(
-                            insertion: .opacity.animation(.easeInOut(duration: 3)),
-                            removal: .opacity.animation(.easeInOut(duration: 0.2))
-                        )
-                    )
             }
 
             VStack {
-                if !locAuth || !micAuth {
+                switch step {
+                case .permissions:
                     permissions
                         .transition(
                             .asymmetric(
                                 insertion: .opacity.animation(.easeInOut(duration: 3)),
-                                removal: .opacity.animation(.easeInOut(duration: 0.3))
+                                removal: .opacity.animation(.easeInOut(duration: 0.25))
                             )
                         )
-                } else {
+                case .control:
                     control
                         .transition(
                             .asymmetric(
@@ -64,16 +72,17 @@ struct OnboardingView: View {
                 }
             }
             .padding(32)
-            .frame(maxWidth: 500, maxHeight: 300)
+            .frame(maxWidth: 500, maxHeight: 375)
         }
     }
 
-    var permissions: some View {
+    private var permissions: some View {
         VStack(alignment: .leading) {
-            Text("Hi there! 🙂‍↔️")
+            Text("Abra puts your Shazams on a map.")
                 .font(.system(size: 34, weight: .black))
+                .padding(.bottom, 4)
                 .shadow(color: .theme, radius: 12)
-            Text("Abra needs permission to locate Shazams.")
+            Text("Grant permissions to get started.")
                 .padding(.bottom)
 
             RoundedButton(
@@ -105,10 +114,26 @@ struct OnboardingView: View {
                     }
                 }
             )
+
+            RoundedButton(
+                label: musicAuth ? "" : "Song Lookup",
+                systemImage: musicAuth ? "checkmark" : "music.note",
+                color: musicAuth ? .green : .red,
+                onFirstTap: {
+                    Task {
+                        await music.authorize()
+                    }
+                },
+                onSubsequentTaps: {
+                    if !musicAuth {
+                        openURL(URL(string: UIApplication.openSettingsURLString)!)
+                    }
+                }
+            )
         }
     }
 
-    var control: some View {
+    private var control: some View {
         VStack(alignment: .leading) {
             Text("To finish setup,")
                 .font(.system(size: 34, weight: .black))
@@ -116,39 +141,7 @@ struct OnboardingView: View {
             Text("Add Abra’s Control widget for quick access.")
                 .padding(.bottom)
 
-            VStack(alignment: .leading, spacing: 24) {
-                Divider()
-
-                HStack(spacing: 8) {
-                    Image("AppIconDisplayable")
-                        .resizable()
-                        .background(.black.opacity(0.75))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .frame(width: 32, height: 32, alignment: .center)
-
-                    Text("Abra")
-                        .font(.subheadline.weight(.medium))
-                }
-
-                VStack {
-                    Image("abra.logo")
-                        .font(.system(size: 34))
-                        .foregroundStyle(.white)
-                        .padding(8)
-                        .background(Circle().fill(.secondary))
-                    Text("Recognize\nMusic")
-                        .font(.caption2)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.secondary)
-                }
-                .shadow(color: phase == 5 ? .theme : .clear, radius: 12)
-
-                Divider()
-            }
-            .opacity(phase >= 3 ? 1 : 0)
-
-            Spacer()
+            controlButton
 
             RoundedButton(
                 label: "I’m ready",
@@ -157,12 +150,12 @@ struct OnboardingView: View {
                 action: { UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding") }
             )
             .padding(.top)
-            .opacity(phase > 20 ? 1 : 0)
-            .disabled(phase <= 20)
+            .opacity(phase > 32 ? 1 : 0)
+            .disabled(phase <= 32)
         }
         .statusBar(hidden: true)
         .onAppear {
-            timer = Timer.publish(every: 0.75, on: .main, in: .common)
+            timer = Timer.publish(every: 0.5, on: .main, in: .common)
                 .autoconnect()
                 .sink { _ in
                     withAnimation(.easeInOut(duration: 1)) {
@@ -175,14 +168,21 @@ struct OnboardingView: View {
         }
     }
 
-    var plus: some View {
+    private var plus: some View {
         ZStack(alignment: .topLeading) {
             Color.clear
 
-            Image(systemName: "plus")
-                .font(.system(size: 20))
-                .padding(.leading, 36)
-                .padding(.top, 24)
+            HStack(alignment: .center) {
+                Image(systemName: "plus")
+                    .font(.system(size: 20))
+                    .foregroundColor(3 ... 4 ~= phase ? .primary : .secondary)
+
+                Guide("1")
+                    .padding(.leading, 4)
+                    .scaleEffect(phase > 2 ? 1 : 0)
+            }
+            .padding(.leading, 36)
+            .padding(.top, 12)
         }
     }
 
@@ -191,16 +191,61 @@ struct OnboardingView: View {
             Color.clear
 
             HStack {
-                Image(systemName: "plus.circle.fill")
-                    .imageScale(.small)
-                Text("Add a Control")
-                    .font(.callout.weight(.medium))
+                Group {
+                    Image(systemName: "plus.circle.fill")
+                        .imageScale(.small)
+                    Text("Add a Control")
+                        .font(.callout.weight(.medium))
+                }
+                .foregroundColor(5 ... 6 ~= phase ? .primary : .secondary)
+
+                Guide("2")
+                    .padding(.leading, 4)
+                    .scaleEffect(phase > 4 ? 1 : 0)
             }
             .padding(.bottom, 36)
         }
     }
 
-    var arrow: some View {
+    private var controlButton: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            Divider()
+
+            HStack(spacing: 8) {
+                Image("AppIconDisplayable")
+                    .resizable()
+                    .background(.black.opacity(0.75))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .frame(width: 32, height: 32, alignment: .center)
+
+                Text("Abra")
+                    .font(.subheadline.weight(.medium))
+            }
+
+            VStack(alignment: .leading) {
+                HStack {
+                    Image("abra.logo")
+                        .font(.system(size: 34))
+                        .foregroundStyle(.white)
+                        .padding(8)
+                        .background(Circle().fill(.secondary))
+                        .shadow(color: phase == 8 ? .theme : .clear, radius: 12)
+                    Guide("3")
+                        .padding(.leading, 12)
+                        .scaleEffect(phase > 6 ? 1 : 0)
+                }
+                Text("Recognize\nMusic")
+                    .font(.caption2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
+
+            Divider()
+        }
+    }
+
+    private var arrow: some View {
         ZStack(alignment: .topTrailing) {
             Color.clear
 
@@ -224,11 +269,22 @@ struct OnboardingView: View {
             }
             .padding(.trailing, 40)
         }
+        .opacity(phase >= 12 ? 1 : 0)
+    }
+
+    private func Guide(_ text: String) -> some View {
+        Text(text)
+            .foregroundStyle(.white)
+            .font(.headline.weight(.bold))
+            .padding(12)
+            .background(.blue)
+            .clipShape(Circle())
     }
 }
 
 #Preview {
-    MapView(modelContext: PreviewSampleData.container.mainContext)
+    MapView(modelContext: PreviewSampleData.container.mainContext, detent: .fraction(0.50))
+        .edgesIgnoringSafeArea(.all)
         .environment(SheetProvider())
         .modelContainer(PreviewSampleData.container)
         .overlay {
@@ -238,5 +294,6 @@ struct OnboardingView: View {
             OnboardingView()
                 .environment(ShazamProvider())
                 .environment(LocationProvider())
+                .environment(MusicProvider())
         }
 }
