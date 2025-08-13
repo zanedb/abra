@@ -4,8 +4,8 @@
 //
 
 import ActivityKit
-import WidgetKit
 import SwiftUI
+import WidgetKit
 
 struct LiveActivity: Widget {
     var body: some WidgetConfiguration {
@@ -17,8 +17,8 @@ struct LiveActivity: Widget {
                     .foregroundStyle(.white)
                 trailing(context: context)
             }
-                .activityBackgroundTint(.black)
-                .padding()
+            .activityBackgroundTint(.black)
+            .padding()
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
@@ -31,18 +31,19 @@ struct LiveActivity: Widget {
                     center(context: context)
                 }
             } compactLeading: {
-                Image(systemName: "shazam.logo.fill")
+                Image("abra.logo")
             } compactTrailing: {
                 Image(systemName: "waveform")
             } minimal: {
-                Image(systemName: "shazam.logo.fill")
+                Image("abra.logo")
             }
         }
     }
     
-    var leading: some View{
-        Image(systemName: "shazam.logo.fill")
+    var leading: some View {
+        Image("abra.logo")
             .resizable()
+            .scaledToFit()
             .frame(width: 55, height: 55)
     }
     
@@ -51,18 +52,18 @@ struct LiveActivity: Widget {
             Image(systemName: "xmark.circle.fill")
                 .symbolRenderingMode(.hierarchical)
                 .resizable()
-                .font(Font.title.weight(.light))
+                .scaledToFit()
                 .foregroundStyle(.blue)
                 .frame(width: 55, height: 55)
-                .accessibilityLabel("Stop listening")
+                .accessibilityLabel("Stop listening.")
         }
-            .buttonStyle(PlainButtonStyle())
+        .buttonStyle(PlainButtonStyle())
     }
     
     func center(context: ActivityViewContext<WidgetAttributes>) -> some View {
         HStack(spacing: 0) {
             Text(context.state.takingTooLong ? "Still listening…" : "Listening…")
-                .font(.system(size: 17, weight: .bold))
+                .font(.headline.weight(.bold))
                 .padding(.leading, 5)
             
             Spacer()
