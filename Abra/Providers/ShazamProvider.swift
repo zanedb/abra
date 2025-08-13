@@ -210,6 +210,11 @@ enum ShazamStatus: Equatable {
         Task {
             await startMatching()
         }
+        
+        // Power users go on through
+        if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+            UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+        }
     }
     
     @MainActor @objc private func handleStopRecordingIntent(_ notification: Notification) {
