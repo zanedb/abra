@@ -76,9 +76,6 @@ struct SongView: View {
         .onGeometryChange(for: CGRect.self) { proxy in
             proxy.frame(in: .global)
         } action: { minimized = ($0.height < 100) ? true : false }
-        .task {
-            await music.authorize()
-        }
         .onChange(of: location.currentPlacemark) {
             // Save location if it wasn't initially ready
             if let currentLoc = location.currentLocation, stream.latitude == -1 && stream.longitude == -1 {

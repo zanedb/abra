@@ -11,7 +11,7 @@ import StoreKit
 @Observable class MusicProvider {
     let musicPlayer = MPMusicPlayerController.systemMusicPlayer
     
-    var authorizationStatus: MusicAuthorization.Status?
+    var authorizationStatus: MusicAuthorization.Status = .notDetermined
     
     private(set) var nowPlaying: String?
     private(set) var lastPlayed: String?
@@ -118,6 +118,10 @@ import StoreKit
     @discardableResult
     func fetchTrackInfo(_ trackId: String) async throws -> MusicItemCollection<Song>.Element? {
         do {
+            if authorizationStatus == .notDetermined {
+                await authorize()
+            }
+            
             let request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: MusicItemID(rawValue: trackId))
             let response = try await request.response()
             
