@@ -135,7 +135,7 @@ struct SheetView: View {
                     }
                 } header: {
                     Text("\(section.id)")
-                        .foregroundColor(.gray)
+                        .foregroundStyle(.gray)
                         .font(.subheading)
                         .padding(.horizontal)
                         .padding(.vertical, 4)

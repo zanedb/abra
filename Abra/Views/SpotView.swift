@@ -47,7 +47,7 @@ struct SpotView: View {
                         Text("\(eventCount) Event\(eventCount != 1 ? "s" : "")")
                             .font(.subheadline)
                             .bold()
-                            .foregroundColor(.gray)
+                            .foregroundStyle(.gray)
                             .padding(.horizontal)
                             .padding(.top, 12)
                             
@@ -61,7 +61,7 @@ struct SpotView: View {
                         
                     Text("\(songCount) Song\(songCount != 1 ? "s" : "")")
                         .font(.subheading)
-                        .foregroundColor(.gray)
+                        .foregroundStyle(.gray)
                         .padding(.horizontal)
                         .padding(.top, 12)
 
@@ -86,7 +86,7 @@ struct SpotView: View {
                             Button("Shuffle", systemImage: "shuffle", action: { spot.play(music, shuffle: true) })
                         } label: {
                             Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                                .foregroundColor(.gray)
+                                .foregroundStyle(.gray)
                                 .font(.system(size: 24))
                                 .symbolRenderingMode(.hierarchical)
                         } primaryAction: {
@@ -94,7 +94,7 @@ struct SpotView: View {
                         }
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.gray)
+                                .foregroundStyle(.gray)
                                 .font(.system(size: 24))
                                 .symbolRenderingMode(.hierarchical)
                         }
@@ -140,11 +140,11 @@ struct SpotView: View {
 //                } label: {
                     Text(spot.description)
                         .font(.system(size: 15))
-                        .foregroundColor(.gray)
+                        .foregroundStyle(.gray)
 //                    Image(systemName: "chevron.up.chevron.down")
 //                        .imageScale(.small)
 //                        .font(.subheadline)
-//                        .foregroundColor(.gray)
+//                        .foregroundStyle(.gray)
 //                }
             }
             .padding(.leading, 6)

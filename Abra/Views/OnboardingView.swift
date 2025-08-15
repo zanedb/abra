@@ -175,7 +175,7 @@ struct OnboardingView: View {
             HStack(alignment: .center) {
                 Image(systemName: "plus")
                     .font(.system(size: 20))
-                    .foregroundColor(3 ... 4 ~= phase ? .primary : .secondary)
+                    .foregroundStyle(3 ... 4 ~= phase ? .primary : .secondary)
 
                 Guide("1")
                     .padding(.leading, 4)
@@ -197,7 +197,7 @@ struct OnboardingView: View {
                     Text("Add a Control")
                         .font(.callout.weight(.medium))
                 }
-                .foregroundColor(5 ... 6 ~= phase ? .primary : .secondary)
+                .foregroundStyle(5 ... 6 ~= phase ? .primary : .secondary)
 
                 Guide("2")
                     .padding(.leading, 4)

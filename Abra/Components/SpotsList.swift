@@ -24,7 +24,7 @@ struct SpotsList: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 0) {
                     Text("Spots")
-                        .foregroundColor(.gray)
+                        .foregroundStyle(.gray)
                         .font(.subheading)
                 }
                 .padding(.bottom, 8)
@@ -50,7 +50,7 @@ struct SpotsList: View {
                 SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: 48)
                 Text(spot.name)
                     .font(.system(size: 12))
-                    .foregroundColor(.primary)
+                    .tint(.primary)
                     .lineLimit(1)
             }
             .frame(width: 56)

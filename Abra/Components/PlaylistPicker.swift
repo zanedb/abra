@@ -65,7 +65,7 @@ struct PlaylistPicker: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.gray)
+                            .foregroundStyle(.gray)
                             .font(.system(size: 24))
                             .symbolRenderingMode(.hierarchical)
                     }

@@ -40,13 +40,13 @@ struct SongRow: View {
                     
                     Text(stream.relativeDateTime)
                         .font(.system(size: 13))
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
                 .padding(.bottom, 3)
                 
                 Text(stream.artist)
                     .font(.system(size: 14))
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .padding(.bottom, 3)
                 
                 Spacer()
@@ -58,7 +58,7 @@ struct SongRow: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 12, height: 12)
-                                .foregroundColor(Color(spot.color))
+                                .foregroundStyle(Color(spot.color))
                             Text(spot.name)
                                 .foregroundStyle(.secondary)
                                 .font(.system(size: 13))
@@ -155,7 +155,7 @@ struct SongRowMini: View {
                     if stream.isExplicit {
                         Image(systemName: "e.square.fill")
                             .imageScale(.small)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                             .padding(.leading, -3.0)
                             .accessibilityLabel("Explicit")
                     }
@@ -163,7 +163,7 @@ struct SongRowMini: View {
                 
                 Text(stream.artist)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
             
@@ -194,7 +194,7 @@ struct SongRowMini: View {
         Text("Discovered")
             .font(.subheadline)
             .bold()
-            .foregroundColor(.gray)
+            .foregroundStyle(.gray)
             .padding(.horizontal)
             .padding(.top, 12)
         EditableList(Binding(get: { [ShazamStream.preview, ShazamStream.preview] }, set: { _ in })) { $stream in

@@ -22,7 +22,7 @@ struct SpotIcon: View {
             .resizable()
             .scaledToFit()
             .frame(width: size / 2, height: size / 2)
-            .foregroundColor(renderingMode == .iconOnly || renderingMode == .hierarchical ? color : .white)
+            .foregroundStyle(renderingMode == .iconOnly || renderingMode == .hierarchical ? color : .white)
             .frame(width: size, height: size)
             .background(
                 renderingMode == .iconOnly

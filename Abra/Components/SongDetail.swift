@@ -79,11 +79,11 @@ struct SongDetail: View {
                                 .font(.system(size: 13, weight: .medium))
                             Text(stream.timestamp, style: .date)
                                 .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                             
                             Text(stream.cityState) // TODO: neighborhood/address info here
                                 .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                         
                         Spacer()

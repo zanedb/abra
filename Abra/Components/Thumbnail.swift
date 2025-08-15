@@ -36,7 +36,7 @@ struct Thumbnail: View {
                     .aspectRatio(2/3, contentMode: .fit)
             } else {
                 Rectangle()
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
                     .colorInvert()
                     .aspectRatio(2/3, contentMode: .fit)
                 ProgressView()

@@ -106,8 +106,8 @@ struct ContentView: View {
             .overlay(
                 Button { shazam.stopMatching() } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
-                        .font(.system(size: 36))
+                        .foregroundStyle(.white)
+                        .font(.system(size: 32))
                         .symbolRenderingMode(.hierarchical)
                         .padding(.vertical)
                         .padding(.trailing, -10)

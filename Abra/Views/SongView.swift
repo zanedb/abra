@@ -9,11 +9,7 @@ import SwiftUI
 
 struct SongView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
-    @Environment(SheetProvider.self) private var view
-    @Environment(LibraryProvider.self) private var library
-    @Environment(MusicProvider.self) private var music
     @Environment(LocationProvider.self) private var location
     
     var stream: ShazamStream
@@ -58,14 +54,14 @@ struct SongView: View {
                         if let appleMusicURL = stream.appleMusicURL {
                             ShareLink(item: appleMusicURL) {
                                 Image(systemName: "square.and.arrow.up.circle.fill")
-                                    .foregroundColor(.gray)
+                                    .foregroundStyle(.gray)
                                     .font(.system(size: 24))
                                     .symbolRenderingMode(.hierarchical)
                             }
                         }
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.gray)
+                                .foregroundStyle(.gray)
                                 .font(.system(size: 24))
                                 .symbolRenderingMode(.hierarchical)
                         }
@@ -94,5 +90,6 @@ struct SongView: View {
                 .environment(LibraryProvider())
                 .environment(MusicProvider())
                 .environment(LocationProvider())
+                .environment(ShazamProvider())
         }
 }
