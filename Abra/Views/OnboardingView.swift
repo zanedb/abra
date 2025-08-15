@@ -42,7 +42,7 @@ struct OnboardingView: View {
     }
 
     var body: some View {
-        ZStack {
+        Group {
             if step == .control {
                 plus
                     .ignoresSafeArea()
