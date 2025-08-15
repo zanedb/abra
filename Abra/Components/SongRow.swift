@@ -139,7 +139,11 @@ struct SongRowMini: View {
                 .padding(.trailing, 5)
                 .overlay {
                     if nowPlaying || lastPlayed {
-                        NowPlayingAnimation(on: nowPlaying)
+                        Waveform(on: nowPlaying)
+                            .frame(width: 48, height: 48)
+                            .background(.black.opacity(0.4))
+                            .clipShape(.rect(cornerRadius: 3))
+                            .padding(.trailing, 5)
                             .transition(.opacity.animation(.easeInOut(duration: 0.25)))
                     }
                 }
@@ -180,63 +184,6 @@ struct SongRowMini: View {
             Button("View", systemImage: "arrow.up.right", action: { view.show(stream) })
         }
         .contentShape(Rectangle())
-    }
-}
-
-struct NowPlayingAnimation: View {
-    let on: Bool
-    
-    var body: some View {
-        HStack(spacing: 2) {
-            ForEach(0 ..< 5) { index in
-                AnimatedBar(
-                    isAnimating: on,
-                    delay: Double(index) * 0.1
-                )
-            }
-        }
-        .frame(width: 48, height: 48)
-        .background(.black.opacity(0.4))
-        .clipShape(.rect(cornerRadius: 3))
-        .padding(.trailing, 5)
-    }
-}
-
-struct AnimatedBar: View {
-    let isAnimating: Bool
-    let delay: Double
-    
-    @State private var height: CGFloat = 2
-    
-    var body: some View {
-        RoundedRectangle(cornerRadius: 1)
-            .fill(.white)
-            .frame(width: 2, height: height)
-            .animation(
-                isAnimating ?
-                    Animation.easeInOut(duration: 0.6)
-                    .repeatForever(autoreverses: true)
-                    .delay(delay) :
-                    Animation.easeInOut(duration: 0.3),
-                value: height
-            )
-            .onAppear {
-                updateHeight()
-            }
-            .onChange(of: isAnimating) {
-                updateHeight()
-            }
-    }
-    
-    private func updateHeight() {
-        if isAnimating {
-            // Random heights for the bars when animating
-            let heights: [CGFloat] = [8, 12, 16, 10, 6]
-            height = heights[Int(delay * 10) % heights.count]
-        } else {
-            // Collapsed state
-            height = 2
-        }
     }
 }
 
