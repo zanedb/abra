@@ -22,6 +22,8 @@
 		2F4BE1EB2D7FEE1D006AFFC2 /* WidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2F4BE1D72D7FEE1C006AFFC2 /* WidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2F4BE1F82D80B6DB006AFFC2 /* ActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4BE1F72D80B6D7006AFFC2 /* ActivityAttributes.swift */; };
 		2F4BE1FB2D80B707006AFFC2 /* ActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4BE1F72D80B6D7006AFFC2 /* ActivityAttributes.swift */; };
+		2F4C61F12E4EBBAA00B1E0AF /* MotionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4C61F02E4EBBA800B1E0AF /* MotionProvider.swift */; };
+		2F4C61F32E4EC48900B1E0AF /* Waveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4C61F22E4EC48800B1E0AF /* Waveform.swift */; };
 		2F6093702A2EDFB30092A6DD /* AbraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F60936F2A2EDFB30092A6DD /* AbraApp.swift */; };
 		2F6093742A2EDFB50092A6DD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F6093732A2EDFB50092A6DD /* Assets.xcassets */; };
 		2F6093772A2EDFB50092A6DD /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F6093762A2EDFB50092A6DD /* Preview Assets.xcassets */; };
@@ -117,6 +119,7 @@
 		2F4BE1D92D7FEE1C006AFFC2 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		2F4BE1DB2D7FEE1C006AFFC2 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		2F4BE1F72D80B6D7006AFFC2 /* ActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityAttributes.swift; sourceTree = "<group>"; };
+		2F4C61F02E4EBBA800B1E0AF /* MotionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionProvider.swift; sourceTree = "<group>"; };
 		2F4C61F22E4EC48800B1E0AF /* Waveform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Waveform.swift; sourceTree = "<group>"; };
 		2F60936C2A2EDFB30092A6DD /* Abra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Abra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F60936F2A2EDFB30092A6DD /* AbraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbraApp.swift; sourceTree = "<group>"; };
@@ -307,6 +310,7 @@
 		2F6093A72A2EF2290092A6DD /* Providers */ = {
 			isa = PBXGroup;
 			children = (
+				2F4C61F02E4EBBA800B1E0AF /* MotionProvider.swift */,
 				2F63DEDF2E0D2AF600DAA30F /* SheetProvider.swift */,
 				2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */,
 				2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */,
@@ -566,6 +570,7 @@
 				2F8908882C73106D0002850C /* Photos.swift in Sources */,
 				2FEACDF72C7317AF00F79E2D /* LibraryProvider.swift in Sources */,
 				2F9D49532A79CECE002CB9E5 /* SpotView.swift in Sources */,
+				2F4C61F32E4EC48900B1E0AF /* Waveform.swift in Sources */,
 				2FE8937C2E26EBA700244DEF /* SpotSelector.swift in Sources */,
 				2FA7D81E2AC0EA240039AD5C /* PreviewSampleData.swift in Sources */,
 				2F4BE1F82D80B6DB006AFFC2 /* ActivityAttributes.swift in Sources */,
@@ -573,6 +578,7 @@
 				2FB9AF012A3193F5003C7A21 /* SongSheet.swift in Sources */,
 				2FE766D22A30515E00952513 /* SongRow.swift in Sources */,
 				2FA7D81C2AC0E9780039AD5C /* ModelContainerPreview.swift in Sources */,
+				2F4C61F12E4EBBAA00B1E0AF /* MotionProvider.swift in Sources */,
 				2F8919F02A4442BA0012DFF6 /* SpotsList.swift in Sources */,
 				2F25ED1D2E2EF0E600BD2FEE /* SongActions.swift in Sources */,
 				2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */,

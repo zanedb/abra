@@ -13,6 +13,7 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     
     @AppStorage("hasCompletedOnboarding") var onboarded: Bool = false
+    @Namespace var animation
     
     @State var detent: PresentationDetent = .fraction(0.50)
     
@@ -32,7 +33,7 @@ struct ContentView: View {
                 set: { _ in }
             )) {
                 inspector
-                    .popover(isPresented: Binding(
+                    .fullScreenCover(isPresented: Binding(
                         get: { shazam.isMatching },
                         set: { _ in shazam.stopMatching() }
                     )) {
@@ -97,23 +98,16 @@ struct ContentView: View {
     }
     
     private var searching: some View {
-        Searching()
-            .presentationDetents([.fraction(0.50)])
-            .interactiveDismissDisabled()
-            .presentationDragIndicator(.hidden)
-            .presentationBackground(.thickMaterial)
-            .presentationCornerRadius(18)
-            .overlay(
+        Searching(namespace: animation)
+            .overlay(alignment: .topTrailing) {
                 Button { shazam.stopMatching() } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.white)
                         .font(.system(size: 32))
                         .symbolRenderingMode(.hierarchical)
-                        .padding(.vertical)
-                        .padding(.trailing, -10)
-                },
-                alignment: .topTrailing
-            )
+                }
+                .padding(.horizontal)
+            }
             .onAppear {
                 // If location was "allow once" request again
                 if location.authorizationStatus == .notDetermined && onboarded {
