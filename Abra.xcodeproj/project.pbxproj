@@ -51,7 +51,6 @@
 		2FB9AF012A3193F5003C7A21 /* SongSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB9AF002A3193F5003C7A21 /* SongSheet.swift */; };
 		2FBD40702A3ED4E10083C4B6 /* SheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */; };
 		2FC1E0952A622A7B00EF92D4 /* IconDesigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC1E0942A622A7B00EF92D4 /* IconDesigner.swift */; };
-		2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC675622A3FACD200FD7638 /* SearchBar.swift */; };
 		2FC8CCEF2AC399B600523478 /* SectionedQuery in Frameworks */ = {isa = PBXBuildFile; productRef = 2FC8CCEE2AC399B600523478 /* SectionedQuery */; };
 		2FCB5C402E1E4FDE0053E33D /* SentrySwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2FCB5C3F2E1E4FDE0053E33D /* SentrySwiftUI */; };
 		2FD307AC2E3426C5004ED2AD /* PlaylistPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD307AB2E3426C3004ED2AD /* PlaylistPicker.swift */; };
@@ -118,6 +117,7 @@
 		2F4BE1D92D7FEE1C006AFFC2 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		2F4BE1DB2D7FEE1C006AFFC2 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		2F4BE1F72D80B6D7006AFFC2 /* ActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityAttributes.swift; sourceTree = "<group>"; };
+		2F4C61F22E4EC48800B1E0AF /* Waveform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Waveform.swift; sourceTree = "<group>"; };
 		2F60936C2A2EDFB30092A6DD /* Abra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Abra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F60936F2A2EDFB30092A6DD /* AbraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbraApp.swift; sourceTree = "<group>"; };
 		2F6093732A2EDFB50092A6DD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -151,7 +151,6 @@
 		2FB9AF002A3193F5003C7A21 /* SongSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongSheet.swift; sourceTree = "<group>"; };
 		2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetView.swift; sourceTree = "<group>"; };
 		2FC1E0942A622A7B00EF92D4 /* IconDesigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconDesigner.swift; sourceTree = "<group>"; };
-		2FC675622A3FACD200FD7638 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		2FD307AB2E3426C3004ED2AD /* PlaylistPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistPicker.swift; sourceTree = "<group>"; };
 		2FD307AD2E3449FF004ED2AD /* NewPlaylist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPlaylist.swift; sourceTree = "<group>"; };
 		2FD8448B2A2F089000B67301 /* Abra.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Abra.entitlements; sourceTree = "<group>"; };
@@ -347,11 +346,11 @@
 			children = (
 				2FE893772E25D92100244DEF /* Wrapper.swift */,
 				2F736BB82DBD8D020078F1BB /* Toast.swift */,
+				2F4C61F22E4EC48800B1E0AF /* Waveform.swift */,
 				2FB5FA2E2DB883FF00EFD901 /* Annotations.swift */,
 				2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */,
 				2F3DAB7E2DA9CEEF001004B9 /* RoundedButton.swift */,
 				2FF310C92A4A6DE900DA2A80 /* Searching.swift */,
-				2FC675622A3FACD200FD7638 /* SearchBar.swift */,
 				2FE766D12A30515E00952513 /* SongRow.swift */,
 				2FB9AF002A3193F5003C7A21 /* SongSheet.swift */,
 				2FAF74B62E0C55AA003D246C /* SongDetail.swift */,
@@ -556,7 +555,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				2F6093A42A2EEDFE0092A6DD /* MapView.swift in Sources */,
-				2FC675632A3FACD200FD7638 /* SearchBar.swift in Sources */,
 				2F3DAB7F2DA9CEF1001004B9 /* RoundedButton.swift in Sources */,
 				2F3C12D12E3B31930080C310 /* SpotRow.swift in Sources */,
 				2F6093A22A2EEC960092A6DD /* ContentView.swift in Sources */,
@@ -847,7 +845,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.71.0;
+				MARKETING_VERSION = 0.72.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abra;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -885,7 +883,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.71.0;
+				MARKETING_VERSION = 0.72.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abra;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
