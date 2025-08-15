@@ -22,10 +22,11 @@ struct OnboardingView: View {
     private var locAuth: Bool {
         location.authorizationStatus == .authorizedWhenInUse || location.authorizationStatus == .authorizedAlways
     }
-
     private var musicAuth: Bool {
         music.authorizationStatus == .authorized
     }
+
+    private var idiom = UIDevice.current.userInterfaceIdiom
 
     enum OnboardingState {
         case permissions
@@ -41,7 +42,7 @@ struct OnboardingView: View {
     }
 
     var body: some View {
-        Group {
+        ZStack {
             if step == .control {
                 plus
                     .ignoresSafeArea()
@@ -169,7 +170,7 @@ struct OnboardingView: View {
     }
 
     private var plus: some View {
-        ZStack(alignment: .topLeading) {
+        ZStack(alignment: idiom == .phone ? .topLeading : .topTrailing) {
             Color.clear
 
             HStack(alignment: .center) {
@@ -182,12 +183,13 @@ struct OnboardingView: View {
                     .scaleEffect(phase > 2 ? 1 : 0)
             }
             .padding(.leading, 36)
-            .padding(.top, 12)
+            .padding(.top, idiom == .phone ? 12 : 16)
+            .padding(.trailing, idiom == .phone ? 0 : 284) // For iPad positioning
         }
     }
 
     var addAControl: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: idiom == .phone ? .bottom : .trailing) {
             Color.clear
 
             HStack {
@@ -204,6 +206,9 @@ struct OnboardingView: View {
                     .scaleEffect(phase > 4 ? 1 : 0)
             }
             .padding(.bottom, 36)
+            .padding(.leading, 32)
+            .padding(.top, idiom == .phone ? 0 : 156) // For iPad positioning
+            .padding(.trailing, idiom == .phone ? 0 : 104) // For iPad positioning
         }
     }
 
@@ -268,6 +273,7 @@ struct OnboardingView: View {
                     .padding(.top, 12)
             }
             .padding(.trailing, 40)
+            .padding(.top, idiom == .phone ? 0 : 24)
         }
         .opacity(phase >= 12 ? 1 : 0)
     }
@@ -283,7 +289,7 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    MapView(modelContext: PreviewSampleData.container.mainContext, detent: .fraction(0.50))
+    MapView(modelContext: PreviewSampleData.container.mainContext)
         .edgesIgnoringSafeArea(.all)
         .environment(SheetProvider())
         .modelContainer(PreviewSampleData.container)
