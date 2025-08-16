@@ -29,7 +29,6 @@ struct SongView: View {
                     .padding(.top, -48)
                 
                 SongDetail(stream: stream)
-                    .padding(.horizontal)
                     
                 Photos(stream: stream)
                 

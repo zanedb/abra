@@ -61,7 +61,7 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
         var filteredAssets: [PHAsset] = []
         let searchRadius: CLLocationDistance = 500 // 0.5km
         
-        // Select photos within 0.5km of ShazamStream coord
+        // Select photos within 0.5km
         allAssets.enumerateObjects { asset, _, _ in
             if let assetLocation = asset.location {
                 let distance = assetLocation.distance(from: location)

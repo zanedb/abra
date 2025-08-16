@@ -16,14 +16,9 @@ struct Photos: View {
     var stream: ShazamStream
 
     @State private var loaded: Bool = false
-    
+
     private func loadPhotos() {
-        // Don't prompt if user hasn't interacted yet
-        guard requestedAuthorization else { return }
-
-        // Reset (in case of view replacement)
-        loaded = false
-
+        loaded = false // Reset (in case of view replacement)
         // Request authorization, on success load photos
         library.requestAuthorization {
             loaded = true
@@ -46,6 +41,9 @@ struct Photos: View {
             }
         }
         .task(id: stream.persistentModelID) {
+            // Don't prompt if user hasn't interacted yet
+            guard requestedAuthorization else { return loaded = true }
+
             loadPhotos()
         }
     }
@@ -54,7 +52,6 @@ struct Photos: View {
         Text("Moments")
             .font(.subheading)
             .padding(.horizontal)
-            .padding(.top, 8)
     }
 
     private var libraryView: some View {
@@ -70,6 +67,7 @@ struct Photos: View {
             .padding(.horizontal)
             .frame(height: 192)
         }
+        .padding(.bottom, 8)
     }
 
     private var permissionView: some View {
@@ -120,6 +118,7 @@ struct Photos: View {
 //            }
         }
         .padding(.horizontal)
+        .padding(.bottom, 8)
     }
 }
 

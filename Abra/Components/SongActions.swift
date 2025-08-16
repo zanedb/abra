@@ -52,7 +52,8 @@ struct SongActions: View {
                 row("Delete", icon: "trash.fill", action: { showingConfirmation = true }, role: .destructive)
             }
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.bottom)
         .popover(isPresented: $showingPlaylistPicker) {
             PlaylistPicker(stream: stream)
                 .presentationDetents([.fraction(0.50), .fraction(0.999)])

@@ -115,6 +115,8 @@ struct SongDetail: View {
                 .padding()
             }
         }
+        .padding(.horizontal)
+        .padding(.bottom, 8)
         .popover(isPresented: $showingSpotSelector) {
             SpotSelector(selection: $stream.spot, newSpotCallback: { createSpot(type) })
                 .presentationDetents([.fraction(0.50), .fraction(0.999)])
