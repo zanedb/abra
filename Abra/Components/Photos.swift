@@ -13,44 +13,40 @@ struct Photos: View {
     @AppStorage("hasRequestedPhotosAuthorization") var requestedAuthorization: Bool = false
     @AppStorage("hasIgnoredPhotosRequest") var ignoredRequest: Bool = false
 
-    private var authorized: Bool {
-        library.authorizationStatus == .authorized || library.authorizationStatus == .limited
-    }
-
     var stream: ShazamStream
 
-    func requestForAuthorizationIfNecessary() {
-        // Make sure photo library access is granted
-        // If not, we'll show the permission grant view
-        guard library.authorizationStatus != .authorized || library.authorizationStatus != .limited else { return }
-        guard requestedAuthorization else { return } // Don't prompt if user hasn't interacted yet
-        library.requestAuthorization(date: stream.timestamp,
-                                     handleError: { error in
-                                         guard error != nil else { return }
-                                         print("Photos error occurred")
-                                     })
+    @State private var loaded: Bool = false
+    
+    private func loadPhotos() {
+        // Don't prompt if user hasn't interacted yet
+        guard requestedAuthorization else { return }
+
+        // Reset (in case of view replacement)
+        loaded = false
+
+        // Request authorization, on success load photos
+        library.requestAuthorization {
+            loaded = true
+            if library.authorized {
+                library.fetchSelectedPhotos(date: stream.timestamp, location: stream.location)
+            }
+        }
     }
 
     var body: some View {
         VStack(alignment: .leading) {
-            if !authorized {
-                if ignoredRequest {
-                    EmptyView()
-                } else {
-                    heading
-                    permissionView
-                }
-            } else {
-                if library.results.isEmpty {
-                    EmptyView()
-                } else {
+            if loaded {
+                if library.authorized && !library.results.isEmpty {
                     heading
                     libraryView
+                } else if !library.authorized {
+                    heading
+                    permissionView
                 }
             }
         }
         .task(id: stream.persistentModelID) {
-            requestForAuthorizationIfNecessary()
+            loadPhotos()
         }
     }
 
@@ -96,11 +92,7 @@ struct Photos: View {
                         // If we've already prompted, go to app-specific settings
                         openURL(URL(string: UIApplication.openSettingsURLString)!)
                     } else {
-                        library.requestAuthorization(date: stream.timestamp,
-                                                     handleError: { error in
-                                                         guard error != nil else { return }
-                                                         print("Photos error occurred")
-                                                     })
+                        loadPhotos()
                     }
                 }, label: {
                     HStack {
@@ -115,6 +107,7 @@ struct Photos: View {
         }
         .overlay {
             // MARK: "Ignore" button disabled until Settings view is implemented
+
             // Show ignore button if user has interacted with permission prompt
 //            HStack(alignment: .top) {
 //                Spacer()

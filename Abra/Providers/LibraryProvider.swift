@@ -11,55 +11,38 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
     typealias Element = PHAsset
     typealias Index = Int
     
-    var fetchResult: PHFetchResult<PHAsset>
+    var filteredResult: [PHAsset]
     
-    var endIndex: Int { fetchResult.count }
+    var endIndex: Int { filteredResult.count }
     var startIndex: Int { 0 }
     
     subscript(position: Int) -> PHAsset {
-        fetchResult.object(at:  fetchResult.count - position - 1)
+        filteredResult[filteredResult.count - position - 1]
     }
 }
 
 @Observable final class LibraryProvider {
     typealias PHAssetLocalIdentifier = String
     
-    enum AuthorizationError: Error {
-        case restrictedAccess
-    }
-    
     enum QueryError: Error {
         case phAssetNotFound
     }
     
-    // Whether the user has granted us library access
     var authorizationStatus: PHAuthorizationStatus = .notDetermined
+    var authorized: Bool { authorizationStatus == .authorized || authorizationStatus == .limited }
     
-    // Collection that stores photo asset IDs
-    var results = PHFetchResultCollection(fetchResult: .init())
-    
-    // The manager that will fetch and cache photos for us
+    var results = PHFetchResultCollection(filteredResult: [])
     var imageCachingManager = PHCachingImageManager()
     
-    func requestAuthorization(date: Date, handleError: ((AuthorizationError?) -> Void)? = nil) {
+    func requestAuthorization(callback: (() -> Void)? = nil) {
         UserDefaults.standard.set(true, forKey: "hasRequestedPhotosAuthorization")
         PHPhotoLibrary.requestAuthorization { [weak self] status in
             self?.authorizationStatus = status
-            
-            switch status {
-            // If access granted, fetch photo asset IDs
-            case .authorized, .limited:
-                self?.fetchSelectedPhotos(date: date)
-            // If denied, show error
-            case .denied, .notDetermined, .restricted:
-                handleError?(.restrictedAccess)
-            @unknown default:
-                break
-            }
+            callback?()
         }
     }
     
-    private func fetchSelectedPhotos(date: Date) {
+    func fetchSelectedPhotos(date: Date, location: CLLocation) {
         imageCachingManager.allowsCachingHighQualityImages = false
         
         let fetchOptions = PHFetchOptions()
@@ -71,11 +54,25 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
         fetchOptions.predicate = NSPredicate(format: "creationDate >= %@ && creationDate <= %@", startDate as CVarArg, endDate as CVarArg)
         
         fetchOptions.sortDescriptors = [
-            NSSortDescriptor(key: "creationDate", ascending: false) // sort descending
+            NSSortDescriptor(key: "creationDate", ascending: false) // Sort descending
         ]
         
+        let allAssets = PHAsset.fetchAssets(with: .image, options: fetchOptions)
+        var filteredAssets: [PHAsset] = []
+        let searchRadius: CLLocationDistance = 500 // 0.5km
+        
+        // Select photos within 0.5km of ShazamStream coord
+        allAssets.enumerateObjects { asset, _, _ in
+            if let assetLocation = asset.location {
+                let distance = assetLocation.distance(from: location)
+                if distance <= searchRadius {
+                    filteredAssets.append(asset)
+                }
+            }
+        }
+        
         DispatchQueue.main.async {
-            self.results.fetchResult = PHAsset.fetchAssets(with: .image, options: fetchOptions)
+            self.results.filteredResult = filteredAssets
         }
     }
     
@@ -99,7 +96,7 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
         options.isNetworkAccessAllowed = true
         options.isSynchronous = true
         
-        return try await withCheckedThrowingContinuation{ [weak self] continuation in
+        return try await withCheckedThrowingContinuation { [weak self] continuation in
             self?.imageCachingManager.requestImage(
                 for: asset,
                 targetSize: targetSize,
