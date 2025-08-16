@@ -11,63 +11,123 @@ import ShazamKit
 import SwiftData
 
 @Model final class ShazamStream {
-    var title: String = ""
-    var artist: String = ""
-    var isExplicit: Bool = false
-    var artworkURL: URL = URL(string: "https://upload.wikimedia.org/wikipedia/en/c/cf/Denzel_Curry_-_Melt_My_Eyez_See_Your_Future.png")!
     var timestamp: Date = Date.now
     
+    // SHMediaItem
+    var title: String = ""
+    var subtitle: String?
+    var artist: String = ""
+    var artworkURL: URL = URL(string: "https://upload.wikimedia.org/wikipedia/en/c/cf/Denzel_Curry_-_Melt_My_Eyez_See_Your_Future.png")!
+    var videoURL: URL?
+    var genres: [String] = []
+    var isExplicit: Bool = false
+    var creationDate: Date?
     var isrc: String?
-    var shazamID: String?
-    var shazamLibraryID: UUID?
-    var appleMusicID: String?
+    var shazamLibraryID: UUID? // SHMediaItem.id
     var appleMusicURL: URL?
+    var appleMusicID: String?
+    var webURL: URL?
+    var shazamID: String?
+    var timeRanges: [Range<TimeInterval>] = []
+    var frequencySkewRanges: [Range<Float>] = []
     
-    var latitude: Double = 37.721941
-    var longitude: Double = -122.4739084
-    var speed: Double?
-    var altitude: Double?
-    var thoroughfare: String?
-    var city: String?
-    var state: String?
+    // CLLocation
+    var latitude: Double = -1
+    var longitude: Double = -1
+    var altitude: CLLocationDistance?
+    var isProducedByAccessory: Bool?
+    var isSimulatedBySoftware: Bool?
+    var horizontalAccuracy: CLLocationAccuracy?
+    var verticalAccuracy: CLLocationAccuracy?
+    var speed: CLLocationSpeed?
+    var speedAccuracy: CLLocationSpeedAccuracy?
+    var course: CLLocationDirection?
+    var courseAccuracy: CLLocationDirectionAccuracy?
+    
+    // CLPlacemark
+    var placemarkName: String? // CLPlacemark.name
+    var thoroughfare: String? // Street address
+    var subThoroughfare: String? // Street number
+    var city: String? // CLPlacemark.locality
+    var subLocality: String? // Neighborhood
+    var state: String? // CLPlacemark.administrativeArea, state/province
+    var subAdministrativeArea: String? // County
+    var postalCode: String?
+    var countryCode: String? // CLPlacemark.isoCountryCode
     var country: String?
-    var countryCode: String?
+    var inlandWater: String? // Body of water, if above one
+    var ocean: String? // If above one
+    var areasOfInterest: [String] = []
+    var timeZoneIdentifier: String?
     
+    // Relations
     var spot: Spot?
     var event: Event?
     
-    init(title: String = "", artist: String = "", isExplicit: Bool = false, artworkURL: URL = URL(string: "https://upload.wikimedia.org/wikipedia/en/c/cf/Denzel_Curry_-_Melt_My_Eyez_See_Your_Future.png")!, latitude: Double = 37.721941, longitude: Double = -122.4739084) {
-        self.title = title
-        self.artist = artist
-        self.isExplicit = isExplicit
+    init(mediaItem: SHMediaItem, location: CLLocation?, placemark: CLPlacemark?) {
         self.timestamp = .now
-        self.artworkURL = artworkURL
-        self.latitude = latitude
-        self.longitude = longitude
-    }
-    
-    init(mediaItem: SHMediaItem, location: CLLocation?, placemark: CLPlacemark?, modelContext: ModelContext) {
+        
+        // SHMediaItem
         self.title = mediaItem.title ?? "Unknown Title"
+        self.subtitle = mediaItem.subtitle
         self.artist = mediaItem.artist ?? "Unknown Artist"
-        self.isExplicit = mediaItem.explicitContent
-        self.timestamp = .now
         self.artworkURL = mediaItem.artworkURL ?? URL(string: "https://zane.link/abra-unavailable")!
+        self.videoURL = mediaItem.videoURL
+        self.genres = mediaItem.genres
+        self.isExplicit = mediaItem.explicitContent
+        self.creationDate = mediaItem.creationDate
+        self.isrc = mediaItem.isrc
+        self.shazamLibraryID = mediaItem.id
+        self.appleMusicURL = mediaItem.appleMusicURL
+        self.appleMusicID = mediaItem.appleMusicID
+        self.webURL = mediaItem.webURL
+        self.shazamID = mediaItem.shazamID
+        self.timeRanges = mediaItem.timeRanges
+        self.frequencySkewRanges = mediaItem.frequencySkewRanges
+        
+        // CLLocation
         self.latitude = location?.coordinate.latitude ?? -1
         self.longitude = location?.coordinate.longitude ?? -1
-        
-        // Optional properties
-        self.isrc = mediaItem.isrc
-        self.shazamID = mediaItem.shazamID
-        self.shazamLibraryID = mediaItem.id
-        self.appleMusicID = mediaItem.appleMusicID
-        self.appleMusicURL = mediaItem.appleMusicURL
         self.altitude = location?.altitude
+        self.isProducedByAccessory = location?.sourceInformation?.isProducedByAccessory
+        self.isSimulatedBySoftware = location?.sourceInformation?.isSimulatedBySoftware
+        self.horizontalAccuracy = location?.horizontalAccuracy
+        self.verticalAccuracy = location?.verticalAccuracy
         self.speed = location?.speed
+        self.speedAccuracy = location?.speedAccuracy
+        self.course = location?.course
+        self.courseAccuracy = location?.courseAccuracy
+        
+        // CLPlacemark
+        self.placemarkName = placemark?.name
         self.thoroughfare = placemark?.thoroughfare
+        self.subThoroughfare = placemark?.subThoroughfare
         self.city = placemark?.locality
+        self.subLocality = placemark?.subLocality
         self.state = placemark?.administrativeArea
-        self.country = placemark?.country
+        self.subAdministrativeArea = placemark?.subAdministrativeArea
+        self.postalCode = placemark?.postalCode
         self.countryCode = placemark?.isoCountryCode
+        self.country = placemark?.country
+        self.inlandWater = placemark?.inlandWater
+        self.ocean = placemark?.ocean
+        self.areasOfInterest = placemark?.areasOfInterest ?? []
+        self.timeZoneIdentifier = placemark?.timeZone?.identifier
+    }
+    
+    // .preview initializer
+    init(title: String = "", artist: String = "", isExplicit: Bool = false, artworkURL: URL = URL(string: "https://upload.wikimedia.org/wikipedia/en/c/cf/Denzel_Curry_-_Melt_My_Eyez_See_Your_Future.png")!, latitude: Double = 37.721941, longitude: Double = -122.4739084) {
+        self.timestamp = .now
+        self.title = title
+        self.artist = artist
+        self.artworkURL = artworkURL
+        self.genres = []
+        self.isExplicit = isExplicit
+        self.timeRanges = []
+        self.frequencySkewRanges = []
+        
+        self.latitude = latitude
+        self.longitude = longitude
     }
 }
 
@@ -76,9 +136,13 @@ extension ShazamStream {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
     
+    public var location: CLLocation {
+        CLLocation(coordinate: coordinate, altitude: altitude ?? 0.0, horizontalAccuracy: horizontalAccuracy ?? 0.0, verticalAccuracy: verticalAccuracy ?? 0.0, course: course ?? 0.0, courseAccuracy: courseAccuracy ?? 0.0, speed: speed ?? 0.0, speedAccuracy: speedAccuracy ?? 0.0, timestamp: timestamp)
+    }
+    
     public var cityState: String {
-        if city != nil && state != nil {
-            "\(city!), \(state!)"
+        if let city = city, let state = state {
+            "\(city), \(state)"
         } else {
             "Unknown"
         }
@@ -110,7 +174,7 @@ extension ShazamStream {
     
     /// Place; i.e. "in San Francisco," "at 1015"
     public var place: String {
-        "\(spot?.name != nil ? "at" : "in") \(spot?.name ?? city ?? "Unknown")"
+        "\(spot?.name != nil ? "at" : "in") \(spot?.name ?? city)"
     }
     
     /// Description; i.e. "August 11 in San Francisco", "July 4 at 1015"
@@ -152,15 +216,34 @@ extension ShazamStream {
     
     /// Updates location, using Placemark data as well if possible
     public func updateLocation(_ location: CLLocation, placemark: CLPlacemark? = nil) {
-        self.latitude = location.coordinate.latitude
-        self.longitude = location.coordinate.longitude
-        self.altitude = location.altitude
-        self.speed = location.speed
-        self.thoroughfare = placemark?.thoroughfare
-        self.city = placemark?.locality
-        self.state = placemark?.administrativeArea
-        self.country = placemark?.country
-        self.countryCode = placemark?.isoCountryCode
+        // CLLocation
+        latitude = location.coordinate.latitude
+        longitude = location.coordinate.longitude
+        altitude = location.altitude
+        isProducedByAccessory = location.sourceInformation?.isProducedByAccessory
+        isSimulatedBySoftware = location.sourceInformation?.isSimulatedBySoftware
+        horizontalAccuracy = location.horizontalAccuracy
+        verticalAccuracy = location.verticalAccuracy
+        speed = location.speed
+        speedAccuracy = location.speedAccuracy
+        course = location.course
+        courseAccuracy = location.courseAccuracy
+        
+        // CLPlacemark
+        placemarkName = placemark?.name
+        thoroughfare = placemark?.thoroughfare
+        subThoroughfare = placemark?.subThoroughfare
+        city = placemark?.locality
+        subLocality = placemark?.subLocality
+        state = placemark?.administrativeArea
+        subAdministrativeArea = placemark?.subAdministrativeArea
+        postalCode = placemark?.postalCode
+        countryCode = placemark?.isoCountryCode
+        country = placemark?.country
+        inlandWater = placemark?.inlandWater
+        ocean = placemark?.ocean
+        areasOfInterest = placemark?.areasOfInterest ?? []
+        timeZoneIdentifier = placemark?.timeZone?.identifier
     }
     
     /// Find Spots that are super close by and save to automagically.
@@ -176,16 +259,16 @@ extension ShazamStream {
         
         let predicate = #Predicate<Spot> {
             $0.latitude >= latMin && $0.latitude < latMax &&
-            $0.longitude >= lonMin && $0.longitude < lonMax
+                $0.longitude >= lonMin && $0.longitude < lonMax
         }
             
         let fetchDescriptor = FetchDescriptor<Spot>(predicate: predicate)
         
         do {
             let spots = try context.fetch(fetchDescriptor)
-            spots.forEach {
-                if $0.type != .place { return } // Only SpotType.place groups by location
-                self.spot = $0
+            for item in spots {
+                if item.type != .place { continue } // Only SpotType.place groups by location
+                spot = item
             }
         } catch {
             print(error.localizedDescription)
@@ -193,9 +276,14 @@ extension ShazamStream {
     }
     
     static var preview: ShazamStream {
-        ShazamStream(title: "The Ills", artist: "Denzel Curry", isExplicit: true,
-                     artworkURL: URL(string: "https://upload.wikimedia.org/wikipedia/en/c/cf/Denzel_Curry_-_Melt_My_Eyez_See_Your_Future.png")!,
-                     latitude: 37.721941, longitude: -122.4739084)
+        ShazamStream(
+            title: "The Ills",
+            artist: "Denzel Curry",
+            isExplicit: true,
+            artworkURL: URL(string: "https://upload.wikimedia.org/wikipedia/en/c/cf/Denzel_Curry_-_Melt_My_Eyez_See_Your_Future.png")!,
+            latitude: 37.721941,
+            longitude: -122.4739084
+        )
     }
 }
 
