@@ -16,6 +16,7 @@ struct ContentView: View {
     @Namespace var animation
     
     @State var detent: PresentationDetent = .fraction(0.50)
+    @State var sheetHeight: CGFloat = 384
     
     @State private var sheet = SheetProvider()
     @State private var toast = ToastProvider()
@@ -25,7 +26,7 @@ struct ContentView: View {
     @State private var music = MusicProvider()
     
     var body: some View {
-        MapView(modelContext: context)
+        MapView(modelContext: context, sheetHeight: sheetHeight)
             .edgesIgnoringSafeArea(.all)
             .environment(sheet)
             .sheet(isPresented: Binding(
@@ -87,7 +88,7 @@ struct ContentView: View {
     }
     
     private var inspector: some View {
-        SheetView()
+        SheetView(height: $sheetHeight)
             .environment(sheet)
             .environment(shazam)
             .environment(location)

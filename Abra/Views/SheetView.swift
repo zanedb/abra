@@ -37,6 +37,11 @@ struct SheetView: View {
         }
     }
     
+    @Binding var height: CGFloat
+    
+    @State private var lastHeight: CGFloat = 0
+    @State private var debounceWorkItem: DispatchWorkItem?
+    
     @State private var searchText: String = ""
     @State private var searchHidden: Bool = false
     @State private var searchFocused: Bool = false
@@ -104,6 +109,28 @@ struct SheetView: View {
                     }
                 }
             }
+        }
+        .onGeometryChange(for: CGRect.self) { proxy in
+            proxy.frame(in: .global)
+        } action: { proxy in
+            let newHeight = proxy.height
+            
+            // Only update if height changes meaningfully (e.g., > 2pt)
+            guard abs(newHeight - lastHeight) > 2 else { return }
+            lastHeight = newHeight
+            
+            guard newHeight < 400 else { return } // Hardcoded value of .fraction(0.50) sheet, on my iPhone.. yes it's not ideal
+
+            // Cancel any pending debounce
+            debounceWorkItem?.cancel()
+
+            // Debounce update to avoid rapid firing
+            let workItem = DispatchWorkItem {
+                height = newHeight
+                print("Sheet height updated:", newHeight)
+            }
+            debounceWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: workItem)
         }
         .onChange(of: shazam.status) {
             if case .matched(let song) = shazam.status {

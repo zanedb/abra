@@ -21,6 +21,7 @@ struct MapView: UIViewRepresentable {
     private var spots: [Spot]
 
     var modelContext: ModelContext
+    var sheetHeight: CGFloat = 0.0
 
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
@@ -39,6 +40,8 @@ struct MapView: UIViewRepresentable {
         withObservationTracking(of: sheet.now) { _ in
             showAnnotation(sheet.now, on: mapView)
         }
+
+        updateLayoutMargins(mapView)
 
         return mapView
     }
@@ -60,36 +63,41 @@ struct MapView: UIViewRepresentable {
         // This is hacky, but works!
         hideKeyboard()
 
-        // Center map
-        // Offset latitude (move northward) by approximately 35% of the span
-        // There's probably a better way to do this as this value is set based on my limited personal testing
-        let span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-        let offsetLatitude = coord.latitude + (span.latitudeDelta * -0.35)
-        let region = MKCoordinateRegion(
-            center: CLLocationCoordinate2D(
-                latitude: offsetLatitude,
-                longitude: coord.longitude
-            ),
-            span: span
-        )
+        // If <10km from current center, animate
+        let center = CLLocation(latitude: mapView.centerCoordinate.latitude, longitude: mapView.centerCoordinate.longitude)
+        let animated = center.distance(from: CLLocation(latitude: coord.latitude, longitude: coord.longitude)) < 10000 // 10km
 
-        mapView.setRegion(region, animated: true)
+        // Center map on coordinates
+        mapView.setCenter(coord, animated: animated)
+
+        // TODO: If zoomed out enough, zoom in?
+    }
+
+    private func updateLayoutMargins(_ mapView: MKMapView) {
+        let idiom = UIDevice.current.userInterfaceIdiom
+        let orientation = UIDevice.current.orientation
+
+        var bottomInset: CGFloat = 0
+        var leadingInset: CGFloat = 0
+
+        if idiom == .phone && orientation.isPortrait {
+            bottomInset = sheetHeight
+        } else if (idiom == .phone && orientation.isLandscape) || idiom == .pad {
+            leadingInset = 400 // Based on sheet width defined in ViewModifiers.swift
+        }
+
+        let newMargins = NSDirectionalEdgeInsets(top: 0, leading: leadingInset, bottom: bottomInset, trailing: 0)
+        if mapView.directionalLayoutMargins != newMargins {
+            // On all but initial render, disable .follow on sheet movement
+            mapView.userTrackingMode = .none
+            mapView.directionalLayoutMargins = newMargins
+        }
     }
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
         print("UI view did update")
 
-        // Quick hash check - bail early if nothing changed
-//        var hasher = Hasher()
-//        shazams.hash(into: &hasher)
-//        spots.hash(into: &hasher)
-//        let newDataHash = hasher.finalize()
-//
-//        if context.coordinator.lastDataHash == newDataHash {
-//            print("No data changes detected, skipping update")
-//            return
-//        }
-//        context.coordinator.lastDataHash = newDataHash
+        updateLayoutMargins(mapView)
 
         // Get current annotations (excluding user location and clusters)
         let currentAnnotations = mapView.annotations.filter {
