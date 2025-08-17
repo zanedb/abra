@@ -70,6 +70,7 @@ struct ContentView: View {
                     OnboardingView()
                         .environment(shazam)
                         .environment(location)
+                        .environment(music)
                         .transition(.blurReplace.animation(.easeInOut(duration: 0.25)))
                 }
             }
