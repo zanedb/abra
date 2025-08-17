@@ -93,19 +93,20 @@ struct SheetView: View {
                         .font(.title2.weight(.medium))
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    HStack(spacing: 2) {
+                    HStack(spacing: 4) {
                         Button(action: { if searchHidden { searchFocused = true } }) {
                             Image(systemName: "magnifyingglass")
                                 .font(.system(size: 14))
                                 .tint(searchHidden ? .gray : .clear)
                         }
-                        Button(action: { Task { await shazam.startMatching() } }) {
-                            Image(systemName: "shazam.logo.fill")
-                                .tint(.blue)
+                        Button(action: {}) {
+                            Image(systemName: "person.crop.circle.fill")
                                 .fontWeight(.medium)
                                 .font(.system(size: 24))
-                                .symbolRenderingMode(.multicolor)
+                                .symbolRenderingMode(.hierarchical)
+                                .foregroundStyle(.secondary)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -206,7 +207,7 @@ struct SheetView: View {
     
     private func createShazamStream(_ mediaItem: SHMediaItem) {
         // Create and show ShazamStream
-        let stream = ShazamStream(mediaItem: mediaItem, location: location.currentLocation, placemark: location.currentPlacemark, modelContext: modelContext)
+        let stream = ShazamStream(mediaItem: mediaItem, location: location.currentLocation, placemark: location.currentPlacemark)
         modelContext.insert(stream)
         try? modelContext.save()
         view.show(stream)

@@ -15,9 +15,7 @@ struct MapView: UIViewRepresentable {
            sort: \ShazamStream.timestamp, order: .reverse)
     private var shazams: [ShazamStream]
 
-    @Query( /* filter: #Predicate<Spot> { $0.type == .place }, */
-        sort: \Spot.updatedAt, order: .reverse
-    )
+    @Query(sort: \Spot.updatedAt, order: .reverse)
     private var spots: [Spot]
 
     var modelContext: ModelContext

@@ -97,6 +97,17 @@ struct ContentView: View {
             .presentationInspector()
             .interactiveDismissDisabled()
             .prefersEdgeAttachedInCompactHeight(allowScrollingInMediumDetent: true)
+            .overlay(alignment: .bottomTrailing) {
+                Button(action: { Task { await shazam.startMatching() } }) {
+                    Image(systemName: "shazam.logo.fill")
+                        .imageScale(.large)
+                        .font(.largeTitle)
+                        .symbolRenderingMode(.multicolor)
+                        .shadow(radius: 4, x: 0, y: 4)
+                        .matchedTransitionSource(id: "ShazamButton", in: animation)
+                }
+                .padding()
+            }
     }
     
     private var searching: some View {
