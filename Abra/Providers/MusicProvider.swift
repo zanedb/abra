@@ -10,6 +10,7 @@ import StoreKit
 
 @Observable class MusicProvider {
     let musicPlayer = MPMusicPlayerController.systemMusicPlayer
+    let musicKitPlayer = SystemMusicPlayer.shared
     
     var authorizationStatus: MusicAuthorization.Status = .notDetermined
     
@@ -78,23 +79,23 @@ import StoreKit
                 
             return
         }
+
+        let musicItemIDs = ids.map { MusicItemID($0) }
         
-        musicPlayer.setQueue(with: ids)
-        
-        musicPlayer.prepareToPlay { [weak self] error in
-            guard let self = self else { return }
+        do {
+            // Fetch Song objects for the given IDs
+            let request = MusicCatalogResourceRequest<Song>(matching: \.id, memberOf: musicItemIDs)
+            let response = try await request.response()
+            let songs = response.items
+
+            // Insert songs into the queue after the currently playing item, skip one
+            try await musicKitPlayer.queue.insert(songs, position: .afterCurrentEntry)
+            try await musicKitPlayer.skipToNextEntry()
             
-            if let error = error {
-                Task { @MainActor in
-                    self.errorMessage = error.localizedDescription
-                }
-                return
-            }
-            
-            self.musicPlayer.play()
-            Task { @MainActor in
-                self.errorMessage = nil
-            }
+            // Play using MPMusicPlayerController so it reports the event properly
+            musicPlayer.play()
+        } catch {
+            print("Error inserting songs into queue: \(error)")
         }
     }
     
