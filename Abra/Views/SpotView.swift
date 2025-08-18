@@ -134,18 +134,8 @@ struct SpotView: View {
                     .font(minimized ? .title2 : .title)
                     .frame(maxWidth: minimized ? 220 : 180, alignment: .leading)
                     .bold()
-//                Menu {
-//                    Button("Place", systemImage: spot.type == .place ? "checkmark" : "", action: { spot.type = .place })
-//                    Button("Vehicle", systemImage: spot.type == .vehicle ? "checkmark" : "", action: { spot.type = .vehicle })
-//                } label: {
-                    Text(spot.description)
-                        .font(.system(size: 15))
-                        .foregroundStyle(.gray)
-//                    Image(systemName: "chevron.up.chevron.down")
-//                        .imageScale(.small)
-//                        .font(.subheadline)
-//                        .foregroundStyle(.gray)
-//                }
+                Text(spot.description)
+                    .foregroundStyle(.gray)
             }
             .padding(.leading, 6)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -185,7 +175,7 @@ struct SpotView: View {
 
 #Preview {
     @Previewable @State var view = SheetProvider()
-    @Previewable var spot = Spot(name: "Me", type: .place, symbol: "play.fill", latitude: ShazamStream.preview.latitude, longitude: ShazamStream.preview.longitude, shazamStreams: [.preview, .preview])
+    @Previewable var spot = Spot(name: "Me", symbol: "play.fill", latitude: ShazamStream.preview.latitude, longitude: ShazamStream.preview.longitude, shazamStreams: [.preview, .preview])
 
     Map(initialPosition: .automatic)
         .ignoresSafeArea(.all)

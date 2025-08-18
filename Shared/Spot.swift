@@ -7,14 +7,8 @@ import Foundation
 import MapKit
 import SwiftData
 
-enum SpotType: Codable {
-    case place
-    case vehicle
-}
-
 @Model final class Spot {
     var name: String = ""
-    var type: SpotType = SpotType.place
     var symbol: String = "mappin.and.ellipse"
     @Attribute(.transformable(by: UIColorValueTransformer.self)) var color: UIColor = UIColor.systemIndigo
 
@@ -34,7 +28,7 @@ enum SpotType: Codable {
     var createdAt: Date = Date.now
     var updatedAt: Date = Date.now
 
-    init(name: String = "", type: SpotType = .place, symbol: String = "house", color: UIColor = .systemIndigo, latitude: Double = 37.3316876, longitude: Double = -122.0327261, shazamStreams: [ShazamStream] = []) {
+    init(name: String = "", symbol: String = "house", color: UIColor = .systemIndigo, latitude: Double = 37.3316876, longitude: Double = -122.0327261, shazamStreams: [ShazamStream] = []) {
         self.name = name
         self.type = type
         self.symbol = symbol
@@ -46,7 +40,7 @@ enum SpotType: Codable {
         self.updatedAt = .now
     }
 
-    init(locationFrom: ShazamStream, type: SpotType, streams: [ShazamStream], modelContext: ModelContext) {
+    init(locationFrom: ShazamStream, streams: [ShazamStream]) {
         self.name = ""
         self.type = type
         self.symbol = ""
@@ -69,17 +63,13 @@ extension Spot {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
-    public var cityState: String {
+    /// i.e. "San Francisco, CA"
+    public var description: String {
         if city != nil && state != nil {
             "\(city!), \(state!)"
         } else {
             "Unknown"
         }
-    }
-    
-    /// Returns a description, i.e. "San Francisco, CA" or "Vehicle"
-    public var description: String {
-        type == .place ? cityState : "Vehicle"
     }
 
     /// Plays the Spot's contents; optionally shuffle
@@ -99,9 +89,6 @@ extension Spot {
     /// Save ShazamStreams within a close nearby area to the Spot
     /// Queries for lat/long within three decimal sig figs of precision
     public func appendNearbyShazamStreams(_ context: ModelContext) {
-        // Only SpotType.place groups by location
-        if type != .place { return }
-
         let precision = 0.001
         let halfPrecision = precision / 2
 
@@ -133,7 +120,7 @@ extension Spot {
     }
 
     static var preview: Spot {
-        Spot(name: "Sioux Falls", type: .place, symbol: "magnifyingglass", latitude: 37.3316876, longitude: -122.0327261, shazamStreams: [ShazamStream.preview])
+        Spot(name: "Sioux Falls", symbol: "magnifyingglass", latitude: 37.3316876, longitude: -122.0327261, shazamStreams: [ShazamStream.preview])
     }
 }
 

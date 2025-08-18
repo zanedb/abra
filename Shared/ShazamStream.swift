@@ -174,7 +174,7 @@ extension ShazamStream {
     
     /// Place; i.e. "in San Francisco," "at 1015"
     public var place: String {
-        "\(spot?.name != nil ? "at" : "in") \(spot?.name ?? city)"
+        "\(spot?.name != nil ? "at" : "in") \(spot?.name ?? city ?? "Unknown")"
     }
     
     /// Description; i.e. "August 11 in San Francisco", "July 4 at 1015"
@@ -267,7 +267,6 @@ extension ShazamStream {
         do {
             let spots = try context.fetch(fetchDescriptor)
             for item in spots {
-                if item.type != .place { continue } // Only SpotType.place groups by location
                 spot = item
             }
         } catch {

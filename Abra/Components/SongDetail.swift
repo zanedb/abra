@@ -37,10 +37,6 @@ struct SongDetail: View {
         _spotEvents = Query(filter: eventPredicate, sort: \.updatedAt)
     }
     
-    private var type: SpotType {
-        stream.modality == .driving ? .vehicle : .place
-    }
-    
     private var identicalShazamStream: ShazamStream? {
         identicalShazamStreams.last // Show most recent
     }
@@ -118,7 +114,7 @@ struct SongDetail: View {
         .padding(.horizontal)
         .padding(.bottom, 8)
         .popover(isPresented: $showingSpotSelector) {
-            SpotSelector(selection: $stream.spot, newSpotCallback: { createSpot(type) })
+            SpotSelector(selection: $stream.spot, newSpotCallback: { createSpot() })
                 .presentationDetents([.fraction(0.50), .fraction(0.999)])
                 .presentationBackground(.thickMaterial)
                 .presentationBackgroundInteraction(.enabled)
@@ -196,10 +192,10 @@ struct SongDetail: View {
         stream.event = stream.event == event ? nil : event
     }
     
-    private func createSpot(_ type: SpotType) {
+    private func createSpot() {
         showingSpotSelector = false
         // Create new Spot, insert into modelContext, and open for immediate editing
-        let spot = Spot(locationFrom: stream, type: .place, streams: [stream], modelContext: modelContext)
+        let spot = Spot(locationFrom: stream, streams: [stream])
         modelContext.insert(spot)
         view.show(spot)
         

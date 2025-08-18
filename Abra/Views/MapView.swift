@@ -183,7 +183,7 @@ struct MapView: UIViewRepresentable {
                 if let shazamAnnotations = clusterAnnotation.memberAnnotations as? [ShazamAnnotation] {
                     let streams = shazamAnnotations.compactMap(\.shazamStream)
                     print("Cluster has \(streams.count) Shazam streams")
-                    let spot = Spot(locationFrom: streams.first!, type: .place, streams: streams, modelContext: parent.modelContext)
+                    let spot = Spot(locationFrom: streams.first!, streams: streams)
                     parent.modelContext.insert(spot)
                     parent.sheet.show(spot)
                     
