@@ -135,10 +135,10 @@ struct SongSheet: View {
                 message: message,
                 type: .error,
                 symbol: "exclamationmark.circle.fill",
-                action: {
+                action: message == "Permission denied" ? {
                     // On permissions issue, tapping takes you right to app settings!
                     openURL(URL(string: UIApplication.openSettingsURLString)!)
-                }
+                } : nil
             )
         }
     }
