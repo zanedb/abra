@@ -29,6 +29,7 @@ struct MapView: UIViewRepresentable {
         mapView.showsUserTrackingButton = true
         mapView.showsCompass = true
         mapView.setUserTrackingMode(.follow, animated: true)
+        mapView.selectableMapFeatures = [.pointsOfInterest]
 
         mapView.register(ShazamAnnotationView.self, forAnnotationViewWithReuseIdentifier: NSStringFromClass(ShazamAnnotation.self))
         mapView.register(ShazamClusterAnnotationView.self, forAnnotationViewWithReuseIdentifier: NSStringFromClass(MKClusterAnnotation.self))
@@ -190,6 +191,15 @@ struct MapView: UIViewRepresentable {
                     Task {
                         spot.appendNearbyShazamStreams(parent.modelContext)
                     }
+                }
+            case let featureAnnotation as MKMapFeatureAnnotation:
+                let spot = Spot(from: featureAnnotation)
+                parent.modelContext.insert(spot)
+                parent.sheet.show(spot)
+                
+                Task {
+                    spot.appendNearbyShazamStreams(parent.modelContext)
+                    await spot.affiliateMapItem(from: featureAnnotation)
                 }
             default:
                 return
