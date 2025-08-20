@@ -39,7 +39,7 @@ class SpotAnnotation: NSObject, MKAnnotation {
 
 final class ShazamAnnotationView: MKAnnotationView {
     private let imageView = UIImageView()
-    private let size: CGFloat = 36
+    private let size: CGFloat = 32
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
@@ -61,7 +61,7 @@ final class ShazamAnnotationView: MKAnnotationView {
             loadImage()
         }
     }
-
+    
     private func setupUI() {
         backgroundColor = .clear
         frame = CGRect(x: 0, y: 0, width: size, height: size)
@@ -72,7 +72,18 @@ final class ShazamAnnotationView: MKAnnotationView {
         imageView.layer.cornerRadius = size / 2
         imageView.backgroundColor = .systemBackground
 
+        // White circular outline
+        imageView.layer.borderColor = UIColor.white.cgColor
+        imageView.layer.borderWidth = 2
+
         addSubview(imageView)
+
+        // Subtle shadow (spotlight effect)
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.18
+        layer.shadowRadius = 6
+        layer.shadowOffset = CGSize(width: 0, height: 2)
+        layer.masksToBounds = false
     }
 
     private func loadImage() {
@@ -87,91 +98,42 @@ final class ShazamAnnotationView: MKAnnotationView {
             ]
         )
     }
+    
+    // Animate open/close on selection
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+
+        let scale: CGFloat = selected ? 1.5 : 1.0
+        let duration: TimeInterval = animated ? 0.5 : 0.0
+
+        UIView.animate(
+            withDuration: duration,
+            delay: 0,
+            usingSpringWithDamping: 0.6,
+            initialSpringVelocity: 0.8,
+            options: [.curveEaseInOut, .allowUserInteraction],
+            animations: {
+                self.transform = CGAffineTransform(scaleX: scale, y: scale)
+            },
+            completion: nil
+        )
+    }
 }
 
-final class SpotAnnotationView: MKAnnotationView {
-    private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
-    private let containerView = UIView()
-    private let iconImageView = UIImageView()
-    private let size: CGFloat = 48
-
-    override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-
-        displayPriority = .defaultHigh
-        collisionMode = .circle
-
-        setupUI()
-    }
-
-    @available(*, unavailable)
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+final class SpotAnnotationView: MKMarkerAnnotationView {
+    static let reuseIdentifier = NSStringFromClass(SpotAnnotation.self)
 
     override var annotation: MKAnnotation? {
-        didSet {
-            updateSpotIcon()
+        willSet {
+            guard let spotAnnotation = newValue as? SpotAnnotation else { return }
+            configure(with: spotAnnotation)
         }
     }
-    
-    private func setupUI() {
-        backgroundColor = .clear
-        frame = CGRect(x: 0, y: 0, width: size, height: size)
-        
-        blurView.frame = bounds
-        blurView.layer.cornerRadius = size / 2
-        blurView.clipsToBounds = true
-        addSubview(blurView)
 
-        containerView.frame = bounds
-        containerView.layer.cornerRadius = size / 2
-        containerView.clipsToBounds = true
-        addSubview(containerView)
-
-        let iconSize: CGFloat = size * 0.5 // Icon is 50% of container size
-        iconImageView.frame = CGRect(
-            x: (size - iconSize) / 2,
-            y: (size - iconSize) / 2,
-            width: iconSize,
-            height: iconSize
-        )
-        iconImageView.contentMode = .scaleAspectFit
-        iconImageView.tintColor = .systemGray // Will be set in updateSpotIcon()
-        containerView.addSubview(iconImageView)
-
-        updateSpotIcon()
-    }
-
-    private func updateSpotIcon() {
-        guard let spotAnnotation = annotation as? SpotAnnotation else {
-            containerView.backgroundColor = .systemGray5
-            iconImageView.tintColor = .systemGray
-            iconImageView.image = UIImage(systemName: "questionmark")
-            return
-        }
-
-        containerView.backgroundColor = spotAnnotation.spot.color.withAlphaComponent(0.2)
-        iconImageView.tintColor = spotAnnotation.spot.color
-        
-        let symbol = spotAnnotation.spot.symbol.isEmpty ? "plus.circle.fill" : spotAnnotation.spot.symbol
-        let config = UIImage.SymbolConfiguration(
-            pointSize: size * 0.4,
-            weight: .medium,
-            scale: .default
-        )
-        
-        iconImageView.image = UIImage(
-            systemName: symbol,
-            withConfiguration: config
-        )
-    }
-
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        containerView.backgroundColor = .systemGray5
-        iconImageView.tintColor = .systemGray
-        iconImageView.image = nil
+    private func configure(with spotAnnotation: SpotAnnotation) {
+        markerTintColor = spotAnnotation.spot.color
+        glyphText = "🎶" // TODO: create glyphImage from NSAttributedString
+        displayPriority = .required
     }
 }
 
@@ -181,6 +143,7 @@ final class ShazamClusterAnnotationView: MKAnnotationView {
     private let containerView = UIView()
     private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
     private let countLabel = UILabel()
+    private var size: CGFloat = 32
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
@@ -189,6 +152,7 @@ final class ShazamClusterAnnotationView: MKAnnotationView {
         collisionMode = .circle
 
         setupUI()
+        updateView()
     }
 
     @available(*, unavailable)
@@ -198,11 +162,6 @@ final class ShazamClusterAnnotationView: MKAnnotationView {
 
     override var annotation: MKAnnotation? {
         didSet {
-            guard annotation is MKClusterAnnotation else {
-//                assertionFailure("Using ShazamClusterAnnotationViewRepresentable with wrong annotation type")
-                return
-            }
-
             updateView()
         }
     }
@@ -211,26 +170,27 @@ final class ShazamClusterAnnotationView: MKAnnotationView {
         backgroundColor = .clear
 
         containerView.backgroundColor = .clear
+        containerView.frame = bounds
         addSubview(containerView)
 
-        blurEffectView.layer.cornerRadius = 20
         blurEffectView.clipsToBounds = true
         containerView.addSubview(blurEffectView)
 
         countLabel.textAlignment = .center
-        countLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        countLabel.font = UIFont.systemFont(ofSize: size / 2, weight: .semibold)
         countLabel.textColor = .label
+        countLabel.frame = bounds
         containerView.addSubview(countLabel)
 
-        frame = CGRect(x: 0, y: 0, width: 40, height: 40)
-        containerView.frame = bounds
-        blurEffectView.frame = bounds
-        countLabel.frame = bounds
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.18
+        layer.shadowRadius = 6
+        layer.shadowOffset = CGSize(width: 0, height: 2)
+        layer.masksToBounds = false
     }
 
     private func updateView() {
         guard let cluster = annotation as? MKClusterAnnotation else {
-            // Set default state if no cluster annotation yet
             countLabel.text = ""
             return
         }
@@ -238,9 +198,7 @@ final class ShazamClusterAnnotationView: MKAnnotationView {
         let count = cluster.memberAnnotations.count
         countLabel.text = "\(count)"
 
-        // Adjust size based on count
-        let size: CGFloat = count > 99 ? 50 : count > 9 ? 45 : 40
-        frame = CGRect(x: 0, y: 0, width: size, height: size)
+        frame = CGRect(origin: frame.origin, size: CGSize(width: size, height: size))
         containerView.frame = bounds
         blurEffectView.frame = bounds
         blurEffectView.layer.cornerRadius = size / 2
@@ -248,9 +206,8 @@ final class ShazamClusterAnnotationView: MKAnnotationView {
     }
 }
 
+
 #Preview {
-    MapView(modelContext: PreviewSampleData.container.mainContext)
-        .edgesIgnoringSafeArea(.all)
-        .environment(SheetProvider())
+    ContentView()
         .modelContainer(PreviewSampleData.container)
 }
