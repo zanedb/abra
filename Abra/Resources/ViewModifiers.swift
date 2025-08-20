@@ -9,7 +9,7 @@ import SwiftUIIntrospect
 struct InspectorSheetPresentation: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .presentationBackgroundInteraction(.enabled)
+            .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.50)))
             .presentationBackground(.thickMaterial)
             .presentationCornerRadius(18)
     }

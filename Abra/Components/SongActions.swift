@@ -18,7 +18,7 @@ struct SongActions: View {
     var body: some View {
         ZStack(alignment: .leading) {
             Rectangle()
-                .fill(.background)
+                .fill(.thinMaterial)
                 .clipShape(RoundedRectangle(
                     cornerRadius: 14
                 ))

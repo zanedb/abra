@@ -60,14 +60,8 @@ struct SongDetail: View {
                 }
                 .font(.system(size: 13))
             }
-        
-            ZStack(alignment: .leading) {
-                Rectangle()
-                    .fill(.background)
-                    .clipShape(RoundedRectangle(
-                        cornerRadius: 14
-                    ))
-                
+            
+            Wrapper {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 4) {
@@ -108,7 +102,6 @@ struct SongDetail: View {
                         }
                     }
                 }
-                .padding()
             }
         }
         .padding(.horizontal)
