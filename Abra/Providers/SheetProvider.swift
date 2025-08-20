@@ -4,6 +4,8 @@
 //
 
 import SwiftUI
+import MapKit
+import Combine
 
 /// Presents a single sheet out of two data sources
 /// A possible ShazamStream, Spot can be selected
@@ -11,16 +13,17 @@ import SwiftUI
 /// When multiple are selected, Spot takes priority over ShazamStream
 /// When a sheet is dismissed, all are deselected
 @Observable final class SheetProvider {
+    let didChange = PassthroughSubject<Void, Never>()
+
     var stream: ShazamStream?
     var spot: Spot?
-    var detent: PresentationDetent = .fraction(0.50)
-
+    
     enum ViewState: Equatable {
         case none
         case stream(ShazamStream)
         case spot(Spot)
     }
-
+    
     var now: ViewState {
         get {
             if spot != nil {
@@ -34,22 +37,42 @@ import SwiftUI
             if newValue == .none {
                 stream = nil
                 spot = nil
-                detent = .fraction(0.50)
+                didChange.send()
             }
         }
     }
-
-    var isPresented: Bool { now != .none }
+    
+    var isPresentedBinding: Binding<Bool> { Binding<Bool>(
+        get: { self.now != .none },
+        set: { _ in
+            self.now = .none
+        })
+    }
+    
+    var isPresented: Bool {
+        self.now != .none
+    }
+    
+    var coordinate: CLLocationCoordinate2D? {
+        switch now {
+        case .spot(let spot):
+            return spot.coordinate
+        case .stream(let stream):
+            return stream.coordinate
+        case .none:
+            return nil
+        }
+    }
     
     func show(_ spot: Spot) {
         self.spot = spot
         stream = nil
-        detent = .fraction(0.50)
+        didChange.send()
     }
     
     func show(_ stream: ShazamStream) {
         self.stream = stream
         spot = nil
-        detent = .fraction(0.50)
+        didChange.send()
     }
 }

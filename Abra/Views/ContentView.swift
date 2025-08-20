@@ -9,14 +9,9 @@ import SwiftUI
 import SwiftUIIntrospect
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var context
     @Environment(\.scenePhase) private var scenePhase
     
     @AppStorage("hasCompletedOnboarding") var onboarded: Bool = false
-    @Namespace var animation
-    
-    @State var detent: PresentationDetent = .fraction(0.50)
-    @State var sheetHeight: CGFloat = 384
     
     @State private var sheet = SheetProvider()
     @State private var toast = ToastProvider()
@@ -26,34 +21,13 @@ struct ContentView: View {
     @State private var music = MusicProvider()
     
     var body: some View {
-        MapView(modelContext: context, sheetHeight: sheetHeight)
+        MapView()
             .edgesIgnoringSafeArea(.all)
             .environment(sheet)
-            .sheet(isPresented: Binding(
-                get: { onboarded || isPreview },
-                set: { _ in }
-            )) {
-                inspector
-                    .fullScreenCover(isPresented: Binding(
-                        get: { shazam.isMatching },
-                        set: { _ in shazam.stopMatching() }
-                    )) {
-                        searching
-                    }
-                    .sheet(isPresented: Binding<Bool>(
-                        get: { sheet.now != .none },
-                        set: { _ in sheet.now = .none }
-                    )) {
-                        switch sheet.now {
-                        case .stream(let stream):
-                            song(stream)
-                        case .spot(let item):
-                            spot(item)
-                        case .none:
-                            EmptyView()
-                        }
-                    }
-            }
+            .environment(shazam)
+            .environment(location)
+            .environment(music)
+            .environment(library)
             .overlay(alignment: .top) {
                 // Variable blur at the top of map, makes time/battery legible
                 GeometryReader { geom in
@@ -85,74 +59,6 @@ struct ContentView: View {
             }
             .withToastProvider(toast)
             .withToastOverlay(using: toast)
-    }
-    
-    private var inspector: some View {
-        SheetView(height: $sheetHeight)
-            .environment(sheet)
-            .environment(shazam)
-            .environment(location)
-            .environment(music)
-            .presentationDetents([.height(96), .fraction(0.50), .fraction(0.999)], selection: $detent)
-            .presentationInspector()
-            .interactiveDismissDisabled()
-            .prefersEdgeAttachedInCompactHeight(allowScrollingInMediumDetent: true)
-            .overlay(alignment: .bottomTrailing) {
-                Button(action: { Task { await shazam.startMatching() } }) {
-                    Image(systemName: "shazam.logo.fill")
-                        .imageScale(.large)
-                        .font(.largeTitle)
-                        .symbolRenderingMode(.multicolor)
-                        .shadow(radius: 4, x: 0, y: 4)
-                        .matchedTransitionSource(id: "ShazamButton", in: animation)
-                }
-                .padding()
-            }
-    }
-    
-    private var searching: some View {
-        Searching(namespace: animation)
-            .overlay(alignment: .topTrailing) {
-                Button { shazam.stopMatching() } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.white)
-                        .font(.system(size: 32))
-                        .symbolRenderingMode(.hierarchical)
-                }
-                .padding(.horizontal)
-            }
-            .onAppear {
-                // If location was "allow once" request again
-                if location.authorizationStatus == .notDetermined && onboarded {
-                    location.requestPermission()
-                }
-                // We‘ll need this soon
-                location.requestLocation()
-            }
-    }
-    
-    private func song(_ stream: ShazamStream) -> some View {
-        SongView(stream: stream)
-            .environment(sheet)
-            .environment(shazam)
-            .environment(library)
-            .environment(music)
-            .environment(location)
-            .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $sheet.detent)
-            .presentationInspector()
-            .edgesIgnoringSafeArea(.bottom)
-            .interactiveDismissDisabled()
-            .prefersEdgeAttachedInCompactHeight()
-    }
-    
-    private func spot(_ spot: Spot) -> some View {
-        SpotView(spot: spot)
-            .environment(sheet)
-            .environment(music)
-            .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $sheet.detent)
-            .presentationInspector()
-            .interactiveDismissDisabled()
-            .prefersEdgeAttachedInCompactHeight()
     }
 }
 

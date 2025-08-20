@@ -56,6 +56,13 @@ enum ShazamStatus: Equatable {
         return false
     }
     
+    var isMatchingBinding: Binding<Bool> {
+        Binding<Bool>(
+            get: { self.isMatching },
+            set: { _ in Task { await self.stopMatching() } }
+        )
+    }
+    
     init() {
         if UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
             // If this runs during onboarding, it‘ll ruin the permission request flow

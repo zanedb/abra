@@ -15,6 +15,8 @@ struct SheetView: View {
     @Environment(SheetProvider.self) private var view
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
+    @Environment(LibraryProvider.self) private var library
+    @Environment(MusicProvider.self) private var music
     
     @SectionedQuery(\.timeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var timeSectionedStreams: SectionedResults<String, ShazamStream>
     
@@ -37,10 +39,7 @@ struct SheetView: View {
         }
     }
     
-    @Binding var height: CGFloat
-    
-    @State private var lastHeight: CGFloat = 0
-    @State private var debounceWorkItem: DispatchWorkItem?
+    @Namespace var animation
     
     @State private var searchText: String = ""
     @State private var searchHidden: Bool = false
@@ -79,7 +78,8 @@ struct SheetView: View {
                     }
                 }
             }
-            .searchable(text: $searchText, isPresented: $searchFocused, prompt: "Shazams, Spots, Places, and More")
+            .background(.thickMaterial)
+            .searchable(text: $searchText, isPresented: $searchFocused, placement: .toolbar, prompt: "Shazams, Spots, Places, and More")
             .onScrollGeometryChange(for: CGFloat.self, of: { geometry in
                 geometry.contentOffset.y
             }) { oldValue, newValue in
@@ -111,27 +111,29 @@ struct SheetView: View {
                 }
             }
         }
-        .onGeometryChange(for: CGRect.self) { proxy in
-            proxy.frame(in: .global)
-        } action: { proxy in
-            let newHeight = proxy.height
-            
-            // Only update if height changes meaningfully (e.g., > 2pt)
-            guard abs(newHeight - lastHeight) > 2 else { return }
-            lastHeight = newHeight
-            
-            guard newHeight < 400 else { return } // Hardcoded value of .fraction(0.50) sheet, on my iPhone.. yes it's not ideal
-
-            // Cancel any pending debounce
-            debounceWorkItem?.cancel()
-
-            // Debounce update to avoid rapid firing
-            let workItem = DispatchWorkItem {
-                height = newHeight
-                print("Sheet height updated:", newHeight)
+        .overlay(alignment: .bottomTrailing) {
+            Button(action: { Task { await shazam.startMatching() } }) {
+                Image(systemName: "shazam.logo.fill")
+                    .imageScale(.large)
+                    .font(.largeTitle)
+                    .symbolRenderingMode(.multicolor)
+                    .shadow(radius: 4, x: 0, y: 4)
+                    .matchedTransitionSource(id: "ShazamButton", in: animation)
             }
-            debounceWorkItem = workItem
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: workItem)
+            .padding()
+        }
+        .fullScreenCover(isPresented: shazam.isMatchingBinding) {
+            searching
+        }
+        .sheet(isPresented: view.isPresentedBinding) {
+            switch view.now {
+            case .stream(let stream):
+                song(stream)
+            case .spot(let item):
+                spot(item)
+            case .none:
+                EmptyView()
+            }
         }
         .onChange(of: shazam.status) {
             if case .matched(let song) = shazam.status {
@@ -203,6 +205,43 @@ struct SheetView: View {
             }
         }
         .padding(.horizontal)
+    }
+    
+    private var searching: some View {
+        Searching(namespace: animation)
+            .overlay(alignment: .topTrailing) {
+                // TODO: hide on searching view
+                Button { shazam.stopMatching() } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.white)
+                        .font(.system(size: 32))
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .padding(.horizontal)
+            }
+            .onAppear {
+                // If location was "allow once" request again
+                if location.authorizationStatus == .notDetermined /* && onboarded */ {
+                    location.requestPermission()
+                }
+                // We‘ll need this soon
+                location.requestLocation()
+            }
+    }
+    
+    private func song(_ stream: ShazamStream) -> some View {
+        SongView(stream: stream)
+            .presentationDetents([.fraction(0.50), .large])
+            .presentationInspector()
+            .edgesIgnoringSafeArea(.bottom)
+            .prefersEdgeAttachedInCompactHeight()
+    }
+    
+    private func spot(_ spot: Spot) -> some View {
+        SpotView(spot: spot)
+            .presentationDetents([.fraction(0.50), .large])
+            .presentationInspector()
+            .prefersEdgeAttachedInCompactHeight()
     }
     
     private func createShazamStream(_ mediaItem: SHMediaItem) {

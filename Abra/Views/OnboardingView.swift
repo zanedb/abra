@@ -289,7 +289,7 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    MapView(modelContext: PreviewSampleData.container.mainContext)
+    MapView()
         .edgesIgnoringSafeArea(.all)
         .environment(SheetProvider())
         .modelContainer(PreviewSampleData.container)
