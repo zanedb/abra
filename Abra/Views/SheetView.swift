@@ -102,7 +102,7 @@ struct SheetView: View {
                         Button(action: {}) {
                             Image(systemName: "person.crop.circle.fill")
                                 .fontWeight(.medium)
-                                .font(.system(size: 24))
+                                .font(.button)
                                 .symbolRenderingMode(.hierarchical)
                                 .foregroundStyle(.secondary)
                         }
@@ -210,14 +210,8 @@ struct SheetView: View {
     private var searching: some View {
         Searching(namespace: animation)
             .overlay(alignment: .topTrailing) {
-                // TODO: hide on searching view
-                Button { shazam.stopMatching() } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.white)
-                        .font(.system(size: 32))
-                        .symbolRenderingMode(.hierarchical)
-                }
-                .padding(.horizontal)
+                DismissButton(foreground: .white, font: .buttonLarge, action: { shazam.stopMatching() })
+                    .padding(.horizontal)
             }
             .onAppear {
                 // If location was "allow once" request again

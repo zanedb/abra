@@ -81,23 +81,19 @@ struct SpotView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    HStack(spacing: -2) {
+                    HStack(spacing: -4) {
                         Menu {
                             Button("Shuffle", systemImage: "shuffle", action: { spot.play(music, shuffle: true) })
                         } label: {
                             Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
                                 .foregroundStyle(.gray)
-                                .font(.system(size: 24))
+                                .font(.button)
                                 .symbolRenderingMode(.hierarchical)
                         } primaryAction: {
-                            music.playPause(ids: trackIDs)
+                            music.playPause(ids: spot.streams.compactMap(\.appleMusicID))
                         }
-                        Button(action: { dismiss() }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(.gray)
-                                .font(.system(size: 24))
-                                .symbolRenderingMode(.hierarchical)
-                        }
+                        
+                        DismissButton()
                     }
                 }
             }

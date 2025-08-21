@@ -75,12 +75,7 @@ struct IconDesigner: View {
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Symbols")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.gray)
-                            .font(.system(size: 24))
-                            .symbolRenderingMode(.hierarchical)
-                    }
+                    DismissButton()
                 }
             }
         }

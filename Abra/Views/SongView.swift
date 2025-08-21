@@ -49,21 +49,16 @@ struct SongView: View {
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    HStack(spacing: -2) {
+                    HStack(spacing: -4) {
                         if let appleMusicURL = stream.appleMusicURL {
                             ShareLink(item: appleMusicURL) {
                                 Image(systemName: "square.and.arrow.up.circle.fill")
                                     .foregroundStyle(.gray)
-                                    .font(.system(size: 24))
+                                    .font(.button)
                                     .symbolRenderingMode(.hierarchical)
                             }
                         }
-                        Button(action: { dismiss() }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(.gray)
-                                .font(.system(size: 24))
-                                .symbolRenderingMode(.hierarchical)
-                        }
+                        DismissButton()
                     }
                 }
             }

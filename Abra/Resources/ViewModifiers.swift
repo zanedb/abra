@@ -100,4 +100,14 @@ extension Font {
     static var bigTitle: Font {
         .system(size: 18, weight: .bold)
     }
+    
+    /// Button Image sizing in toolbars
+    static var button: Font {
+        .system(size: 24)
+    }
+    
+    /// Used in .fullScreenCover environments
+    static var buttonLarge: Font {
+        .system(size: 32)
+    }
 }
