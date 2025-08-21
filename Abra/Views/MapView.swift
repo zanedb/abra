@@ -56,7 +56,22 @@ struct MapView: UIViewControllerRepresentable {
         mapView.register(ShazamClusterAnnotationView.self, forAnnotationViewWithReuseIdentifier: NSStringFromClass(MKClusterAnnotation.self))
         mapView.register(SpotAnnotationView.self, forAnnotationViewWithReuseIdentifier: NSStringFromClass(SpotAnnotation.self))
 
-        // Present the bottom sheet after the view appears
+        // Observe SheetProvider.now for selection, centering
+        context.coordinator.setupSheetProviderObservation()
+
+        return mapVC
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+        context.coordinator.updateAnnotations(shazams: shazams, spots: spots)
+        
+        // Present the bottom sheet, always
+        if uiViewController.presentedViewController == nil {
+            presentBottomSheet(uiViewController, context: context)
+        }
+    }
+    
+    private func presentBottomSheet(_ uiVC: UIViewController, context: Context) {
         let sheetVC = SheetHostingController(rootView: SheetView()
             .environment(\.modelContext, modelContext)
             .environment(\.toastProvider, toast)
@@ -78,17 +93,8 @@ struct MapView: UIViewControllerRepresentable {
         context.coordinator.bottomSheetVC = sheetVC
 
         DispatchQueue.main.async {
-            mapVC.present(sheetVC, animated: true)
+            uiVC.present(sheetVC, animated: true)
         }
-
-        // Observe SheetProvider.now for selection, centering
-        context.coordinator.setupSheetProviderObservation()
-
-        return mapVC
-    }
-
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        context.coordinator.updateAnnotations(shazams: shazams, spots: spots)
     }
 
     class Coordinator: NSObject, MKMapViewDelegate {
@@ -115,7 +121,7 @@ struct MapView: UIViewControllerRepresentable {
         }
 
         private func handleSheetProviderChange() {
-            guard bottomSheetVC != nil else { return print("BOTTOMSHEETVC GONE AAAAA") }
+            guard bottomSheetVC != nil else { return }
 
             // Center the map if a coordinate is available
             if let mapView = mapView, let coord = parent.sheetProvider.coordinate {
