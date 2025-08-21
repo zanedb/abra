@@ -19,7 +19,7 @@ actor PreviewSampleData {
     }()
 
     static var inMemoryContainer: () throws -> ModelContainer = {
-        let schema = Schema([ShazamStream.self, Spot.self, Event.self])
+        let schema = Schema([ShazamStream.self, Spot.self])
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try! ModelContainer(for: schema, configurations: [configuration])
         let sampleData: [any PersistentModel] = [

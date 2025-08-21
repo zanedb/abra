@@ -31,6 +31,6 @@ struct abraApp: App {
             ContentView()
 //                .environment(\.database, database)
         }
-        .modelContainer(for: [ShazamStream.self, Spot.self, Event.self])
+        .modelContainer(for: [ShazamStream.self, Spot.self])
     }
 }

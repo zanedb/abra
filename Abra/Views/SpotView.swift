@@ -17,23 +17,7 @@ struct SpotView: View {
     @Bindable var spot: Spot
     
     @State private var showingIconDesigner: Bool = false
-    @State private var selectedEvent: Event?
     
-    private var songCount: Int {
-        spot.shazamStreamsByEvent(selectedEvent).count
-    }
-    
-    private var eventCount: Int {
-        spot.events?.count ?? 0
-    }
-    
-    private var trackIDs: [String] {
-        spot.shazamStreamsByEvent(selectedEvent).compactMap(\.appleMusicID)
-    }
-    
-    private var isPlaying: Bool {
-        trackIDs.contains(music.nowPlaying ?? "NIL")
-    }
     
     var body: some View {
         NavigationStack {
@@ -41,41 +25,26 @@ struct SpotView: View {
                 heading
                     .padding(.top, -40)
                     
-                    if eventCount > 0 {
-                        Text("\(eventCount) Event\(eventCount != 1 ? "s" : "")")
-                            .font(.subheadline)
-                            .bold()
-                            .foregroundStyle(.gray)
-                            .padding(.horizontal)
-                            .padding(.top, 12)
-                            
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack {
-                                events
-                            }
-                            .padding(.horizontal)
-                        }
                     }
                         
-                    Text("\(songCount) Song\(songCount != 1 ? "s" : "")")
-                        .font(.subheading)
-                        .foregroundStyle(.gray)
-                        .padding(.horizontal)
-                        .padding(.top, 12)
+                Text("\(spot.streams.count) Song\(spot.streams.count != 1 ? "s" : "")")
+                    .font(.subheading)
+                    .foregroundStyle(.gray)
+                    .padding(.horizontal)
+                    .padding(.top, 12)
 
-                    List(spot.shazamStreamsByEvent(selectedEvent)) { stream in
-                        Button(action: {
-                            if let appleMusicID = stream.appleMusicID {
-                                music.playPause(id: appleMusicID)
-                            }
-                        }) {
-                            SongRowMini(stream: stream)
+                List(spot.streams) { stream in
+                    Button(action: {
+                        if let appleMusicID = stream.appleMusicID {
+                            music.playPause(id: appleMusicID)
                         }
-                        .listRowBackground(Color.clear)
+                    }) {
+                        SongRowMini(stream: stream)
                     }
-                    .scrollContentBackground(.hidden)
-                    .listStyle(.plain)
+                    .listRowBackground(Color.clear)
                 }
+                .scrollContentBackground(.hidden)
+                .listStyle(.plain)
             }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -83,7 +52,7 @@ struct SpotView: View {
                         Menu {
                             Button("Shuffle", systemImage: "shuffle", action: { spot.play(music, shuffle: true) })
                         } label: {
-                            Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                            Image(systemName: spot.streams.compactMap(\.appleMusicID).contains(music.nowPlaying ?? "NIL") ? "pause.circle.fill" : "play.circle.fill")
                                 .foregroundStyle(.gray)
                                 .font(.button)
                                 .symbolRenderingMode(.hierarchical)
@@ -133,46 +102,22 @@ struct SpotView: View {
         .padding(.vertical, 8)
     }
     
-    private var events: some View {
-        ForEach(spot.events!) { event in
-            Button(action: {
-                withAnimation {
-                    selectedEvent = selectedEvent == event ? nil : event
-                }
-            }) {
-                Text(event.name)
-                    .font(.headline)
-                    .padding(12)
-                    .background {
-                        if selectedEvent == event {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.primary)
-                        } else {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(.background)
                         }
                     }
-            }
-            .contextMenu {
-                Button(role: .destructive, action: { modelContext.delete(event) }, label: {
-                    Label("Delete", systemImage: "trash")
-                })
             }
         }
     }
 }
 
 #Preview {
-    @Previewable @State var view = SheetProvider()
     @Previewable var spot = Spot(name: "Me", symbol: "play.fill", latitude: ShazamStream.preview.latitude, longitude: ShazamStream.preview.longitude, shazamStreams: [.preview, .preview])
 
     Map(initialPosition: .automatic)
         .ignoresSafeArea(.all)
         .sheet(isPresented: .constant(true)) {
             SpotView(spot: spot)
-                .environment(view)
+                .environment(SheetProvider())
                 .environment(MusicProvider())
-                .presentationDetents([.height(65), .fraction(0.50), .fraction(0.999)], selection: $view.detent)
                 .presentationBackgroundInteraction(.enabled)
         }
 }

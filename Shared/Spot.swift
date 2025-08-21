@@ -18,7 +18,7 @@ import SwiftData
     var state: String?
     var country: String?
     var countryCode: String?
-    
+
     var mapItemIdentifier: String?
     var pointOfInterestCategory: String?
     var phoneNumber: String?
@@ -27,9 +27,6 @@ import SwiftData
 
     @Relationship(deleteRule: .nullify, inverse: \ShazamStream.spot)
     var shazamStreams: [ShazamStream]? = [ShazamStream]()
-
-    @Relationship(deleteRule: .cascade, inverse: \Event.spot)
-    var events: [Event]? = [Event]()
 
     var createdAt: Date = Date.now
     var updatedAt: Date = Date.now
@@ -88,6 +85,11 @@ extension Spot {
         }
     }
 
+    /// Unwrapped .shazamStreams
+    public var streams: [ShazamStream] {
+        shazamStreams ?? []
+    }
+
     /// Plays the Spot's contents; optionally shuffle
     /// In the future, will play a station based on Spot's Shazams
     public func play(_ music: MusicProvider, shuffle: Bool = false) {
@@ -127,28 +129,21 @@ extension Spot {
             print(error.localizedDescription)
         }
     }
-    
+
     public func affiliateMapItem(from mapFeatureAnnotation: MKMapFeatureAnnotation) async {
         let mapItem = try? await MKMapItemRequest(mapFeatureAnnotation: mapFeatureAnnotation).mapItem
-        
-        self.city = mapItem?.placemark.locality
-        self.state = mapItem?.placemark.administrativeArea
-        self.country = mapItem?.placemark.country
-        self.countryCode = mapItem?.placemark.isoCountryCode
-        self.mapItemIdentifier = mapItem?.identifier?.rawValue
-        self.pointOfInterestCategory = mapItem?.pointOfInterestCategory?.rawValue
-        self.phoneNumber = mapItem?.phoneNumber
-        self.url = mapItem?.url
-        self.timeZoneIdentifier = mapItem?.timeZone?.identifier
+
+        city = mapItem?.placemark.locality
+        state = mapItem?.placemark.administrativeArea
+        country = mapItem?.placemark.country
+        countryCode = mapItem?.placemark.isoCountryCode
+        mapItemIdentifier = mapItem?.identifier?.rawValue
+        pointOfInterestCategory = mapItem?.pointOfInterestCategory?.rawValue
+        phoneNumber = mapItem?.phoneNumber
+        url = mapItem?.url
+        timeZoneIdentifier = mapItem?.timeZone?.identifier
     }
-
-    /// Returns ShazamStreams at a Spot, in an event, OR all if event is nil
-    public func shazamStreamsByEvent(_ event: Event?) -> [ShazamStream] {
-        if event == nil { return shazamStreams ?? [] }
-
-        return shazamStreams?.filter { $0.event == event } ?? []
-    }
-
+    
     static var preview: Spot {
         Spot(name: "Sioux Falls", symbol: "magnifyingglass", latitude: 37.3316876, longitude: -122.0327261, shazamStreams: [ShazamStream.preview])
     }

@@ -62,7 +62,6 @@ import SwiftData
     
     // Relations
     var spot: Spot?
-    var event: Event?
     
     init(mediaItem: SHMediaItem, location: CLLocation?, placemark: CLPlacemark?) {
         self.timestamp = .now

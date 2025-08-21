@@ -13,7 +13,6 @@ struct SongDetail: View {
     @Bindable var stream: ShazamStream
     
     @Query var identicalShazamStreams: [ShazamStream]
-    @Query var spotEvents: [Event]
     
     @Query(sort: \Spot.updatedAt, order: .reverse) private var spots: [Spot]
     
@@ -28,13 +27,6 @@ struct SongDetail: View {
             $0.title == title && $0.artist == artist && $0.persistentModelID != id
         }
         _identicalShazamStreams = Query(filter: predicate, sort: \.timestamp)
-        
-        // Find potential events if a spot has been selected
-        let spotId = stream.spot?.persistentModelID
-        let eventPredicate = #Predicate<Event> {
-            $0.spot?.persistentModelID == spotId
-        }
-        _spotEvents = Query(filter: eventPredicate, sort: \.updatedAt)
     }
     
     private var identicalShazamStream: ShazamStream? {
@@ -43,8 +35,6 @@ struct SongDetail: View {
     
     @State private var showingSpotSelector = false
     @State private var showingLocationPicker = false
-    @State private var eventAlertShown = false
-    @State private var eventName = ""
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -94,10 +84,10 @@ struct SongDetail: View {
                                 Button("Select", systemImage: "mappin.and.ellipse", action: selectSpot)
                             }
                             
-                            if !identicalShazamStreams.isEmpty {
+                            if let identical = identicalShazamStream {
                                 Spacer()
                                 
-                                previouslyDiscovered
+                                previouslyDiscovered(identical)
                             }
                         }
                     }
@@ -108,59 +98,24 @@ struct SongDetail: View {
         .padding(.bottom, 8)
         .popover(isPresented: $showingSpotSelector) {
             SpotSelector(selection: $stream.spot, newSpotCallback: { createSpot() })
-                .presentationDetents([.fraction(0.50), .fraction(0.999)])
+                .presentationDetents([.fraction(0.50), .large])
                 .presentationBackground(.thickMaterial)
                 .presentationBackgroundInteraction(.enabled)
                 .presentationCornerRadius(14)
         }
         .popover(isPresented: $showingLocationPicker) {
             LocationPicker(lat: $stream.latitude, lng: $stream.longitude)
-                .presentationDetents([.fraction(0.50), .fraction(0.999)])
+                .presentationDetents([.fraction(0.50), .large])
                 .presentationBackground(.thickMaterial)
                 .presentationBackgroundInteraction(.enabled)
                 .presentationCornerRadius(14)
         }
-        /*.alert("Add an event", isPresented: $eventAlertShown) {
-            TextField("Name", text: $eventName)
-            Button("Cancel", role: .cancel) {}
-            Button("OK", action: newEvent)
-        } message: {
-            Text("[This UI is temporary.]")
-        }*/
     }
     
-    private var eventSelector: some View {
-        Menu {
-            Button(
-                "New Event",
-                systemImage: "plus",
-                action: { eventAlertShown.toggle() }
-            )
-            
-            Divider()
-            
-            ForEach(spotEvents) { event in
-                Button(
-                    event.name,
-                    systemImage: stream.event == event ? "checkmark" : "", // TODO: fix
-                    action: { addToEvent(event) }
-                )
-            }
-        } label: {
-            Image(
-                systemName: stream.event == nil ? "calendar.badge.plus" : "calendar"
-            )
-            Text(stream.event == nil ? "Add to Event" : stream.event!.name)
-                .lineLimit(1)
-                .font(.system(size: 13))
-                .padding(.leading, -3)
-        }
-    }
-    
-    private var previouslyDiscovered: some View {
-        Button(action: { view.stream = identicalShazamStream }) {
+    private func previouslyDiscovered(_ identical: ShazamStream) -> some View {
+        Button(action: { view.show(identical) }) {
             Image(systemName: "clock.fill")
-            Text("Previously \(identicalShazamStream?.place ?? "sometime")")
+            Text("Previously \(identical.attributedPlace)")
                 .lineLimit(1)
                 .font(.system(size: 13))
                 .padding(.leading, -2)
@@ -173,16 +128,6 @@ struct SongDetail: View {
     
     private func editLocation() {
         showingLocationPicker.toggle()
-    }
-    
-    private func newEvent() {
-        let event = Event(name: eventName, spot: stream.spot!, shazamStreams: [stream])
-        modelContext.insert(event)
-    }
-    
-    private func addToEvent(_ event: Event) {
-        // Set or clear event
-        stream.event = stream.event == event ? nil : event
     }
     
     private func createSpot() {
