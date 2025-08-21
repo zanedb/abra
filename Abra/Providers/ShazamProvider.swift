@@ -220,7 +220,9 @@ enum ShazamStatus: Equatable {
         
         // Power users go on through
         if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
-            UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+            withAnimation {
+                UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+            }
         }
     }
     

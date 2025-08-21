@@ -148,7 +148,7 @@ struct OnboardingView: View {
                 label: "I’m ready",
                 systemImage: "checkmark",
                 color: .primary,
-                action: { UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding") }
+                action: { withAnimation { UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding") } }
             )
             .padding(.top)
             .opacity(phase > 32 ? 1 : 0)

@@ -215,7 +215,7 @@ struct SheetView: View {
             }
             .onAppear {
                 // If location was "allow once" request again
-                if location.authorizationStatus == .notDetermined /* && onboarded */ {
+                if location.authorizationStatus == .notDetermined {
                     location.requestPermission()
                 }
                 // We‘ll need this soon
