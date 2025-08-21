@@ -28,7 +28,7 @@ struct SongActions: View {
                     ShareLink(item: link) {
                         Image(systemName: "square.and.arrow.up")
                             .frame(width: 36, height: 36)
-                            .background(.ultraThickMaterial)
+                            .background(.thinMaterial)
                             .clipShape(Circle())
                         
                         Text("Share Song.link")
@@ -56,9 +56,8 @@ struct SongActions: View {
         .padding(.bottom)
         .popover(isPresented: $showingPlaylistPicker) {
             PlaylistPicker(stream: stream)
-                .presentationDetents([.fraction(0.50), .fraction(0.999)])
+                .presentationDetents([.large])
                 .presentationBackground(.thickMaterial)
-                .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.999)))
                 .presentationCornerRadius(14)
         }
         .confirmationDialog("This song will be deleted from your Abra and Shazam libraries.", isPresented: $showingConfirmation, titleVisibility: .visible) {
@@ -70,7 +69,7 @@ struct SongActions: View {
         Button(role: role, action: action) {
             Image(systemName: icon)
                 .frame(width: 36, height: 36)
-                .background(.ultraThickMaterial)
+                .background(.thinMaterial)
                 .clipShape(Circle())
             
             Text(title)

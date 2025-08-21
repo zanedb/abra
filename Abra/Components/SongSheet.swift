@@ -26,8 +26,8 @@ struct SongSheet: View {
                 .resizable()
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
-                .clipShape(.rect(cornerRadius: 3))
                 .frame(width: 96, height: 96)
+                .clipShape(.rect(cornerRadius: 14))
                 .padding(.trailing, 5)
                 .overlay {
                     if stream.appleMusicID != nil {
