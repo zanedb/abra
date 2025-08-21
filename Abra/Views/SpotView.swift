@@ -16,7 +16,6 @@ struct SpotView: View {
     
     @Bindable var spot: Spot
     
-    @State private var minimized: Bool = false
     @State private var showingIconDesigner: Bool = false
     @State private var selectedEvent: Event?
     
@@ -42,7 +41,6 @@ struct SpotView: View {
                 heading
                     .padding(.top, -40)
                     
-                if !minimized {
                     if eventCount > 0 {
                         Text("\(eventCount) Event\(eventCount != 1 ? "s" : "")")
                             .font(.subheadline)
@@ -111,11 +109,6 @@ struct SpotView: View {
                 }
             }
         }
-        .onGeometryChange(for: CGRect.self) { proxy in
-            proxy.frame(in: .global)
-        } action: {
-            minimized = ($0.height < 100) ? true : false
-        }
     }
     
     private var heading: some View {
@@ -127,8 +120,8 @@ struct SpotView: View {
             }
             VStack(alignment: .leading, spacing: 0) {
                 TextField("Name", text: $spot.name)
-                    .font(minimized ? .title2 : .title)
-                    .frame(maxWidth: minimized ? 220 : 180, alignment: .leading)
+                    .font(.title)
+                    .frame(maxWidth: 180, alignment: .leading)
                     .bold()
                 Text(spot.description)
                     .foregroundStyle(.gray)

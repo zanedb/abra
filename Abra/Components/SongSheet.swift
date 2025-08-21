@@ -14,11 +14,6 @@ struct SongSheet: View {
     @Environment(MusicProvider.self) var music
     
     var stream: ShazamStream
-    var mini: Bool = false
-    
-    private var imageSize: CGFloat {
-        mini ? 48 : 96
-    }
     
     @State private var albumTitle: String = "Apple vs. 7G"
     @State private var released: String = "2021"
@@ -31,12 +26,11 @@ struct SongSheet: View {
                 .resizable()
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
-                .frame(width: imageSize, height: imageSize)
                 .clipShape(.rect(cornerRadius: 3))
+                .frame(width: 96, height: 96)
                 .padding(.trailing, 5)
-                .padding(.leading, mini ? 4 : 0)
                 .overlay {
-                    if !mini && stream.appleMusicID != nil {
+                    if stream.appleMusicID != nil {
                         playButton
                     }
                 }
@@ -46,13 +40,13 @@ struct SongSheet: View {
                     .font(.bigTitle)
                     .padding(.bottom, 2)
                     .lineLimit(2)
-                    .frame(maxWidth: mini ? 220 : 180, alignment: .leading)
+                    .frame(maxWidth: 180, alignment: .leading)
                 Text(stream.artist)
                     .foregroundStyle(.secondary)
                     .font(.system(size: 15))
                     .padding(.bottom, 3)
                     .lineLimit(2)
-                    .frame(maxWidth: mini ? 180 : 220, alignment: .leading)
+                    .frame(maxWidth: 220, alignment: .leading)
                 
                 Spacer()
                 
@@ -73,7 +67,6 @@ struct SongSheet: View {
                         .fontWeight(.medium)
                         .redacted(reason: loadedMetadata ? [] : .placeholder)
                 }
-                .opacity(mini ? 0 : 1)
                 
                 Button(action: {
                     if let url = stream.appleMusicURL {
@@ -91,7 +84,6 @@ struct SongSheet: View {
                 .padding(.top, 5)
                 .disabled(stream.appleMusicURL == nil)
                 .accessibilityLabel("Open album in Music")
-                .opacity(mini ? 0 : 1)
             }
             
             Spacer()
@@ -106,7 +98,7 @@ struct SongSheet: View {
                 .font(.system(size: 40))
                 .foregroundStyle(.thickMaterial)
                 .shadow(radius: 2)
-                .frame(width: imageSize, height: imageSize)
+                .frame(width: 96, height: 96)
         }
     }
     

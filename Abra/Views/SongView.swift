@@ -14,19 +14,14 @@ struct SongView: View {
     
     var stream: ShazamStream
     
-    @State private var minimized: Bool = false
-    @State private var offsetY: CGFloat = 0
-    
-    private var scrolled: Bool {
-        offsetY > -50
-    }
+    @State private var scrolled = false
     
     var body: some View {
         NavigationStack {
             ScrollView {
-                SongSheet(stream: stream, mini: minimized)
+                SongSheet(stream: stream)
                     .padding()
-                    .padding(.top, -48)
+                    .padding(.top, -50)
                 
                 SongDetail(stream: stream)
                     
@@ -38,7 +33,7 @@ struct SongView: View {
                 geometry.contentOffset.y
             }) { oldValue, newValue in
                 if oldValue != newValue {
-                    offsetY = newValue
+                    scrolled = newValue > -52
                 }
             }
             .toolbar {
@@ -63,9 +58,6 @@ struct SongView: View {
                 }
             }
         }
-        .onGeometryChange(for: CGRect.self) { proxy in
-            proxy.frame(in: .global)
-        } action: { minimized = ($0.height < 100) ? true : false }
         .onChange(of: location.currentPlacemark) {
             // Save location if it wasn't initially ready
             if let currentLoc = location.currentLocation, stream.latitude == -1 && stream.longitude == -1 {

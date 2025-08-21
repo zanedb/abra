@@ -172,8 +172,13 @@ extension ShazamStream {
         thoroughfare ?? "Unknown"
     }
     
-    /// Place; i.e. "in San Francisco," "at 1015"
+    /// Place; i.e. "Mission" or "San Francisco" or "1015"
     public var place: String {
+        spot?.name ?? subLocality ?? city ?? country ?? "Unknown"
+    }
+    
+    /// Place; i.e. "in San Francisco," "at 1015"
+    public var attributedPlace: String {
         "\(spot?.name != nil ? "at" : "in") \(spot?.name ?? city ?? "Unknown")"
     }
     
@@ -181,7 +186,7 @@ extension ShazamStream {
     public var description: String {
         let date = self.date
         
-        return "\(date) \(place)"
+        return "\(date) \(attributedPlace)"
     }
     
     // TODO: guess transport modality by speed
