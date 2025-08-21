@@ -10,16 +10,18 @@ struct Thumbnail: View {
     @Environment(LibraryProvider.self) private var library
     @State private var image: Image?
 
-    var assetLocalId: String
+    var assetLocalId: String?
+    var targetSize: CGSize = .init(width: 1024, height: 1024)
 
     func loadImageAsset(
-        targetSize: CGSize = CGSize(width: 1024, height: 1024)
+        targetSize: CGSize
     ) async {
-        guard let uiImage = try? await library
-            .fetchImage(
-                byLocalIdentifier: assetLocalId,
-                targetSize: targetSize
-            )
+        guard let id = assetLocalId,
+              let uiImage = try? await library
+              .fetchImage(
+                  byLocalIdentifier: id,
+                  targetSize: targetSize
+              )
         else {
             image = nil
             return
@@ -32,18 +34,14 @@ struct Thumbnail: View {
             if let image = image {
                 image
                     .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .aspectRatio(2/3, contentMode: .fit)
             } else {
                 Rectangle()
-                    .foregroundStyle(.primary)
-                    .colorInvert()
-                    .aspectRatio(2/3, contentMode: .fit)
+                    .fill(.thinMaterial)
                 ProgressView()
             }
         }
         .task(id: assetLocalId) {
-            await loadImageAsset(targetSize: CGSize(width: 256, height: 384))
+            await loadImageAsset(targetSize: targetSize)
         }
         .onDisappear {
             image = nil

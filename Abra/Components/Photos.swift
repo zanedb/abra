@@ -13,9 +13,12 @@ struct Photos: View {
     @AppStorage("hasRequestedPhotosAuthorization") var requestedAuthorization: Bool = false
     @AppStorage("hasIgnoredPhotosRequest") var ignoredRequest: Bool = false
 
+    @Namespace var transitionNamespace
+
     var stream: ShazamStream
 
     @State private var loaded: Bool = false
+    @State private var showingMoments = false
 
     private func loadPhotos() {
         loaded = false // Reset (in case of view replacement)
@@ -46,6 +49,13 @@ struct Photos: View {
 
             loadPhotos()
         }
+        .fullScreenCover(isPresented: $showingMoments) {
+            MomentView(moment: .init(place: stream.place, timestamp: stream.timestamp, phAssets: library.results.filteredResult), namespace: transitionNamespace)
+        }
+        .onDisappear {
+            // Clear Photos library on disappear
+            library.results.filteredResult = []
+        }
     }
 
     private var heading: some View {
@@ -58,7 +68,10 @@ struct Photos: View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack {
                 ForEach(library.results, id: \.self) { asset in
-                    Thumbnail(assetLocalId: asset.localIdentifier)
+                    Thumbnail(assetLocalId: asset.localIdentifier, targetSize: .init(width: 256, height: 384))
+                        .aspectRatio(contentMode: .fill)
+                        .aspectRatio(2 / 3, contentMode: .fit)
+                        .matchedTransitionSource(id: asset.localIdentifier, in: transitionNamespace)
                         .clipShape(RoundedRectangle(
                             cornerRadius: 8
                         ))
@@ -66,6 +79,9 @@ struct Photos: View {
             }
             .padding(.horizontal)
             .frame(height: 192)
+        }
+        .onTapGesture {
+            showingMoments.toggle()
         }
         .padding(.bottom, 8)
     }

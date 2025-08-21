@@ -59,7 +59,7 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
         
         let allAssets = PHAsset.fetchAssets(with: .image, options: fetchOptions)
         var filteredAssets: [PHAsset] = []
-        let searchRadius: CLLocationDistance = 500 // 0.5km
+        let searchRadius: CLLocationDistance = 2000 // 2km
         
         // Select photos within 0.5km
         allAssets.enumerateObjects { asset, _, _ in
