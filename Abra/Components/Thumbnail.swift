@@ -36,7 +36,7 @@ struct Thumbnail: View {
                     .resizable()
             } else {
                 Rectangle()
-                    .fill(.thinMaterial)
+                    .fill(.clear)
                 ProgressView()
             }
         }

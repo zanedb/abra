@@ -59,7 +59,7 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
         
         let allAssets = PHAsset.fetchAssets(with: .image, options: fetchOptions)
         var filteredAssets: [PHAsset] = []
-        let searchRadius: CLLocationDistance = 2000 // 2km
+        let searchRadius: CLLocationDistance = 1000 // 1km
         
         // Select photos within 0.5km
         allAssets.enumerateObjects { asset, _, _ in
@@ -79,7 +79,8 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
     func fetchImage(
         byLocalIdentifier localId: PHAssetLocalIdentifier,
         targetSize: CGSize = PHImageManagerMaximumSize,
-        contentMode: PHImageContentMode = .default
+        contentMode: PHImageContentMode = .default,
+        options: PHImageRequestOptions? = nil
     ) async throws -> UIImage? {
         let results = PHAsset.fetchAssets(
             withLocalIdentifiers: [localId],
@@ -90,18 +91,18 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
             throw QueryError.phAssetNotFound
         }
         
-        let options = PHImageRequestOptions()
-        options.deliveryMode = .opportunistic
-        options.resizeMode = .fast
-        options.isNetworkAccessAllowed = true
-        options.isSynchronous = true
+        let defaults = PHImageRequestOptions()
+        defaults.deliveryMode = .opportunistic
+        defaults.resizeMode = .fast
+        defaults.isNetworkAccessAllowed = true
+        defaults.isSynchronous = true
         
         return try await withCheckedThrowingContinuation { [weak self] continuation in
             self?.imageCachingManager.requestImage(
                 for: asset,
                 targetSize: targetSize,
                 contentMode: contentMode,
-                options: options,
+                options: options ?? defaults,
                 resultHandler: { image, info in
                     if let error = info?[PHImageErrorKey] as? Error {
                         continuation.resume(throwing: error)

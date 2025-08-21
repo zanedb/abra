@@ -62,6 +62,12 @@ extension Date {
         return dateComponents.year == currentYearComponents.year
     }
 
+    var day: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM d"
+        return formatter.string(from: self)
+    }
+
     var month: String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMMM"
@@ -144,12 +150,13 @@ func extractShazamErrorCode(from error: any Error) -> String? {
     let errorString = String(describing: error)
     let regex = try! NSRegularExpression(pattern: #"Code=\d+\s+"([^"]*)"#)
     let range = NSRange(location: 0, length: errorString.utf16.count)
-    
+
     guard let match = regex.firstMatch(in: errorString, range: range),
-          let stringRange = Range(match.range(at: 1), in: errorString) else {
+          let stringRange = Range(match.range(at: 1), in: errorString)
+    else {
         return nil
     }
-    
+
     return String(errorString[stringRange])
 }
 

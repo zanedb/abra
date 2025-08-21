@@ -16,6 +16,10 @@ struct MomentView: View {
     var moment: Moment
     var namespace: Namespace.ID
 
+    @Namespace var details
+
+    @State private var selectedPhotoIndex: Int? = nil
+
     var body: some View {
         ZStack(alignment: .top) {
             // Photos
@@ -23,22 +27,34 @@ struct MomentView: View {
                 VStack(spacing: 2) {
                     // First image: full width, 1:1 aspect
                     if let firstAsset = moment.phAssets.first {
-                        Thumbnail(assetLocalId: firstAsset.localIdentifier, targetSize: .init(width: 512, height: 512))
-                            .scaledToFill()
-                            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width)
-                            .clipped()
-                            .navigationTransition(.zoom(sourceID: firstAsset.localIdentifier, in: namespace))
+                        Button {
+                            selectedPhotoIndex = 0
+                        } label: {
+                            Thumbnail(assetLocalId: firstAsset.localIdentifier, targetSize: .init(width: 512, height: 512))
+                                .scaledToFill()
+                                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width)
+                                .clipped()
+                                .matchedTransitionSource(id: firstAsset.localIdentifier, in: details)
+                                .navigationTransition(.zoom(sourceID: firstAsset.localIdentifier, in: namespace))
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
 
                     // 3-column grid for remaining images
-                    let size = (UIScreen.main.bounds.width / 3) - (2 * 2)
+                    let size = (UIScreen.main.bounds.width - (2 * 2)) / 3
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 3), spacing: 2) {
-                        ForEach(moment.phAssets.dropFirst(), id: \.self) { asset in
-                            Thumbnail(assetLocalId: asset.localIdentifier, targetSize: .init(width: 256, height: 256))
-                                .scaledToFill()
-                                .frame(width: size, height: size)
-                                .clipped()
-                                .navigationTransition(.zoom(sourceID: asset.localIdentifier, in: namespace))
+                        ForEach(Array(moment.phAssets.dropFirst().enumerated()), id: \.element) { index, asset in
+                            Button {
+                                selectedPhotoIndex = index + 1
+                            } label: {
+                                Thumbnail(assetLocalId: asset.localIdentifier, targetSize: .init(width: 256, height: 256))
+                                    .scaledToFill()
+                                    .frame(width: size, height: size)
+                                    .clipped()
+                                    .matchedTransitionSource(id: asset.localIdentifier, in: details)
+                                    .navigationTransition(.zoom(sourceID: asset.localIdentifier, in: namespace))
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
                 }
@@ -60,7 +76,7 @@ struct MomentView: View {
                 VStack(alignment: .leading) {
                     Text(moment.place)
                         .font(.title.weight(.medium))
-                    Text("\(moment.timestamp.relativeGroupString) · \(moment.phAssets.count) photo\(moment.phAssets.count == 1 ? "" : "s")")
+                    Text("\(moment.timestamp.day) · \(moment.phAssets.count) photo\(moment.phAssets.count == 1 ? "" : "s")")
                         .font(.subheadline)
 
                     Spacer()
@@ -72,6 +88,16 @@ struct MomentView: View {
                 DismissButton(foreground: .white, font: .buttonLarge)
             }
             .padding()
+        }
+        .fullScreenCover(isPresented: Binding<Bool>(
+            get: { selectedPhotoIndex != nil },
+            set: { _ in selectedPhotoIndex = nil }
+        )) {
+            PhotoView(
+                photos: moment.phAssets,
+                initialIndex: selectedPhotoIndex!
+            )
+            .navigationTransition(.zoom(sourceID: moment.phAssets[selectedPhotoIndex!].localIdentifier, in: details))
         }
     }
 }

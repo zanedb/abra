@@ -68,7 +68,7 @@ struct Photos: View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack {
                 ForEach(library.results, id: \.self) { asset in
-                    Thumbnail(assetLocalId: asset.localIdentifier, targetSize: .init(width: 256, height: 384))
+                    Thumbnail(assetLocalId: asset.localIdentifier, targetSize: .init(width: 384, height: 576))
                         .aspectRatio(contentMode: .fill)
                         .aspectRatio(2 / 3, contentMode: .fit)
                         .matchedTransitionSource(id: asset.localIdentifier, in: transitionNamespace)

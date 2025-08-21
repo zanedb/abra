@@ -101,6 +101,11 @@ extension Font {
         .system(size: 18, weight: .bold)
     }
     
+    /// Used in PhotoView
+    static var buttonSmall: Font {
+        .system(size: 20)
+    }
+    
     /// Button Image sizing in toolbars
     static var button: Font {
         .system(size: 24)
