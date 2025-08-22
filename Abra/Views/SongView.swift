@@ -3,25 +3,30 @@
 //  Abra
 //
 
-import MapKit
+import MusicKit
 import SwiftData
 import SwiftUI
 
 struct SongView: View {
+    @Environment(\.openURL) private var openURL
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Environment(LocationProvider.self) private var location
+    @Environment(\.toastProvider) private var toast
+    @Environment(MusicProvider.self) private var music
     
     var stream: ShazamStream
     
-    @State private var scrolled = false
+    @State private var albumTitle: String = "Apple vs. 7G"
+    @State private var released: String = "2021"
+    @State private var genre: String = "Electronic"
+    @State private var loadedMetadata: Bool = false
     
     var body: some View {
         NavigationStack {
             ScrollView {
-                SongSheet(stream: stream)
+                Info
                     .padding()
-                    .padding(.top, -50)
+                    .padding(.top, -28)
                 
                 SongDetail(stream: stream)
                     
@@ -29,25 +34,17 @@ struct SongView: View {
                 
                 SongActions(stream: stream)
             }
-            .onScrollGeometryChange(for: CGFloat.self, of: { geometry in
-                geometry.contentOffset.y
-            }) { oldValue, newValue in
-                if oldValue != newValue {
-                    scrolled = newValue > -52
-                }
-            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    if scrolled {
-                        Text(stream.title)
-                            .font(.bigTitle)
-                    }
+                    Text(stream.title)
+                        .font(.title2.weight(.bold))
+                        .lineLimit(1)
                 }
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: -4) {
-                        if let appleMusicURL = stream.appleMusicURL {
-                            ShareLink(item: appleMusicURL) {
-                                Image(systemName: "square.and.arrow.up.circle.fill")
+                        if let appleMusicID = stream.appleMusicID {
+                            Button(action: { music.playPause(id: appleMusicID) }) {
+                                Image(systemName: music.nowPlaying == appleMusicID ? "pause.circle.fill" : "play.circle.fill")
                                     .foregroundStyle(.gray)
                                     .font(.button)
                                     .symbolRenderingMode(.hierarchical)
@@ -58,12 +55,66 @@ struct SongView: View {
                 }
             }
         }
-        .onChange(of: location.currentPlacemark) {
-            // Save location if it wasn't initially ready
-            if let currentLoc = location.currentLocation, stream.latitude == -1 && stream.longitude == -1 {
-                stream.updateLocation(currentLoc, placemark: location.currentPlacemark)
-                stream.spotIt(context: modelContext)
+    }
+    
+    var Info: some View {
+        HStack(spacing: 4) {
+            Text(stream.artist)
+                .foregroundStyle(.secondary)
+                .font(.headline.weight(.regular))
+                .lineLimit(1)
+                
+            Image(systemName: "circle.fill")
+                .font(.system(size: 2).bold())
+                .foregroundStyle(.secondary)
+            
+            Button(action: {
+                if let url = stream.appleMusicURL {
+                    openURL(url)
+                }
+            }) {
+                Text(albumTitle)
+                    .font(.headline.weight(.regular))
+                    .lineLimit(1)
+                    .redacted(reason: loadedMetadata ? [] : .placeholder)
             }
+            .disabled(stream.appleMusicURL == nil)
+            .accessibilityLabel("Open album in Music")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .task(id: stream.persistentModelID, loadMetadata)
+    }
+    
+    @Sendable private func loadMetadata() async {
+        guard let id = stream.appleMusicID else { return loadedMetadata = false }
+        
+        do {
+            let song = try await music.fetchTrackInfo(id)
+                
+            if let albumName = song?.albumTitle, let releaseDate = song?.releaseDate?.year, let genres = song?.genreNames {
+                albumTitle = albumName.hasSuffix(" - Single") ? "Single" : albumName
+                genre = genres.first ?? ""
+                released = releaseDate
+                    
+                loadedMetadata = true
+            }
+        } catch {
+            loadedMetadata = false // Don't show stale information
+            
+            var message = error.localizedDescription
+            if let e = error as? MusicDataRequest.Error {
+                message = e.title
+            }
+            
+            toast.show(
+                message: message,
+                type: .error,
+                symbol: "exclamationmark.circle.fill",
+                action: message == "Permission denied" ? {
+                    // On permissions issue, tapping takes you right to app settings!
+                    openURL(URL(string: UIApplication.openSettingsURLString)!)
+                } : nil
+            )
         }
     }
 }
