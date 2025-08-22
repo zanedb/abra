@@ -1,12 +1,12 @@
 //
-//  SongDetail.swift
+//  SongDiscovered.swift
 //  Abra
 //
 
 import SwiftData
 import SwiftUI
 
-struct SongDetail: View {
+struct SongDiscovered: View {
     @Environment(\.modelContext) var modelContext
     @Environment(SheetProvider.self) private var view
     

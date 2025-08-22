@@ -26,9 +26,9 @@ struct SongView: View {
             ScrollView {
                 Info
                     .padding()
-                    .padding(.top, -28)
+                    .padding(.top, -26)
                 
-                SongDetail(stream: stream)
+                SongDiscovered(stream: stream)
                     
                 Photos(stream: stream)
                 
