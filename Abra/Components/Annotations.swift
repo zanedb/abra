@@ -37,88 +37,88 @@ class SpotAnnotation: NSObject, MKAnnotation {
 
 // MARK: - Annotation Views
 
-final class ShazamAnnotationView: MKAnnotationView {
-    private let imageView = UIImageView()
-    private let size: CGFloat = 32
+    final class ShazamAnnotationView: MKAnnotationView {
+        private let imageView = UIImageView()
+        private let size: CGFloat = 32
 
-    override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+            super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
 
-        displayPriority = .defaultLow
-        collisionMode = .circle
+            displayPriority = .defaultLow
+            collisionMode = .circle
 
-        setupUI()
-        loadImage()
-    }
-
-    @available(*, unavailable)
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override var annotation: MKAnnotation? {
-        didSet {
+            setupUI()
             loadImage()
         }
+
+        @available(*, unavailable)
+        required init?(coder aDecoder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        override var annotation: MKAnnotation? {
+            didSet {
+                loadImage()
+            }
+        }
+        
+        private func setupUI() {
+            backgroundColor = .clear
+            frame = CGRect(x: 0, y: 0, width: size, height: size)
+
+            imageView.frame = bounds
+            imageView.contentMode = .scaleAspectFill
+            imageView.clipsToBounds = true
+            imageView.layer.cornerRadius = 8
+            imageView.backgroundColor = .systemBackground
+
+            // White circular outline
+            imageView.layer.borderColor = UIColor.white.cgColor
+            imageView.layer.borderWidth = 2
+
+            addSubview(imageView)
+
+            // Subtle shadow (spotlight effect)
+            layer.shadowColor = UIColor.black.cgColor
+            layer.shadowOpacity = 0.18
+            layer.shadowRadius = 6
+            layer.shadowOffset = CGSize(width: 0, height: 2)
+            layer.masksToBounds = false
+        }
+
+        private func loadImage() {
+            guard let shazamAnnotation = annotation as? ShazamAnnotation else { return }
+
+            imageView.kf.setImage(
+                with: shazamAnnotation.shazamStream.artworkURL,
+                placeholder: UIImage(systemName: "exclamationmark.circle.fill"),
+                options: [
+                    .transition(.fade(0.2)),
+                    .cacheOriginalImage
+                ]
+            )
+        }
+        
+        // Animate open/close on selection
+        override func setSelected(_ selected: Bool, animated: Bool) {
+            super.setSelected(selected, animated: animated)
+
+            let scale: CGFloat = selected ? 4.0 : 1.0
+            let duration: TimeInterval = animated ? 0.5 : 0.0
+
+            UIView.animate(
+                withDuration: duration,
+                delay: 0,
+                usingSpringWithDamping: 0.6,
+                initialSpringVelocity: 0.8,
+                options: [.curveEaseInOut, .allowUserInteraction],
+                animations: {
+                    self.transform = CGAffineTransform(scaleX: scale, y: scale)
+                },
+                completion: nil
+            )
+        }
     }
-    
-    private func setupUI() {
-        backgroundColor = .clear
-        frame = CGRect(x: 0, y: 0, width: size, height: size)
-
-        imageView.frame = bounds
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = size / 2
-        imageView.backgroundColor = .systemBackground
-
-        // White circular outline
-        imageView.layer.borderColor = UIColor.white.cgColor
-        imageView.layer.borderWidth = 2
-
-        addSubview(imageView)
-
-        // Subtle shadow (spotlight effect)
-        layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOpacity = 0.18
-        layer.shadowRadius = 6
-        layer.shadowOffset = CGSize(width: 0, height: 2)
-        layer.masksToBounds = false
-    }
-
-    private func loadImage() {
-        guard let shazamAnnotation = annotation as? ShazamAnnotation else { return }
-
-        imageView.kf.setImage(
-            with: shazamAnnotation.shazamStream.artworkURL,
-            placeholder: UIImage(systemName: "exclamationmark.circle.fill"),
-            options: [
-                .transition(.fade(0.2)),
-                .cacheOriginalImage
-            ]
-        )
-    }
-    
-    // Animate open/close on selection
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        let scale: CGFloat = selected ? 1.5 : 1.0
-        let duration: TimeInterval = animated ? 0.5 : 0.0
-
-        UIView.animate(
-            withDuration: duration,
-            delay: 0,
-            usingSpringWithDamping: 0.6,
-            initialSpringVelocity: 0.8,
-            options: [.curveEaseInOut, .allowUserInteraction],
-            animations: {
-                self.transform = CGAffineTransform(scaleX: scale, y: scale)
-            },
-            completion: nil
-        )
-    }
-}
 
 final class SpotAnnotationView: MKMarkerAnnotationView {
     static let reuseIdentifier = NSStringFromClass(SpotAnnotation.self)
