@@ -27,11 +27,12 @@ struct SongActions: View {
                 if let link = stream.songLink {
                     ShareLink(item: link) {
                         Image(systemName: "square.and.arrow.up")
-                            .frame(width: 36, height: 36)
+                            .frame(width: 32, height: 32)
                             .background(.thinMaterial)
                             .clipShape(Circle())
                         
                         Text("Share Song.link")
+                            .font(.callout)
                         
                         Spacer()
                     }
@@ -39,14 +40,14 @@ struct SongActions: View {
                     .padding(.vertical, 10)
                     
                     Divider()
-                        .padding(.leading, 60)
+                        .padding(.leading, 56)
                 }
                 
                 if stream.appleMusicID != nil {
                     row("Add to Playlist", icon: "music.note.list", action: { showingPlaylistPicker.toggle() })
                 
                     Divider()
-                        .padding(.leading, 60)
+                        .padding(.leading, 56)
                 }
                 
                 row("Delete", icon: "trash.fill", action: { showingConfirmation = true }, role: .destructive)
@@ -68,11 +69,12 @@ struct SongActions: View {
     private func row(_ title: String, icon: String, action: @escaping () -> Void, role: ButtonRole? = .none) -> some View {
         Button(role: role, action: action) {
             Image(systemName: icon)
-                .frame(width: 36, height: 36)
+                .frame(width: 32, height: 32)
                 .background(.thinMaterial)
                 .clipShape(Circle())
             
             Text(title)
+                .font(.callout)
             
             Spacer()
         }

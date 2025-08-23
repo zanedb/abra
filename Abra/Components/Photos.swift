@@ -12,6 +12,7 @@ struct Moment: Identifiable {
     var place: String
     var timestamp: Date
     var phAssets: [PHAsset] = []
+    var streams: [ShazamStream] = []
 }
 
 struct Photos: View {
