@@ -63,6 +63,7 @@ struct SongView: View {
                                     .font(.button)
                                     .symbolRenderingMode(.hierarchical)
                             } primaryAction: {
+                                music.playPause(id: appleMusicID)
                             }
                         }
                         DismissButton()
