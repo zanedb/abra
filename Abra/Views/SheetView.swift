@@ -99,28 +99,18 @@ struct SheetView: View {
                                 .font(.system(size: 14))
                                 .tint(searchHidden ? .gray : .clear)
                         }
-                        Button(action: {}) {
-                            Image(systemName: "person.crop.circle.fill")
+                        Button(action: { Task { await shazam.startMatching() } }) {
+                            Image(systemName: "shazam.logo.fill")
                                 .fontWeight(.medium)
                                 .font(.button)
-                                .symbolRenderingMode(.hierarchical)
-                                .foregroundStyle(.secondary)
+                                .symbolRenderingMode(.multicolor)
+                                .foregroundStyle(.blue)
+                                .matchedTransitionSource(id: "ShazamButton", in: animation)
                         }
                         .buttonStyle(.plain)
                     }
                 }
             }
-        }
-        .overlay(alignment: .bottomTrailing) {
-            Button(action: { Task { await shazam.startMatching() } }) {
-                Image(systemName: "shazam.logo.fill")
-                    .imageScale(.large)
-                    .font(.largeTitle)
-                    .symbolRenderingMode(.multicolor)
-                    .shadow(radius: 4, x: 0, y: 4)
-                    .matchedTransitionSource(id: "ShazamButton", in: animation)
-            }
-            .padding()
         }
         .fullScreenCover(isPresented: shazam.isMatchingBinding) {
             searching
