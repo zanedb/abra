@@ -38,16 +38,31 @@ struct SongView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Text(stream.title)
                         .font(.title2.weight(.bold))
-                        .lineLimit(1)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: -4) {
                         if let appleMusicID = stream.appleMusicID {
-                            Button(action: { music.playPause(id: appleMusicID) }) {
+                            Menu {
+                                Button("Add to Queue", systemImage: "text.line.last.and.arrowtriangle.forward", action: {
+                                    Task {
+                                        await music.queue(ids: [appleMusicID], position: .tail)
+                                    }
+                                })
+                                Button("Play Next", systemImage: "text.line.first.and.arrowtriangle.forward", action: {
+                                    Task {
+                                        await music.queue(ids: [appleMusicID], position: .afterCurrentEntry)
+                                    }
+                                })
+                                if let url = stream.appleMusicURL {
+                                    Divider()
+                                    ShareLink("Share Album", item: url)
+                                }
+                            } label: {
                                 Image(systemName: music.nowPlaying == appleMusicID ? "pause.circle.fill" : "play.circle.fill")
                                     .foregroundStyle(.gray)
                                     .font(.button)
                                     .symbolRenderingMode(.hierarchical)
+                            } primaryAction: {
                             }
                         }
                         DismissButton()

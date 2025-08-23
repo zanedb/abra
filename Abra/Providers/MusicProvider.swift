@@ -79,7 +79,20 @@ import StoreKit
                 
             return
         }
-
+        
+        do {
+            // Play next, skip one
+            await queue(ids: ids, position: .afterCurrentEntry)
+            try await musicKitPlayer.skipToNextEntry()
+            
+            // Play using MPMusicPlayerController so it reports the event properly
+            musicPlayer.play()
+        } catch {
+            print("Error playing: \(error)")
+        }
+    }
+    
+    func queue(ids: [String], position: MusicKit.MusicPlayer.Queue.EntryInsertionPosition = .tail) async {
         let musicItemIDs = ids.map { MusicItemID($0) }
         
         do {
@@ -88,12 +101,8 @@ import StoreKit
             let response = try await request.response()
             let songs = response.items
 
-            // Insert songs into the queue after the currently playing item, skip one
-            try await musicKitPlayer.queue.insert(songs, position: .afterCurrentEntry)
-            try await musicKitPlayer.skipToNextEntry()
-            
-            // Play using MPMusicPlayerController so it reports the event properly
-            musicPlayer.play()
+            // Insert songs into the queue at position
+            try await musicKitPlayer.queue.insert(songs, position: position)
         } catch {
             print("Error inserting songs into queue: \(error)")
         }
