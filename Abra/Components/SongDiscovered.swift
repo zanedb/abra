@@ -33,83 +33,64 @@ struct SongDiscovered: View {
         identicalShazamStreams.last // Show most recent
     }
     
-    @State private var showingSpotSelector = false
-    @State private var showingLocationPicker = false
+    // TODO: sort by location, updatedAt, limit to 5
+    private var recentNearbySpots: [Spot] {
+        spots.sorted { $0.updatedAt > $1.updatedAt }.reversed()
+    }
     
     var body: some View {
         VStack(alignment: .leading) {
-            HStack {
-                Text("Discovered")
-                    .font(.subheading)
-                
-                Spacer()
-                
-                Menu("Edit") {
-                    Button("Location", systemImage: "location.fill", action: editLocation)
-                    Button("Spot", systemImage: "mappin.and.ellipse", action: selectSpot)
-                }
-                .font(.system(size: 13))
-            }
+            Text("Discovered")
+                .font(.subheading)
             
             Wrapper {
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(stream.timestamp, style: .time)
-                                .font(.system(size: 13, weight: .medium))
-                            Text(stream.timestamp, style: .date)
-                                .font(.system(size: 13))
-                                .foregroundStyle(.secondary)
-                            
-                            Text(stream.cityState) // TODO: neighborhood/address info here
-                                .font(.system(size: 13))
-                                .foregroundStyle(.secondary)
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(stream.timestamp, style: .time)
+                            .fontWeight(.medium)
+                        Text(stream.timestamp, style: .date)
+                            .foregroundStyle(.secondary)
+                            .font(.callout)
+                        if let identical = identicalShazamStream {
+                            previouslyDiscovered(identical)
                         }
+                    }
+                    
+                    Spacer()
                         
-                        Spacer()
-                        
-                        VStack(alignment: .trailing) {
-                            if let spot = stream.spot {
-                                Button(action: {
-                                    view.show(spot)
-                                }) {
-                                    SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: 24, renderingMode: .hierarchical)
-                                    
-                                    Text(spot.name)
-                                        .lineLimit(1)
-                                        .fontWeight(.medium)
-                                        .foregroundStyle(Color(spot.color))
-                                }
-                            } else {
-                                Button("Select", systemImage: "mappin.and.ellipse", action: selectSpot)
+                    VStack(alignment: .trailing, spacing: 0) {
+                        Menu {
+                            ForEach(recentNearbySpots, id: \.id) { spot in
+                                Toggle(spot.name, systemImage: spot.symbol, isOn: spotBinding(spot, stream: stream))
                             }
-                            
-                            if let identical = identicalShazamStream {
-                                Spacer()
-                                
-                                previouslyDiscovered(identical)
-                            }
+                            Divider()
+                            Button("New Spot", systemImage: "plus", action: createSpot)
+                        } label: {
+                            Text(stream.spot?.name ?? "Choose")
+                                .lineLimit(1)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .imageScale(.small)
+                                .font(.subheadline)
                         }
+                        .padding(.bottom, 5)
+                        
+                        Text(stream.cityState)
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
                     }
                 }
             }
         }
         .padding(.horizontal)
         .padding(.bottom, 8)
-        .popover(isPresented: $showingSpotSelector) {
-            SpotSelector(selection: $stream.spot, newSpotCallback: { createSpot() })
-                .presentationDetents([.fraction(0.50), .large])
-                .presentationBackground(.thickMaterial)
-                .presentationBackgroundInteraction(.enabled)
-                .presentationCornerRadius(14)
-        }
-        .popover(isPresented: $showingLocationPicker) {
-            LocationPicker(lat: $stream.latitude, lng: $stream.longitude)
-                .presentationDetents([.fraction(0.50), .large])
-                .presentationBackground(.thickMaterial)
-                .presentationBackgroundInteraction(.enabled)
-                .presentationCornerRadius(14)
-        }
+    }
+    
+    private func spotBinding(_ spot: Spot, stream: ShazamStream) -> Binding<Bool> {
+        Binding<Bool>(
+            get: { stream.spot == spot },
+            set: { stream.spot = $0 ? spot : nil
+            })
     }
     
     private func previouslyDiscovered(_ identical: ShazamStream) -> some View {
@@ -117,21 +98,13 @@ struct SongDiscovered: View {
             Image(systemName: "clock.fill")
             Text("Previously \(identical.attributedPlace)")
                 .lineLimit(1)
-                .font(.system(size: 13))
+                .font(.callout)
                 .padding(.leading, -2)
         }
-    }
-    
-    private func selectSpot() {
-        showingSpotSelector.toggle()
-    }
-    
-    private func editLocation() {
-        showingLocationPicker.toggle()
+        .padding(.top)
     }
     
     private func createSpot() {
-        showingSpotSelector = false
         // Create new Spot, insert into modelContext, and open for immediate editing
         let spot = Spot(locationFrom: stream, streams: [stream])
         modelContext.insert(spot)
