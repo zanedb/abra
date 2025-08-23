@@ -123,6 +123,8 @@ struct SongRowMini: View {
     @Environment(MusicProvider.self) private var music
     
     var stream: ShazamStream
+    var playOnTap: Bool = false
+    var blendMode: BlendMode = .normal
     
     private var nowPlaying: Bool { music.nowPlaying != nil && music.nowPlaying == stream.appleMusicID }
     private var lastPlayed: Bool { music.lastPlayed != nil && music.lastPlayed == stream.appleMusicID }
@@ -135,7 +137,7 @@ struct SongRowMini: View {
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 48, height: 48)
-                .clipShape(.rect(cornerRadius: 3))
+                .clipShape(.rect(cornerRadius: 4))
                 .padding(.trailing, 5)
                 .overlay {
                     if nowPlaying || lastPlayed {
@@ -166,10 +168,16 @@ struct SongRowMini: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
+            .blendMode(blendMode)
             
             Spacer()
         }
         .frame(maxHeight: 44)
+        .onTapGesture {
+            if let appleMusicID = stream.appleMusicID, playOnTap {
+                music.playPause(id: appleMusicID)
+            }
+        }
         .contextMenu {
             if let appleMusicURL = stream.appleMusicURL {
                 Link(destination: appleMusicURL) {

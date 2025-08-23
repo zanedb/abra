@@ -42,7 +42,7 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
         }
     }
     
-    func fetchSelectedPhotos(date: Date, location: CLLocation) {
+    func fetchSelectedPhotos(date: Date, location: CLLocation) -> [PHAsset] {
         imageCachingManager.allowsCachingHighQualityImages = false
         
         let fetchOptions = PHFetchOptions()
@@ -71,9 +71,7 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
             }
         }
         
-        DispatchQueue.main.async {
-            self.results.filteredResult = filteredAssets
-        }
+        return filteredAssets
     }
     
     func fetchImage(

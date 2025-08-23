@@ -6,12 +6,6 @@
 import Photos
 import SwiftUI
 
-struct Moment {
-    var place: String
-    var timestamp: Date
-    var phAssets: [PHAsset] = []
-}
-
 struct MomentView: View {
     var moment: Moment
     var namespace: Namespace.ID
@@ -89,6 +83,17 @@ struct MomentView: View {
             }
             .padding()
         }
+        .overlay(alignment: .bottom) {
+            ForEach(moment.streams, id: \.id) { stream in
+                SongRowMini(stream: stream, playOnTap: true, blendMode: .difference)
+                    .padding()
+                    .padding(.horizontal)
+                    .foregroundStyle(.white)
+                    .background(.thinMaterial)
+                    .clipShape(Capsule())
+                    .padding()
+            }
+        }
         .fullScreenCover(isPresented: Binding<Bool>(
             get: { selectedPhotoIndex != nil },
             set: { _ in selectedPhotoIndex = nil }
@@ -103,11 +108,13 @@ struct MomentView: View {
 }
 
 #Preview {
-    @Previewable var moment: Moment = .init(place: "1015", timestamp: .now, phAssets: [])
+    @Previewable var moment: Moment = .init(place: "1015", timestamp: .now, phAssets: [], streams: [.preview])
     @Previewable @Namespace var namespace
 
     VStack {}
         .fullScreenCover(isPresented: .constant(true)) {
             MomentView(moment: moment, namespace: namespace)
         }
+        .environment(SheetProvider())
+        .environment(MusicProvider())
 }

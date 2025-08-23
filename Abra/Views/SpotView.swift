@@ -26,6 +26,9 @@ struct SpotView: View {
                     .padding(.top, -40)
                     
                     }
+                Photos(spot: spot)
+                    .padding(.top, 8)
+                    .foregroundStyle(.gray)
                         
                 Text("\(spot.streams.count) Song\(spot.streams.count != 1 ? "s" : "")")
                     .font(.subheading)
@@ -34,14 +37,8 @@ struct SpotView: View {
                     .padding(.top, 12)
 
                 List(spot.streams) { stream in
-                    Button(action: {
-                        if let appleMusicID = stream.appleMusicID {
-                            music.playPause(id: appleMusicID)
-                        }
-                    }) {
-                        SongRowMini(stream: stream)
-                    }
-                    .listRowBackground(Color.clear)
+                    SongRowMini(stream: stream, playOnTap: true)
+                        .listRowBackground(Color.clear)
                 }
                 .scrollContentBackground(.hidden)
                 .listStyle(.plain)

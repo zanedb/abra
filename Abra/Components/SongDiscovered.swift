@@ -48,6 +48,7 @@ struct SongDiscovered: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(stream.timestamp, style: .time)
                             .fontWeight(.medium)
+                            .padding(.bottom, 2)
                         Text(stream.timestamp, style: .date)
                             .foregroundStyle(.secondary)
                             .font(.callout)

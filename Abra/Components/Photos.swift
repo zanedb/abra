@@ -3,8 +3,16 @@
 //  Abra
 //
 
+import Photos
 import SwiftData
 import SwiftUI
+
+struct Moment: Identifiable {
+    var id = UUID()
+    var place: String
+    var timestamp: Date
+    var phAssets: [PHAsset] = []
+}
 
 struct Photos: View {
     @Environment(LibraryProvider.self) private var library
@@ -15,46 +23,66 @@ struct Photos: View {
 
     @Namespace var transitionNamespace
 
-    var stream: ShazamStream
+    init(stream: ShazamStream) {
+        self.stream = stream
+        self.id = stream.id
+    }
 
-    @State private var loaded: Bool = false
-    @State private var showingMoments = false
+    init(spot: Spot) {
+        self.spot = spot
+        self.id = spot.id
+    }
+
+    var stream: ShazamStream?
+    var spot: Spot?
+    var id: PersistentIdentifier
+
+    @State private var moments: [Moment] = []
+    @State private var moment: Moment? = nil
 
     private func loadPhotos() {
-        loaded = false // Reset (in case of view replacement)
         // Request authorization, on success load photos
         library.requestAuthorization {
-            loaded = true
             if library.authorized {
-                library.fetchSelectedPhotos(date: stream.timestamp, location: stream.location)
+                var streams: [ShazamStream] = []
+                if let stream {
+                    streams.append(stream)
+                } else if let spot {
+                    spot.shazamStreams?.forEach { streams.append($0) }
+                }
+
+                // TODO: if the results are the same, only create one and add all Streams
+                for stream in streams {
+                    let photos = library.fetchSelectedPhotos(date: stream.timestamp, location: stream.location)
+                    guard !photos.isEmpty else { continue }
+                    moments.append(.init(place: stream.place, timestamp: stream.timestamp, phAssets: photos.reversed(), streams: [stream]))
+                }
             }
         }
     }
 
     var body: some View {
         VStack(alignment: .leading) {
-            if loaded {
-                if library.authorized && !library.results.isEmpty {
-                    heading
-                    libraryView
-                } else if !library.authorized {
-                    heading
-                    permissionView
-                }
+            if library.authorized && !moments.isEmpty {
+                heading
+                libraryView
+            } else if !library.authorized && stream != nil {
+                heading
+                permissionView
             }
         }
-        .task(id: stream.persistentModelID) {
+        .task(id: id) {
             // Don't prompt if user hasn't interacted yet
-            guard requestedAuthorization else { return loaded = true }
+            guard requestedAuthorization else { return }
 
             loadPhotos()
         }
-        .fullScreenCover(isPresented: $showingMoments) {
-            MomentView(moment: .init(place: stream.place, timestamp: stream.timestamp, phAssets: library.results.filteredResult), namespace: transitionNamespace)
+        .fullScreenCover(item: $moment) { moment in
+            MomentView(moment: moment, namespace: transitionNamespace)
         }
         .onDisappear {
             // Clear Photos library on disappear
-            library.results.filteredResult = []
+            moments = []
         }
     }
 
@@ -67,21 +95,47 @@ struct Photos: View {
     private var libraryView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack {
-                ForEach(library.results, id: \.self) { asset in
-                    Thumbnail(assetLocalId: asset.localIdentifier, targetSize: .init(width: 384, height: 576))
-                        .aspectRatio(contentMode: .fill)
-                        .aspectRatio(2 / 3, contentMode: .fit)
-                        .matchedTransitionSource(id: asset.localIdentifier, in: transitionNamespace)
-                        .clipShape(RoundedRectangle(
-                            cornerRadius: 8
-                        ))
+                if moments.count > 1 {
+                    ForEach(moments.reversed(), id: \.id) { mo in
+                        Thumbnail(assetLocalId: mo.phAssets.first!.localIdentifier, targetSize: .init(width: 384, height: 576))
+                            .aspectRatio(contentMode: .fill)
+                            .aspectRatio(2 / 3, contentMode: .fit)
+                            .matchedTransitionSource(id: mo.phAssets.first!.localIdentifier, in: transitionNamespace)
+                            .onTapGesture {
+                                moment = mo
+                            }
+                            .overlay(alignment: .bottomLeading) {
+                                HStack(alignment: .bottom) {
+                                    Text(mo.timestamp.day)
+                                        .font(.headline)
+                                        .foregroundStyle(.white)
+                                        .padding()
+                                    Spacer()
+                                }
+                                    .frame(maxWidth: .infinity)
+                                    .background(.thinMaterial)
+                            }
+                            .clipShape(RoundedRectangle(
+                                cornerRadius: 8
+                            ))
+                    }
+                } else if let thisMoment = moments.first {
+                    ForEach(thisMoment.phAssets, id: \.self) { asset in
+                        Thumbnail(assetLocalId: asset.localIdentifier, targetSize: .init(width: 384, height: 576))
+                            .aspectRatio(contentMode: .fill)
+                            .aspectRatio(2 / 3, contentMode: .fit)
+                            .matchedTransitionSource(id: asset.localIdentifier, in: transitionNamespace)
+                            .clipShape(RoundedRectangle(
+                                cornerRadius: 8
+                            ))
+                            .onTapGesture {
+                                moment = thisMoment
+                            }
+                    }
                 }
             }
             .padding(.horizontal)
             .frame(height: 192)
-        }
-        .onTapGesture {
-            showingMoments.toggle()
         }
         .padding(.bottom, 8)
     }
