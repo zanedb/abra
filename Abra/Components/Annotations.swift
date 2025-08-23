@@ -132,7 +132,9 @@ final class SpotAnnotationView: MKMarkerAnnotationView {
 
     private func configure(with spotAnnotation: SpotAnnotation) {
         markerTintColor = spotAnnotation.spot.color
-        glyphText = "🎶" // TODO: create glyphImage from NSAttributedString
+        if spotAnnotation.spot.symbol != "" {
+            glyphImage = UIImage(systemName: spotAnnotation.spot.symbol)
+        }
         displayPriority = .required
     }
 }
