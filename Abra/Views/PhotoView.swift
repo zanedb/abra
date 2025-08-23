@@ -13,8 +13,7 @@ struct PhotoView: View {
     let photos: [PHAsset]
     
     @State private var currentIndex: Int
-    @State private var showingShareSheet = false
-    @State private var imageToShare: UIImage?
+    @State private var imageToShare: Image?
     
     init(photos: [PHAsset], initialIndex: Int) {
         self.photos = photos
@@ -30,7 +29,10 @@ struct PhotoView: View {
                     GeometryReader { geometry in
                         Thumbnail(
                             assetLocalId: photos[index].localIdentifier,
-                            targetSize: .init(width: 1024, height: 1024)
+                            targetSize: .init(width: 1024, height: 1024),
+                            callback: { image in
+                                imageToShare = Image(uiImage: image)
+                            }
                         )
                         .scaledToFit()
                         .frame(width: geometry.size.width, height: geometry.size.height)
@@ -69,72 +71,18 @@ struct PhotoView: View {
                     
                     Spacer()
                     
-                    Button(action: { shareCurrentPhoto() }) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.buttonSmall)
+                    if let imageToShare {
+                        ShareLink(item: imageToShare,
+                                  preview: SharePreview("", image: imageToShare),
+                                  label: {
+                                      Image(systemName: "square.and.arrow.up")
+                                          .font(.buttonSmall)
+                                  })
                     }
                 }
                 .padding()
             }
             .foregroundStyle(.white)
-        }
-        .background(
-            ShareSheetPresenter(
-                isPresented: $showingShareSheet,
-                activityItems: imageToShare != nil ? [imageToShare!] : []
-            )
-        )
-    }
-    
-    private func shareCurrentPhoto() {
-        let currentAsset = photos[currentIndex]
-        
-        let options = PHImageRequestOptions()
-        options.isSynchronous = false
-        options.deliveryMode = .highQualityFormat
-            
-        library.imageCachingManager.requestImage(
-            for: currentAsset,
-            targetSize: PHImageManagerMaximumSize,
-            contentMode: .aspectFit,
-            options: options
-        ) { image, _ in
-            DispatchQueue.main.async {
-                self.imageToShare = image
-                self.showingShareSheet = true
-            }
-        }
-    }
-}
-
-struct ShareSheetPresenter: UIViewControllerRepresentable {
-    @Binding var isPresented: Bool
-    let activityItems: [Any]
-    
-    func makeUIViewController(context: Context) -> UIViewController {
-        UIViewController()
-    }
-    
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        if isPresented && !activityItems.isEmpty {
-            let activityVC = UIActivityViewController(
-                activityItems: activityItems,
-                applicationActivities: nil
-            )
-            
-            // For iPad support
-            if let popover = activityVC.popoverPresentationController {
-                popover.sourceView = uiViewController.view
-                popover.sourceRect = CGRect(x: uiViewController.view.bounds.midX, y: 0, width: 0, height: 0)
-                popover.permittedArrowDirections = .up
-            }
-            
-            uiViewController.present(activityVC, animated: true)
-            
-            // Reset when dismissed
-            activityVC.completionWithItemsHandler = { _, _, _, _ in
-                isPresented = false
-            }
         }
     }
 }

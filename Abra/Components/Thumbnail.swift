@@ -12,6 +12,7 @@ struct Thumbnail: View {
 
     var assetLocalId: String?
     var targetSize: CGSize = .init(width: 1024, height: 1024)
+    var callback: ((UIImage) -> Void)?
 
     func loadImageAsset(
         targetSize: CGSize
@@ -27,6 +28,9 @@ struct Thumbnail: View {
             return
         }
         image = Image(uiImage: uiImage)
+        if let callback {
+            callback(uiImage)
+        }
     }
 
     var body: some View {
