@@ -19,7 +19,6 @@ import SwiftData
     var artist: String = ""
     var artworkURL: URL = URL(string: "https://upload.wikimedia.org/wikipedia/en/c/cf/Denzel_Curry_-_Melt_My_Eyez_See_Your_Future.png")!
     var videoURL: URL?
-    var genres: [String] = []
     var isExplicit: Bool = false
     var creationDate: Date?
     var isrc: String?
@@ -57,7 +56,6 @@ import SwiftData
     var country: String?
     var inlandWater: String? // Body of water, if above one
     var ocean: String? // If above one
-    var areasOfInterest: [String] = []
     var timeZoneIdentifier: String?
     
     // Relations
@@ -72,7 +70,6 @@ import SwiftData
         self.artist = mediaItem.artist ?? "Unknown Artist"
         self.artworkURL = mediaItem.artworkURL ?? URL(string: "https://zane.link/abra-unavailable")!
         self.videoURL = mediaItem.videoURL
-        self.genres = mediaItem.genres
         self.isExplicit = mediaItem.explicitContent
         self.creationDate = mediaItem.creationDate
         self.isrc = mediaItem.isrc
@@ -110,7 +107,6 @@ import SwiftData
         self.country = placemark?.country
         self.inlandWater = placemark?.inlandWater
         self.ocean = placemark?.ocean
-        self.areasOfInterest = placemark?.areasOfInterest ?? []
         self.timeZoneIdentifier = placemark?.timeZone?.identifier
     }
     
@@ -120,7 +116,6 @@ import SwiftData
         self.title = title
         self.artist = artist
         self.artworkURL = artworkURL
-        self.genres = []
         self.isExplicit = isExplicit
         self.timeRanges = []
         self.frequencySkewRanges = []
@@ -188,23 +183,6 @@ extension ShazamStream {
         return "\(date) \(attributedPlace)"
     }
     
-    // TODO: guess transport modality by speed
-    // Need to do more testing
-    public var modality: Modality {
-        guard let speed = speed else {
-            return .still
-        }
-        
-        switch speed {
-        case 3 ..< 5:
-            return .walking
-        case 5...:
-            return .driving
-        default:
-            return .still
-        }
-    }
-    
     /// Song.link URL
     public var songLink: URL? {
         guard let url = appleMusicURL?.absoluteString else { return nil }
@@ -246,7 +224,6 @@ extension ShazamStream {
         country = placemark?.country
         inlandWater = placemark?.inlandWater
         ocean = placemark?.ocean
-        areasOfInterest = placemark?.areasOfInterest ?? []
         timeZoneIdentifier = placemark?.timeZone?.identifier
     }
     
@@ -288,10 +265,4 @@ extension ShazamStream {
             longitude: -122.4739084
         )
     }
-}
-
-enum Modality {
-    case still
-    case walking
-    case driving
 }
