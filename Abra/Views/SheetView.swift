@@ -134,6 +134,10 @@ struct SheetView: View {
                 handleShazamAPIError(error)
             }
         }
+        .onChange(of: location.currentPlacemark) {
+            // Save location if it wasn't initially ready on latest stream
+            updateLocationlessStreams()
+        }
         .sensoryFeedback(.success, trigger: hapticTrigger)
     }
     
@@ -251,6 +255,20 @@ struct SheetView: View {
             toast.show(message: errorCode, type: .error, symbol: "shazam.logo.fill")
         default:
             break
+        }
+    }
+    
+    private func updateLocationlessStreams() {
+        guard let currentLoc = location.currentLocation else { return }
+        
+        // Find locationless streams within the past hour
+        let locationless = allShazams.filter { $0.latitude == -1 && $0.longitude == -1 && $0.timestamp > Date().addingTimeInterval(-60 * 60) }
+        
+        print("Found \(locationless.count) locationless streams")
+        
+        locationless.forEach { stream in
+            stream.updateLocation(currentLoc, placemark: location.currentPlacemark)
+            stream.spotIt(context: modelContext)
         }
     }
 }
