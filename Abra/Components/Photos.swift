@@ -90,16 +90,14 @@ struct Photos: View {
         ZStack {
             Rectangle()
                 .fill(.thinMaterial)
-                .frame(height: 172)
+                .frame(height: 156)
                 .clipShape(RoundedRectangle(
                     cornerRadius: 14
                 ))
 
             VStack {
-                Text("We can show photos from this moment if you grant library access.")
-                    .font(.subheadline)
+                Text("See photos from when you discovered this song.")
                     .multilineTextAlignment(.center)
-                    .padding(.top, 1)
 
                 Button(action: {
                     if requestedAuthorization {
@@ -117,7 +115,7 @@ struct Photos: View {
                 })
                 .padding(.top, 8)
             }
-            .frame(maxWidth: 256)
+            .frame(maxWidth: 244)
         }
         .overlay {
             // MARK: "Ignore" button disabled until Settings view is implemented
