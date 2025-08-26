@@ -43,6 +43,7 @@ struct Photos: View {
 
     private func loadPhotos() {
         // Request authorization, on success load photos
+        // THIS IS INSANE, RE-DO!
         library.requestAuthorization {
             if library.authorized {
                 var streams: [ShazamStream] = []
@@ -52,12 +53,50 @@ struct Photos: View {
                     spot.shazamStreams?.forEach { streams.append($0) }
                 }
 
-                // TODO: if the results are the same, only create one and add all Streams
+                // Group streams by date and location to avoid duplicate moments
+                var momentDict: [String: Moment] = [:]
+
                 for stream in streams {
                     let photos = library.fetchSelectedPhotos(date: stream.timestamp, location: stream.location)
                     guard !photos.isEmpty else { continue }
-                    moments.append(.init(place: stream.place, timestamp: stream.timestamp, phAssets: photos.reversed(), streams: [stream]))
+
+                    // Create a key based on date (day) and place to group similar moments
+                    let calendar = Calendar.current
+                    let dayComponent = calendar.startOfDay(for: stream.timestamp)
+                    let key = "\(stream.place)_\(dayComponent.timeIntervalSince1970)"
+
+                    if var existingMoment = momentDict[key] {
+                        // Add this stream to existing moment if photos are the same
+                        let existingPhotoIds = Set(existingMoment.phAssets.map(\.localIdentifier))
+                        let newPhotoIds = Set(photos.map(\.localIdentifier))
+
+                        if existingPhotoIds == newPhotoIds {
+                            // Same photos, just add the stream
+                            existingMoment.streams.append(stream)
+                            momentDict[key] = existingMoment
+                        } else {
+                            // Different photos, create new moment
+                            let newMoment = Moment(
+                                place: stream.place,
+                                timestamp: stream.timestamp,
+                                phAssets: photos.reversed(),
+                                streams: [stream]
+                            )
+                            momentDict["\(key)_\(stream.id)"] = newMoment
+                        }
+                    } else {
+                        // Create new moment
+                        let newMoment = Moment(
+                            place: stream.place,
+                            timestamp: stream.timestamp,
+                            phAssets: photos.reversed(),
+                            streams: [stream]
+                        )
+                        momentDict[key] = newMoment
+                    }
                 }
+
+                moments = Array(momentDict.values).sorted { $0.timestamp > $1.timestamp }.reversed()
             }
         }
     }
@@ -113,8 +152,8 @@ struct Photos: View {
                                         .padding()
                                     Spacer()
                                 }
-                                    .frame(maxWidth: .infinity)
-                                    .background(.thinMaterial)
+                                .frame(maxWidth: .infinity)
+                                .background(.thinMaterial)
                             }
                             .clipShape(RoundedRectangle(
                                 cornerRadius: 8
