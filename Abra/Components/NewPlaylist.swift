@@ -47,7 +47,11 @@ struct NewPlaylist: View {
                 .padding(.bottom)
                 
                 List(streams) { stream in
-                    SongRowMini(stream: stream)
+                    SongRowMini(stream: stream, onTapGesture: {
+                        if let appleMusicID = stream.appleMusicID {
+                            music.playPause(id: appleMusicID)
+                        }
+                    })
                 }
                 .listStyle(.inset)
             }

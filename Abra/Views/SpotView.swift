@@ -37,7 +37,11 @@ struct SpotView: View {
                     .padding(.top, 12)
 
                 List(spot.streams) { stream in
-                    SongRowMini(stream: stream, playOnTap: true)
+                    SongRowMini(stream: stream, onTapGesture: {
+                        if let appleMusicID = stream.appleMusicID {
+                            music.playPause(id: appleMusicID)
+                        }
+                    })
                         .listRowBackground(Color.clear)
                 }
                 .scrollContentBackground(.hidden)

@@ -7,6 +7,8 @@ import Photos
 import SwiftUI
 
 struct MomentView: View {
+    @Environment(MusicProvider.self) private var music
+    
     var moment: Moment
     var namespace: Namespace.ID
 
@@ -85,7 +87,15 @@ struct MomentView: View {
         }
         .overlay(alignment: .bottom) {
             ForEach(moment.streams, id: \.id) { stream in
-                SongRowMini(stream: stream, playOnTap: true, blendMode: .difference)
+                SongRowMini(
+                    stream: stream,
+                    onTapGesture: {
+                        if let appleMusicID = stream.appleMusicID {
+                            music.playPause(id: appleMusicID)
+                        }
+                    },
+                    blendMode: .difference
+                )
                     .padding()
                     .padding(.horizontal)
                     .foregroundStyle(.white)

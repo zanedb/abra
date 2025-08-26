@@ -123,7 +123,7 @@ struct SongRowMini: View {
     @Environment(MusicProvider.self) private var music
     
     var stream: ShazamStream
-    var playOnTap: Bool = false
+    var onTapGesture: () -> Void = {}
     var blendMode: BlendMode = .normal
     
     private var nowPlaying: Bool { music.nowPlaying != nil && music.nowPlaying == stream.appleMusicID }
@@ -173,10 +173,9 @@ struct SongRowMini: View {
             Spacer()
         }
         .frame(maxHeight: 44)
+        .contentShape(Rectangle())
         .onTapGesture {
-            if let appleMusicID = stream.appleMusicID, playOnTap {
-                music.playPause(id: appleMusicID)
-            }
+            onTapGesture()
         }
         .contextMenu {
             if let appleMusicURL = stream.appleMusicURL {
@@ -191,7 +190,6 @@ struct SongRowMini: View {
             
             Button("View", systemImage: "arrow.up.right", action: { view.show(stream) })
         }
-        .contentShape(Rectangle())
     }
 }
 
