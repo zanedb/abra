@@ -138,6 +138,14 @@ struct SheetView: View {
             // Save location if it wasn't initially ready on latest stream
             updateLocationlessStreams()
         }
+        .onAppear {
+            // If location was "allow once" request again
+            if location.authorizationStatus == .notDetermined {
+                location.requestPermission()
+            }
+            // We‘ll need this soon
+            location.requestLocation()
+        }
         .sensoryFeedback(.success, trigger: hapticTrigger)
     }
     
@@ -187,10 +195,10 @@ struct SheetView: View {
             
             Section {
                 ForEach(shazams, id: \.id) { stream in
-                    Button(action: { view.show(stream) }) {
-                        SongRowMini(stream: stream)
-                            .padding(.vertical, 4)
-                    }
+                    SongRowMini(stream: stream, onTapGesture: {
+                        view.show(stream)
+                    })
+                    .padding(.vertical, 4)
                     .buttonStyle(.plain)
                     
                     Divider()
@@ -208,13 +216,6 @@ struct SheetView: View {
                     .padding(.horizontal)
             }
             .onAppear {
-                // If location was "allow once" request again
-                if location.authorizationStatus == .notDetermined {
-                    location.requestPermission()
-                }
-                // We‘ll need this soon
-                location.requestLocation()
-            }
     }
     
     private func song(_ stream: ShazamStream) -> some View {
@@ -258,6 +259,8 @@ struct SheetView: View {
         }
     }
     
+    // Maybe we get a grip on location first, save that, and then make a background task to update Placemarks from location?
+    // Should probably do anyway..
     private func updateLocationlessStreams() {
         guard let currentLoc = location.currentLocation else { return }
         
@@ -266,9 +269,12 @@ struct SheetView: View {
         
         print("Found \(locationless.count) locationless streams")
         
-        locationless.forEach { stream in
+        for stream in locationless {
             stream.updateLocation(currentLoc, placemark: location.currentPlacemark)
             stream.spotIt(context: modelContext)
+            if view.now == .stream(stream) {
+                view.show(stream)
+            }
         }
     }
 }
