@@ -15,7 +15,7 @@ struct Wrapper<Content: View>: View {
     var body: some View {
         ZStack {
             Rectangle()
-                .fill(.thinMaterial)
+                .fill(.background)
                 .clipShape(.rect(cornerRadius: 14))
 
             content

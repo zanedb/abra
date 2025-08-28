@@ -93,12 +93,12 @@ extension UISheetPresentationController {
 extension Font {
     /// Subheading style, used in "Discovered," "Moments," etc.
     static var subheading: Font {
-        .system(size: 15, weight: .medium)
+        .system(.subheadline, weight: .medium)
     }
     
     /// Big Title, used in SongView
     static var bigTitle: Font {
-        .system(size: 18, weight: .bold)
+        .system(.headline)
     }
     
     /// Used in PhotoView

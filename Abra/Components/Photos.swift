@@ -183,11 +183,9 @@ struct Photos: View {
     private var permissionView: some View {
         ZStack {
             Rectangle()
-                .fill(.thinMaterial)
+                .fill(.background)
                 .frame(height: 156)
-                .clipShape(RoundedRectangle(
-                    cornerRadius: 14
-                ))
+                .clipShape(.rect(cornerRadius: 14))
 
             VStack {
                 Text("See photos from when you discovered this song.")
@@ -202,8 +200,8 @@ struct Photos: View {
                     }
                 }, label: {
                     HStack {
-                        Image(systemName: requestedAuthorization ? "xmark.app" : "hand.raised.app")
-                            .font(.system(size: 24))
+                        Image(systemName: requestedAuthorization ? "xmark.app" : "photo.stack")
+                            .font(.system(size: 20))
                         Text("Full Photo Library")
                     }
                 })

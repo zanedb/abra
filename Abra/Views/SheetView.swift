@@ -93,10 +93,10 @@ struct SheetView: View {
                         .font(.title2.weight(.medium))
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 12) {
                         Button(action: { if searchHidden { searchFocused = true } }) {
                             Image(systemName: "magnifyingglass")
-                                .font(.system(size: 14))
+                                .font(.system(size: 16))
                                 .tint(searchHidden ? .gray : .clear)
                         }
                         Button(action: { Task { await shazam.startMatching() } }) {
@@ -215,7 +215,6 @@ struct SheetView: View {
                 DismissButton(foreground: .white, font: .buttonLarge, action: { shazam.stopMatching() })
                     .padding(.horizontal)
             }
-            .onAppear {
     }
     
     private func song(_ stream: ShazamStream) -> some View {

@@ -27,25 +27,25 @@ struct SongRow: View {
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 96, height: 96)
-                .clipShape(.rect(cornerRadius: 3))
+                .clipShape(.rect(cornerRadius: 8))
                 .padding(.trailing, 5)
             
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .top) {
                     Text(stream.title)
-                        .font(.system(size: 17, weight: .bold))
+                        .font(.headline)
                         .lineLimit(2)
                     
                     Spacer()
                     
                     Text(stream.relativeDateTime)
-                        .font(.system(size: 13))
+                        .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
                 .padding(.bottom, 3)
                 
                 Text(stream.artist)
-                    .font(.system(size: 14))
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
                     .padding(.bottom, 3)
                 
@@ -61,13 +61,13 @@ struct SongRow: View {
                                 .foregroundStyle(Color(spot.color))
                             Text(spot.name)
                                 .foregroundStyle(.secondary)
-                                .font(.system(size: 13))
+                                .font(.footnote)
                         }
                     }
                     
                     Text(stream.cityState)
                         .foregroundStyle(.secondary)
-                        .font(.system(size: 13))
+                        .font(.footnote)
                 }
             }
         }

@@ -18,42 +18,35 @@ struct SongActions: View {
     var body: some View {
         ZStack(alignment: .leading) {
             Rectangle()
-                .fill(.thinMaterial)
-                .clipShape(RoundedRectangle(
-                    cornerRadius: 14
-                ))
+                .fill(.background)
+                .clipShape(.rect(cornerRadius: 14))
 
             VStack(alignment: .leading, spacing: 0) {
                 if let link = stream.songLink {
                     ShareLink(item: link) {
-                        Image(systemName: "square.and.arrow.up")
-                            .frame(width: 32, height: 32)
-                            .background(.thinMaterial)
-                            .clipShape(Circle())
-                        
-                        Text("Share Song.link")
-                            .font(.callout)
-                        
-                        Spacer()
+                        rowContent("Share Song.link", icon: "square.and.arrow.up")
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 10)
                     
                     Divider()
                         .padding(.leading, 56)
                 }
                 
                 if stream.appleMusicID != nil {
-                    row("Add to Playlist", icon: "music.note.list", action: { showingPlaylistPicker.toggle() })
+                    Button(action: { showingPlaylistPicker.toggle() }) {
+                        rowContent("Add to Playlist", icon: "music.note.list")
+                    }
                 
                     Divider()
                         .padding(.leading, 56)
                 }
                 
-                row("Delete", icon: "trash.fill", action: { showingConfirmation = true }, role: .destructive)
+                Button(role: .destructive, action: { showingConfirmation = true }) {
+                    rowContent("Delete", icon: "trash.fill")
+                }
             }
         }
         .padding(.horizontal)
+        .padding(.top, 8)
         .padding(.bottom)
         .popover(isPresented: $showingPlaylistPicker) {
             PlaylistPicker(stream: stream)
@@ -65,21 +58,20 @@ struct SongActions: View {
             Button("Delete Song", role: .destructive, action: remove)
         }
     }
-
-    private func row(_ title: String, icon: String, action: @escaping () -> Void, role: ButtonRole? = .none) -> some View {
-        Button(role: role, action: action) {
+    
+    private func rowContent(_ title: String, icon: String) -> some View {
+        HStack(spacing: 12) {
             Image(systemName: icon)
                 .frame(width: 32, height: 32)
                 .background(.thinMaterial)
                 .clipShape(Circle())
+                .font(.system(size: 16))
             
             Text(title)
                 .font(.callout)
-            
-            Spacer()
         }
         .padding(.horizontal)
-        .padding(.vertical, 10)
+        .padding(.vertical, 12)
     }
     
     private func remove() {

@@ -42,6 +42,7 @@ struct SongDiscovered: View {
         VStack(alignment: .leading) {
             Text("Discovered")
                 .font(.subheading)
+                .foregroundStyle(.secondary)
             
             Wrapper {
                 HStack(alignment: .top) {
@@ -63,11 +64,12 @@ struct SongDiscovered: View {
                         Menu {
                             ForEach(recentNearbySpots, id: \.id) { spot in
                                 Toggle(spot.name, systemImage: spot.symbol, isOn: spotBinding(spot, stream: stream))
+                                    .tint(Color(spot.color))
                             }
                             Divider()
                             Button("New Spot", systemImage: "plus", action: createSpot)
                         } label: {
-                            Text(stream.spot?.name ?? "Choose")
+                            Text(stream.spot?.name ?? "Choose Spot")
                                 .lineLimit(1)
                             Image(systemName: "chevron.up.chevron.down")
                                 .imageScale(.small)

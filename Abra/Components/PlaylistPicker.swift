@@ -88,6 +88,7 @@ struct PlaylistPicker: View {
         LazyVStack(alignment: .leading, spacing: 0) {
             Text(heading)
                 .font(.subheading)
+                .foregroundStyle(.secondary)
                 .padding()
             
             ForEach(playlists, id: \.persistentID) { playlist in
@@ -115,7 +116,7 @@ struct PlaylistPicker: View {
             
             VStack(alignment: .leading) {
                 Text("New Playlist")
-                    .font(.headline)
+                    .fontWeight(.semibold)
             }
             
             Spacer()
@@ -151,7 +152,7 @@ struct PlaylistPicker: View {
             
             VStack(alignment: .leading) {
                 Text(playlist.name ?? "")
-                    .font(.headline)
+                    .font(.body)
                     .lineLimit(1)
                 if let desc = playlist.descriptionText, !desc.isEmpty {
                     Text(desc)
