@@ -50,15 +50,30 @@ struct SpotView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     HStack(spacing: -4) {
-                        Menu {
-                            Button("Shuffle", systemImage: "shuffle", action: { spot.play(music, shuffle: true) })
-                        } label: {
-                            Image(systemName: spot.streams.compactMap(\.appleMusicID).contains(music.nowPlaying ?? "NIL") ? "pause.circle.fill" : "play.circle.fill")
-                                .foregroundStyle(.gray)
-                                .font(.button)
-                                .symbolRenderingMode(.hierarchical)
-                        } primaryAction: {
-                            music.playPause(ids: spot.streams.compactMap(\.appleMusicID))
+                        if spot.streams.count > 0 {
+                            Menu {
+                                if music.subscribed {
+                                    Button("Shuffle", systemImage: "shuffle", action: { spot.play(music, shuffle: true) })
+                                    Divider()
+                                    Button("Add to Queue", systemImage: "text.line.last.and.arrowtriangle.forward", action: {
+                                        Task {
+                                            await music.queue(ids: spot.streams.compactMap(\.appleMusicID), position: .tail)
+                                        }
+                                    })
+                                    Button("Play Next", systemImage: "text.line.first.and.arrowtriangle.forward", action: {
+                                        Task {
+                                            await music.queue(ids: spot.streams.compactMap(\.appleMusicID), position: .afterCurrentEntry)
+                                        }
+                                    })
+                                }
+                            } label: {
+                                Image(systemName: spot.streams.compactMap(\.appleMusicID).contains(music.nowPlaying ?? "NIL") ? "pause.circle.fill" : "play.circle.fill")
+                                    .foregroundStyle(.gray)
+                                    .font(.button)
+                                    .symbolRenderingMode(.hierarchical)
+                            } primaryAction: {
+                                music.playPause(ids: spot.streams.compactMap(\.appleMusicID))
+                            }
                         }
                         
                         DismissButton()
