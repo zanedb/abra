@@ -43,7 +43,7 @@ struct SpotSelector: View {
                         }
                     } header: {
                         Text("Spots")
-                            .font(.subheading)
+                            .font(.subheadline.weight(.medium))
                     }
                 } else {
                     ForEach(searchResults, id: \.id) { spot in

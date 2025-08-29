@@ -31,7 +31,7 @@ struct SpotView: View {
                     .foregroundStyle(.gray)
                         
                 Text("^[\(spot.streams.count) Song](inflect: true)")
-                    .font(.subheading)
+                    .font(.subheadline.weight(.medium))
                     .foregroundStyle(.gray)
                     .padding(.horizontal)
                     .padding(.top, 12)

@@ -69,6 +69,8 @@ struct SongActions: View {
             
             Text(title)
                 .font(.callout)
+            
+            Spacer()
         }
         .padding(.horizontal)
         .padding(.vertical, 12)

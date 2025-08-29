@@ -128,7 +128,7 @@ struct Photos: View {
 
     private var heading: some View {
         Text("Moments")
-            .font(.subheading)
+            .font(.subheadline.weight(.medium))
             .padding(.horizontal)
     }
 

@@ -87,7 +87,7 @@ struct PlaylistPicker: View {
     private func PlaylistList(_ playlists: [MPMediaPlaylist], heading: String = "") -> some View {
         LazyVStack(alignment: .leading, spacing: 0) {
             Text(heading)
-                .font(.subheading)
+                .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
                 .padding()
             

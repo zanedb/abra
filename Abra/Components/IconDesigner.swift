@@ -114,7 +114,7 @@ struct IconDesigner: View {
         VStack(alignment: .leading) {
             ForEach(collections) { collection in
                 Text(collection.title)
-                    .font(.subheading)
+                    .font(.subheadline.weight(.medium))
                 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 48, maximum: 64))]) {
                     ForEach(collection.contents, id: \.self) { thisSymbol in

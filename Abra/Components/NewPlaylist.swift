@@ -31,7 +31,7 @@ struct NewPlaylist: View {
                 PlaylistImage
                 
                 TextField("Playlist Title", text: $title)
-                    .font(.bigTitle)
+                    .font(.headline)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                     .padding(.vertical, 4)
@@ -41,7 +41,7 @@ struct NewPlaylist: View {
                 
                 Toggle(isOn: $includingSpotStreams) {
                     Text("Include All Songs from \(streams.first?.spot?.name ?? "Spot")")
-                        .font(.subheading.weight(.regular))
+                        .font(.subheadline.weight(.regular))
                 }
                 .padding(.horizontal)
                 .padding(.bottom)
@@ -81,7 +81,7 @@ struct NewPlaylist: View {
             
             Text(title.isEmpty ? "Playlist Title" : title)
                 .foregroundStyle(.background)
-                .font(.bigTitle)
+                .font(.headline)
                 .padding(20)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
