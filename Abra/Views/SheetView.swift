@@ -58,7 +58,7 @@ struct SheetView: View {
                                 .opacity(phase.isIdentity ? 1 : 0)
                         }
                         
-                    SongsList
+                    songsList
                     
                     if spots.isEmpty && shazams.isEmpty {
                         Text("Let‘s Discover")
@@ -74,7 +74,7 @@ struct SheetView: View {
                         ContentUnavailableView.search(text: searchText)
                             .padding()
                     } else {
-                        SearchResults
+                        searchResults
                     }
                 }
             }
@@ -88,28 +88,7 @@ struct SheetView: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Text("Abra")
-                        .font(.title2.weight(.medium))
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    HStack(spacing: 12) {
-                        Button(action: { if searchHidden { searchFocused = true } }) {
-                            Image(systemName: "magnifyingglass")
-                                .font(.system(size: 16))
-                                .tint(searchHidden ? .gray : .clear)
-                        }
-                        Button(action: { Task { await shazam.startMatching() } }) {
-                            Image(systemName: "shazam.logo.fill")
-                                .fontWeight(.medium)
-                                .font(.button)
-                                .symbolRenderingMode(.multicolor)
-                                .foregroundStyle(.blue)
-                                .matchedTransitionSource(id: "ShazamButton", in: animation)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
+                toolbarItems
             }
         }
         .fullScreenCover(isPresented: shazam.isMatchingBinding) {
@@ -149,8 +128,8 @@ struct SheetView: View {
         .sensoryFeedback(.success, trigger: hapticTrigger)
     }
     
-    private var SongsList: some View {
-        LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+    private var songsList: some View {
+        LazyVStack(alignment: .leading, spacing: 0) {
             ForEach(timeSectionedStreams) { section in
                 Section {
                     ForEach(section) { shazam in
@@ -168,7 +147,7 @@ struct SheetView: View {
                 } header: {
                     Text("\(section.id)")
                         .foregroundStyle(.gray)
-                        .font(.subheading)
+                        .font(.subheadline.weight(.medium))
                         .padding(.horizontal)
                         .padding(.vertical, 4)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -178,7 +157,7 @@ struct SheetView: View {
         }
     }
     
-    private var SearchResults: some View {
+    private var searchResults: some View {
         LazyVStack(alignment: .leading) {
             Section {
                 ForEach(spots, id: \.id) { spot in
@@ -215,6 +194,37 @@ struct SheetView: View {
                 DismissButton(foreground: .white, font: .buttonLarge, action: { shazam.stopMatching() })
                     .padding(.horizontal)
             }
+    }
+    
+    @ToolbarContentBuilder
+    private var toolbarItems: some ToolbarContent {
+            ToolbarItem(placement: .topBarLeading) {
+                Text("Abra")
+                    .font(.title2.weight(.medium))
+            }
+            ToolbarItem(placement: .automatic) {
+                HStack(spacing: 12) {
+                    Button(action: { if searchHidden { searchFocused = true } }) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 16))
+                            .tint(searchHidden ? .gray : .clear)
+                    }
+
+                    shazamButton
+                }
+            }
+    }
+    
+    private var shazamButton: some View {
+        Button(action: { Task { await shazam.startMatching() } }) {
+            Image(systemName: "shazam.logo.fill")
+                .fontWeight(.medium)
+                .font(.button)
+                .symbolRenderingMode(.multicolor)
+                .foregroundStyle(.blue)
+                .matchedTransitionSource(id: "ShazamButton", in: animation)
+        }
+        .buttonStyle(.plain)
     }
     
     private func song(_ stream: ShazamStream) -> some View {
