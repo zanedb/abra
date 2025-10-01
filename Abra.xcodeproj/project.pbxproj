@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2F0BF5E22E82113E008582C2 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F0BF5E12E82113E008582C2 /* Kingfisher */; };
 		2F1727442C719B2700EEA500 /* Spot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1727432C719B2700EEA500 /* Spot.swift */; };
 		2F25ED1D2E2EF0E600BD2FEE /* SongActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F25ED1C2E2EF0E200BD2FEE /* SongActions.swift */; };
 		2F30A7C72DA77EB500DFE607 /* VariableBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */; };
 		2F3C12D12E3B31930080C310 /* SpotRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3C12D02E3B31920080C310 /* SpotRow.swift */; };
-		2F3DAB722DA785CB001004B9 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F3DAB712DA785CB001004B9 /* Kingfisher */; };
 		2F3DAB772DA89C69001004B9 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB762DA89C67001004B9 /* OnboardingView.swift */; };
 		2F3DAB792DA8C361001004B9 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB782DA8C360001004B9 /* Utils.swift */; };
 		2F3DAB7F2DA9CEF1001004B9 /* RoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB7E2DA9CEEF001004B9 /* RoundedButton.swift */; };
@@ -204,8 +204,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F0BF5E22E82113E008582C2 /* Kingfisher in Frameworks */,
 				2F3DAB822DAA0E95001004B9 /* SwiftUIIntrospect in Frameworks */,
-				2F3DAB722DA785CB001004B9 /* Kingfisher in Frameworks */,
 				2FC8CCEF2AC399B600523478 /* SectionedQuery in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -435,8 +435,9 @@
 			name = Abra;
 			packageProductDependencies = (
 				2FC8CCEE2AC399B600523478 /* SectionedQuery */,
-				2F3DAB712DA785CB001004B9 /* Kingfisher */,
 				2F3DAB812DAA0E95001004B9 /* SwiftUIIntrospect */,
+				2FCB5C3F2E1E4FDE0053E33D /* SentrySwiftUI */,
+				2F0BF5E12E82113E008582C2 /* Kingfisher */,
 			);
 			productName = abra;
 			productReference = 2F60936C2A2EDFB30092A6DD /* Abra.app */;
@@ -486,7 +487,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
-				LastUpgradeCheck = 1630;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					2F4BE1D62D7FEE1C006AFFC2 = {
 						CreatedOnToolsVersion = 16.2;
@@ -515,8 +516,9 @@
 			mainGroup = 2F6093632A2EDFB30092A6DD;
 			packageReferences = (
 				2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */,
-				2F3DAB702DA785CB001004B9 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				2F3DAB802DAA0E95001004B9 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */,
+				2FCB5C3A2E1E4FDE0053E33D /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+				2F0BF5E02E82113E008582C2 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			productRefGroup = 2F60936D2A2EDFB30092A6DD /* Products */;
 			projectDirPath = "";
@@ -779,7 +781,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -836,10 +838,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
@@ -892,6 +895,7 @@
 				CODE_SIGN_ENTITLEMENTS = abra/abra.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "\"abra/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1041,12 +1045,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		2F3DAB702DA785CB001004B9 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+		2F0BF5E02E82113E008582C2 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 8.3.1;
+				minimumVersion = 8.5.0;
 			};
 		};
 		2F3DAB802DAA0E95001004B9 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */ = {
@@ -1054,7 +1058,7 @@
 			repositoryURL = "https://github.com/siteline/SwiftUI-Introspect";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.3.0;
+				minimumVersion = 26.0.0;
 			};
 		};
 		2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */ = {
@@ -1062,20 +1066,23 @@
 			repositoryURL = "https://github.com/beechtom/swiftdata-sectionedquery";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				minimumVersion = 1.2.0;
 			};
 		};
+		2FCB5C3A2E1E4FDE0053E33D /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
 			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
 			requirement = {
 				kind = upToNextMajorVersion;
+				minimumVersion = 8.56.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		2F3DAB712DA785CB001004B9 /* Kingfisher */ = {
+		2F0BF5E12E82113E008582C2 /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2F3DAB702DA785CB001004B9 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			package = 2F0BF5E02E82113E008582C2 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
 		};
 		2F3DAB812DAA0E95001004B9 /* SwiftUIIntrospect */ = {
@@ -1087,6 +1094,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2FC8CCED2AC399B600523478 /* XCRemoteSwiftPackageReference "swiftdata-sectionedquery" */;
 			productName = SectionedQuery;
+		};
+		2FCB5C3F2E1E4FDE0053E33D /* SentrySwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2FCB5C3A2E1E4FDE0053E33D /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = SentrySwiftUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
