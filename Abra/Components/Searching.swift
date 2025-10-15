@@ -12,9 +12,7 @@ struct Searching: View {
 
     @State private var motion = MotionProvider()
 
-    @State private var pulseAmount: CGFloat = 1
-    @State private var outerPulseAmount: CGFloat = 1
-    @State private var ringPulseAmount: CGFloat = 1
+    @State private var basePulse: CGFloat = 1
 
     var body: some View {
         VStack(spacing: 0) {
@@ -49,56 +47,62 @@ struct Searching: View {
 
     private var logoAnimation: some View {
         ZStack {
+            // Outer background circle
             Circle()
                 .fill(.white.opacity(0.10))
                 .frame(width: 156, height: 156)
-                .scaleEffect(pulseAmount * 1.1)
+                .scaleEffect(scaleForRadius(156))
+            
+            // Middle circle
             Circle()
                 .fill(.white.opacity(0.20))
                 .frame(width: 104, height: 104)
-                .scaleEffect(pulseAmount * 1.1)
+                .scaleEffect(scaleForRadius(104))
+            
+            // Logo
             Image(systemName: "shazam.logo.fill")
                 .foregroundStyle(colorScheme == .dark ? .gray : .blue)
                 .font(.system(size: 72))
-                .scaleEffect(pulseAmount)
+                .scaleEffect(scaleForRadius(72))
                 .symbolRenderingMode(.multicolor)
                 .navigationTransition(.zoom(sourceID: "ShazamButton", in: namespace))
         }
         .overlay {
+            // Large outer circle
             Circle()
                 .fill(.white.opacity(0.05))
                 .frame(width: 256, height: 256)
-                .scaleEffect(outerPulseAmount)
+                .scaleEffect(scaleForRadius(256))
+            
+            // Expanding rings
             Circle()
                 .stroke(.white.opacity(0.50), lineWidth: 1)
                 .frame(width: 512, height: 512)
-                .scaleEffect(ringPulseAmount * 0.9)
-                .opacity(ringPulseAmount == 1 ? 0 : 0.5)
+                .scaleEffect(scaleForRadius(512))
+                .opacity(basePulse == 1 ? 0 : 0.5)
+            
             Circle()
                 .stroke(.white.opacity(0.50), lineWidth: 1)
                 .frame(width: 768, height: 768)
-                .scaleEffect(ringPulseAmount * 0.9)
-                .opacity(ringPulseAmount == 1 ? 0 : 0.5)
+                .scaleEffect(scaleForRadius(768))
+                .opacity(basePulse == 1 ? 0 : 0.5)
         }
         .onAppear {
             withAnimation(.easeInOut(duration: 0.1)
                 .speed(0.1).repeatForever(autoreverses: true))
             {
-                pulseAmount = 1.2
-            }
-
-            withAnimation(.easeInOut(duration: 0.1)
-                .speed(0.1).repeatForever(autoreverses: true))
-            {
-                outerPulseAmount = 1.3
-            }
-
-            withAnimation(.easeInOut(duration: 0.1)
-                .speed(0.1).repeatForever(autoreverses: true))
-            {
-                ringPulseAmount = 1.5
+                basePulse = 1.15
             }
         }
+    }
+    
+    // Calculate scale based on radius
+    private func scaleForRadius(_ radius: CGFloat) -> CGFloat {
+        let baseRadius: CGFloat = 72 // Logo
+        let pulseDelta = basePulse - 1.0
+        let radiusRatio = radius / baseRadius
+        let scaledDelta = pulseDelta * radiusRatio
+        return 1.0 + scaledDelta
     }
 }
 
