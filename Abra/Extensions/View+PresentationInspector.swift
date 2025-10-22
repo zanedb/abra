@@ -6,7 +6,7 @@
 import SwiftUI
 
 // Allows background interaction on medium detent (0.50)
-// On iOS 18: background to .thickMaterial, corner radius to 18
+// On os18: background to .thickMaterial, corner radius to 18
 extension View {
     @ViewBuilder func presentationInspector() -> some View {
         if #available(iOS 26.0, *) {
