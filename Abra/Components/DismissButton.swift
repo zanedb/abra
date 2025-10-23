@@ -7,8 +7,8 @@ import SwiftUI
 
 struct DismissButton: View {
     @Environment(\.dismiss) private var dismiss
-    var foreground: Color? = .gray
-    var font: Font? = .button
+    var foreground: Color? = nil
+    var font: Font? = .buttonSmall
     var action: (() -> Void)?
 
     var body: some View {
@@ -19,10 +19,22 @@ struct DismissButton: View {
                 dismiss()
             }
         }) {
-            Image(systemName: "xmark.circle.fill")
-                .foregroundStyle(foreground ?? .gray)
-                .font(font)
-                .symbolRenderingMode(.hierarchical)
+            Image(systemName: "xmark")
         }
+        .backportCircleSymbolVariant(foreground: foreground)
     }
+}
+
+#Preview {
+    VStack {}
+        .sheet(isPresented: .constant(true)) {
+            NavigationStack {
+                VStack {}
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            DismissButton()
+                        }
+                    }
+            }
+        }
 }

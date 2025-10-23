@@ -13,14 +13,14 @@ struct SongView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.toastProvider) private var toast
     @Environment(MusicProvider.self) private var music
-    
+
     var stream: ShazamStream
-    
+
     @State private var albumTitle: String = "Apple vs. 7G"
     @State private var released: String = "2021"
     @State private var genre: String = "Electronic"
     @State private var loadedMetadata: Bool = false
-    
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -29,15 +29,27 @@ struct SongView: View {
                     .padding(.top, -26)
                 
                 SongDiscovered(stream: stream)
-                    
+
                 Photos(stream: stream)
-                
+
                 SongActions(stream: stream)
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItems
+            }
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var ToolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .primaryAction) {
+            DismissButton()
+        }
                     Text(stream.title)
                         .font(.title2.weight(.bold))
+            ToolbarItem(placement: .topBarLeading) {
+                Text(stream.title)
+                    .font(.title2.weight(.bold))
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: -4) {
@@ -74,18 +86,18 @@ struct SongView: View {
             }
         }
     }
-    
+
     var Info: some View {
         HStack(spacing: 4) {
             Text(stream.artist)
                 .foregroundStyle(.secondary)
                 .font(.headline.weight(.regular))
                 .lineLimit(1)
-                
+
             Image(systemName: "circle.fill")
                 .font(.system(size: 2).bold())
                 .foregroundStyle(.secondary)
-            
+
             Button(action: {
                 if let url = stream.appleMusicURL {
                     openURL(url)
@@ -102,44 +114,54 @@ struct SongView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .task(id: stream.persistentModelID, loadMetadata)
     }
-    
+
     @Sendable private func loadMetadata() async {
-        guard let id = stream.appleMusicID else { return loadedMetadata = false }
-        
+        guard let id = stream.appleMusicID else {
+            loadedMetadata = false
+            return
+        }
+
         do {
             let song = try await music.fetchTrackInfo(id)
-                
-            if let albumName = song?.albumTitle, let releaseDate = song?.releaseDate?.year, let genres = song?.genreNames {
-                albumTitle = albumName.hasSuffix(" - Single") ? "Single" : albumName
+
+            if let albumName = song?.albumTitle,
+                let releaseDate = song?.releaseDate?.year,
+                let genres = song?.genreNames
+            {
+                albumTitle =
+                    albumName.hasSuffix(" - Single") ? "Single" : albumName
                 genre = genres.first ?? ""
                 released = releaseDate
-                    
+
                 loadedMetadata = true
             }
         } catch {
-            loadedMetadata = false // Don't show stale information
-            
+            loadedMetadata = false  // Don't show stale information
+
             var message = error.localizedDescription
             if let e = error as? MusicDataRequest.Error {
                 message = e.title
             }
-            
+
             toast.show(
                 message: message,
                 type: .error,
                 symbol: "exclamationmark.circle.fill",
-                action: message == "Permission denied" ? {
-                    // On permissions issue, tapping takes you right to app settings!
-                    openURL(URL(string: UIApplication.openSettingsURLString)!)
-                } : nil
+                action: message == "Permission denied"
+                    ? {
+                        // On permissions issue, tapping takes you right to app settings!
+                        openURL(
+                            URL(string: UIApplication.openSettingsURLString)!
+                        )
+                    } : nil
             )
         }
     }
 }
 
 #Preview {
-    EmptyView()
-        .inspector(isPresented: .constant(true)) {
+    VStack {}
+        .sheet(isPresented: .constant(true)) {
             SongView(stream: .preview)
                 .environment(SheetProvider())
                 .environment(LibraryProvider())

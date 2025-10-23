@@ -42,43 +42,13 @@ struct SpotView: View {
                             music.playPause(id: appleMusicID)
                         }
                     })
-                        .listRowBackground(Color.clear)
+                    .listRowBackground(Color.clear)
                 }
                 .scrollContentBackground(.hidden)
                 .listStyle(.plain)
             }
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    HStack(spacing: -4) {
-                        if spot.streams.count > 0 {
-                            Menu {
-                                if music.subscribed {
-                                    Button("Shuffle", systemImage: "shuffle", action: { spot.play(music, shuffle: true) })
-                                    Divider()
-                                    Button("Add to Queue", systemImage: "text.line.last.and.arrowtriangle.forward", action: {
-                                        Task {
-                                            await music.queue(ids: spot.streams.compactMap(\.appleMusicID), position: .tail)
-                                        }
-                                    })
-                                    Button("Play Next", systemImage: "text.line.first.and.arrowtriangle.forward", action: {
-                                        Task {
-                                            await music.queue(ids: spot.streams.compactMap(\.appleMusicID), position: .afterCurrentEntry)
-                                        }
-                                    })
-                                }
-                            } label: {
-                                Image(systemName: spot.streams.compactMap(\.appleMusicID).contains(music.nowPlaying ?? "NIL") ? "pause.circle.fill" : "play.circle.fill")
-                                    .foregroundStyle(.gray)
-                                    .font(.button)
-                                    .symbolRenderingMode(.hierarchical)
-                            } primaryAction: {
-                                music.playPause(ids: spot.streams.compactMap(\.appleMusicID))
-                            }
-                        }
-                        
-                        DismissButton()
-                    }
-                }
+                toolbarItems
             }
             .popover(isPresented: $showingIconDesigner) {
                 IconDesigner(symbol: $spot.symbol, color: $spot.color, animation: animation, id: spot.persistentModelID)
@@ -96,12 +66,45 @@ struct SpotView: View {
         }
     }
     
+    @ToolbarContentBuilder
+    private var toolbarItems: some ToolbarContent {
+        if spot.streams.count > 0 {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    if music.subscribed {
+                        Button("Shuffle", systemImage: "shuffle", action: { spot.play(music, shuffle: true) })
+                        Divider()
+                        Button("Add to Queue", systemImage: "text.line.last.and.arrowtriangle.forward", action: {
+                            Task {
+                                await music.queue(ids: spot.streams.compactMap(\.appleMusicID), position: .tail)
+                            }
+                        })
+                        Button("Play Next", systemImage: "text.line.first.and.arrowtriangle.forward", action: {
+                            Task {
+                                await music.queue(ids: spot.streams.compactMap(\.appleMusicID), position: .afterCurrentEntry)
+                            }
+                        })
+                    }
+                } label: {
+                    Image(systemName: spot.streams.compactMap(\.appleMusicID).contains(music.nowPlaying ?? "NIL") ? "pause" : "play")
+                } primaryAction: {
+                    music.playPause(ids: spot.streams.compactMap(\.appleMusicID))
+                }
+                .backportCircleSymbolVariant()
+            }
+        }
+        
+        ToolbarItem(placement: .primaryAction) {
+            DismissButton()
+        }
+    }
+    
     private var heading: some View {
         HStack {
             Button(action: { showingIconDesigner.toggle() }) {
-                SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: minimized ? 40 : 80)
+                SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: 80)
                     .matchedTransitionSource(id: spot.id, in: animation)
-                    .padding(.trailing, minimized ? 2 : 4)
+                    .padding(.trailing, 4)
             }
             VStack(alignment: .leading, spacing: 0) {
                 TextField("Name", text: $spot.name)
