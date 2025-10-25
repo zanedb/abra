@@ -123,7 +123,6 @@ struct SpotSelector: View {
         .popover(isPresented: .constant(true)) {
             SpotSelector(selection: $spot, newSpotCallback: {})
                 .presentationDetents([.fraction(0.999)])
-                .presentationBackground(.thickMaterial)
                 .modelContainer(PreviewSampleData.container)
         }
 }

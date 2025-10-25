@@ -158,7 +158,5 @@ struct IconDesigner: View {
         .popover(isPresented: .constant(true)) {
             IconDesigner(symbol: $symbol, color: $color, animation: animation, id: Spot.preview.id)
                 .presentationDetents([.fraction(0.999)])
-                .presentationBackground(.thickMaterial)
-                .presentationCornerRadius(14)
         }
 }

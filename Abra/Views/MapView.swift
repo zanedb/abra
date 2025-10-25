@@ -90,7 +90,6 @@ struct MapView: UIViewControllerRepresentable {
         sheetVC.isModalInPresentation = true
         sheetVC.preferredContentSize = CGSize(width: 400, height: sheetVC.view.frame.height) // TODO: fix this for iPad vibe
         sheetVC.transitioningDelegate = sheetVC
-        sheetVC.view.backgroundColor = .clear
         context.coordinator.bottomSheetVC = sheetVC
 
         DispatchQueue.main.async {
@@ -543,11 +542,13 @@ class SheetHostingController<Content: View>: UIHostingController<Content>, UIVie
     {
         let controller = SheetPresentationController(presentedViewController: presented, presenting: presenting)
         controller.detents = [
-            .small(),
+            .fraction(0.1),
             .fraction(0.5),
-            .large(allowsScaling: false)
+            .large(allowsScaling: false),
         ]
-        controller.preferredCornerRadius = 18
+        if #unavailable(iOS 26.0) {
+            controller.preferredCornerRadius = 18
+        }
         controller.prefersEdgeAttachedInCompactHeight = true
         controller.widthFollowsPreferredContentSizeWhenEdgeAttached = true
         controller.prefersScrollingExpandsWhenScrolledToEdge = false

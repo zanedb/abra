@@ -52,9 +52,7 @@ struct SpotView: View {
             }
             .popover(isPresented: $showingIconDesigner) {
                 IconDesigner(symbol: $spot.symbol, color: $spot.color, animation: animation, id: spot.persistentModelID)
-                    .presentationDetents([.fraction(0.999)])
-                    .presentationBackground(.thickMaterial)
-                    .presentationCornerRadius(14)
+                    .presentationDetents([.large])
             }
             .onDisappear {
                 // Destroy Spot if not saved
@@ -137,6 +135,7 @@ struct SpotView: View {
             SpotView(spot: spot)
                 .environment(SheetProvider())
                 .environment(MusicProvider())
+                .presentationDetents([.fraction(0.50), .fraction(0.999)])
                 .presentationBackgroundInteraction(.enabled)
         }
 }

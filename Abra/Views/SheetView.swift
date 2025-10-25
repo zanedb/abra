@@ -78,7 +78,6 @@ struct SheetView: View {
                     }
                 }
             }
-            .background(.thickMaterial)
             .searchable(text: $searchText, isPresented: $searchFocused, placement: .toolbar, prompt: "Shazams, Spots, Places, and More")
             .onScrollGeometryChange(for: CGFloat.self, of: { geometry in
                 geometry.contentOffset.y
@@ -151,7 +150,6 @@ struct SheetView: View {
                         .padding(.horizontal)
                         .padding(.vertical, 4)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(.ultraThickMaterial)
                 }
             }
         }

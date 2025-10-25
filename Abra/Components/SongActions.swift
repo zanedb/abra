@@ -51,8 +51,6 @@ struct SongActions: View {
         .popover(isPresented: $showingPlaylistPicker) {
             PlaylistPicker(stream: stream)
                 .presentationDetents([.large])
-                .presentationBackground(.thickMaterial)
-                .presentationCornerRadius(14)
         }
         .confirmationDialog("This song will be deleted from your Abra and Shazam libraries.", isPresented: $showingConfirmation, titleVisibility: .visible) {
             Button("Delete Song", role: .destructive, action: remove)

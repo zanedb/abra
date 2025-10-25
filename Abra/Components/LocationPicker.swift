@@ -120,7 +120,6 @@ struct LocationPicker: View {
         .popover(isPresented: .constant(true)) {
             LocationPicker(lat: $stream.latitude, lng: $stream.longitude)
                 .presentationDetents([.fraction(0.999)])
-                .presentationBackground(.thickMaterial)
                 .environment(LocationProvider())
                 .modelContainer(PreviewSampleData.container)
         }
