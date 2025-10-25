@@ -13,6 +13,7 @@ struct SongView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.toastProvider) private var toast
     @Environment(MusicProvider.self) private var music
+    @Environment(ShazamProvider.self) private var shazam
 
     var stream: ShazamStream
 
@@ -20,6 +21,8 @@ struct SongView: View {
     @State private var released: String = "2021"
     @State private var genre: String = "Electronic"
     @State private var loadedMetadata: Bool = false
+    @State private var showingConfirmation = false
+    @State private var showingPlaylistPicker = false
 
     var body: some View {
         NavigationStack {
@@ -31,11 +34,20 @@ struct SongView: View {
                 SongDiscovered(stream: stream)
 
                 Photos(stream: stream)
-
-                SongActions(stream: stream)
             }
             .toolbar {
                 ToolbarItems
+            }
+            .popover(isPresented: $showingPlaylistPicker) {
+                PlaylistPicker(stream: stream)
+                    .presentationDetents([.large])
+            }
+            .confirmationDialog(
+                "This song will be deleted from your Abra and Shazam libraries.",
+                isPresented: $showingConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete Song", role: .destructive, action: remove)
             }
         }
     }
@@ -45,44 +57,88 @@ struct SongView: View {
         ToolbarItem(placement: .primaryAction) {
             DismissButton()
         }
-                    Text(stream.title)
-                        .font(.title2.weight(.bold))
             ToolbarItem(placement: .topBarLeading) {
                 Text(stream.title)
                     .font(.title2.weight(.bold))
+            }
+
+        if let appleMusicID = stream.appleMusicID {
+            ToolbarItem(placement: .bottomBar) {
+                Button(action: { music.playPause(id: appleMusicID) }) {
+                    Image(
+                        systemName: music.nowPlaying == appleMusicID
+                            ? "pause" : "play"
+                    )
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: -4) {
-                        if let appleMusicID = stream.appleMusicID {
-                            Menu {
-                                if music.subscribed {
-                                    Button("Add to Queue", systemImage: "text.line.last.and.arrowtriangle.forward", action: {
-                                        Task {
-                                            await music.queue(ids: [appleMusicID], position: .tail)
-                                        }
-                                    })
-                                    Button("Play Next", systemImage: "text.line.first.and.arrowtriangle.forward", action: {
-                                        Task {
-                                            await music.queue(ids: [appleMusicID], position: .afterCurrentEntry)
-                                        }
-                                    })
-                                }
-                                if let url = stream.appleMusicURL {
-                                    Divider()
-                                    ShareLink("Share Album", item: url)
-                                }
-                            } label: {
-                                Image(systemName: music.nowPlaying == appleMusicID ? "pause.circle.fill" : "play.circle.fill")
-                                    .foregroundStyle(.gray)
-                                    .font(.button)
-                                    .symbolRenderingMode(.hierarchical)
-                            } primaryAction: {
-                                music.playPause(id: appleMusicID)
+                .backportCircleSymbolVariant()
+            }
+
+            ToolbarItem(placement: .bottomBar) {
+                Button(
+                    "Add to Playlist",
+                    systemImage:
+                        "music.note.list",
+                    action: {
+                        showingPlaylistPicker.toggle()
+                    }
+                )
+                .backportCircleSymbolVariant()
+            }
+        }
+
+        ToolbarItem(placement: .bottomBar) {
+            Menu {
+                if music.subscribed, let appleMusicID = stream.appleMusicID {
+                    Button(
+                        "Add to Queue",
+                        systemImage:
+                            "text.line.last.and.arrowtriangle.forward",
+                        action: {
+                            Task {
+                                await music.queue(
+                                    ids: [appleMusicID],
+                                    position: .tail
+                                )
                             }
                         }
-                        DismissButton()
-                    }
+                    )
+                    Button(
+                        "Play Next",
+                        systemImage:
+                            "text.line.first.and.arrowtriangle.forward",
+                        action: {
+                            Task {
+                                await music.queue(
+                                    ids: [appleMusicID],
+                                    position: .afterCurrentEntry
+                                )
+                            }
+                        }
+                    )
                 }
+
+                if let link = stream.songLink {
+                    Divider()
+                    ShareLink("Song.link", item: link)
+                }
+
+                if let url = stream.appleMusicURL {
+                    ShareLink("Music", item: url)
+                }
+
+                Divider()
+
+                Button(
+                    "Delete",
+                    systemImage:
+                        "trash.fill",
+                    role: .destructive,
+                    action: {
+                        showingConfirmation = true
+                    }
+                )
+            } label: {
+                Image(systemName: "ellipsis")
             }
         }
     }
@@ -156,6 +212,17 @@ struct SongView: View {
                     } : nil
             )
         }
+    }
+
+    private func remove() {
+        withAnimation {
+            modelContext.delete(stream)
+            try? modelContext.save()
+        }
+        Task {
+            try? await shazam.removeFromLibrary(stream: stream)
+        }
+        dismiss()
     }
 }
 
