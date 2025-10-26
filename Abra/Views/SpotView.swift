@@ -54,6 +54,13 @@ struct SpotView: View {
                 IconDesigner(symbol: $spot.symbol, color: $spot.color, animation: animation, id: spot.persistentModelID)
                     .presentationDetents([.large])
             }
+            .confirmationDialog(
+                "This spot will be deleted from your Abra library, though the contents will not be deleted.",
+                isPresented: $showingConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete Spot", role: .destructive, action: remove)
+            }
             .onDisappear {
                 // Destroy Spot if not saved
                 // TODO: test if there are cases where this isn't triggered
@@ -66,37 +73,84 @@ struct SpotView: View {
     
     @ToolbarContentBuilder
     private var toolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .primaryAction) {
+            DismissButton()
+        }
+        
         if spot.streams.count > 0 {
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    if music.subscribed {
-                        Button("Shuffle", systemImage: "shuffle", action: { spot.play(music, shuffle: true) })
-                        Divider()
-                        Button("Add to Queue", systemImage: "text.line.last.and.arrowtriangle.forward", action: {
-                            Task {
-                                await music.queue(ids: spot.streams.compactMap(\.appleMusicID), position: .tail)
-                            }
-                        })
-                        Button("Play Next", systemImage: "text.line.first.and.arrowtriangle.forward", action: {
-                            Task {
-                                await music.queue(ids: spot.streams.compactMap(\.appleMusicID), position: .afterCurrentEntry)
-                            }
-                        })
-                    }
+            ToolbarItem(placement: .bottomBar) {
+                Button {
+                    music.playPause(
+                        ids: spot.streams.compactMap(\.appleMusicID)
+                    )
                 } label: {
-                    Image(systemName: spot.streams.compactMap(\.appleMusicID).contains(music.nowPlaying ?? "NIL") ? "pause" : "play")
-                } primaryAction: {
-                    music.playPause(ids: spot.streams.compactMap(\.appleMusicID))
+                    Image(
+                        systemName: spot.streams.compactMap(\.appleMusicID)
+                            .contains(music.nowPlaying ?? "NIL")
+                            ? "pause" : "play"
+                    )
                 }
                 .backportCircleSymbolVariant()
             }
         }
-        
-        ToolbarItem(placement: .primaryAction) {
-            DismissButton()
+
+        ToolbarItem(placement: .bottomBar) {
+            Menu {
+                if music.subscribed && spot.streams.count > 0 {
+                    Button(
+                        "Shuffle",
+                        systemImage: "shuffle",
+                        action: { spot.play(music, shuffle: true) }
+                    )
+                    Divider()
+                    Button(
+                        "Add to Queue",
+                        systemImage: "text.line.last.and.arrowtriangle.forward",
+                        action: {
+                            Task {
+                                await music.queue(
+                                    ids: spot.streams.compactMap(
+                                        \.appleMusicID
+                                    ),
+                                    position: .tail
+                                )
+                            }
+                        }
+                    )
+                    Button(
+                        "Play Next",
+                        systemImage:
+                            "text.line.first.and.arrowtriangle.forward",
+                        action: {
+                            Task {
+                                await music.queue(
+                                    ids: spot.streams.compactMap(
+                                        \.appleMusicID
+                                    ),
+                                    position: .afterCurrentEntry
+                                )
+                            }
+                        }
+                    )
+                }
+                
+                Divider()
+
+                Button(
+                    "Delete",
+                    systemImage:
+                        "trash.fill",
+                    role: .destructive,
+                    action: {
+                        showingConfirmation = true
+                    }
+                )
+            } label: {
+                Image(systemName: "ellipsis")
+            }
         }
     }
-    
+
     private var heading: some View {
         HStack {
             Button(action: { showingIconDesigner.toggle() }) {
@@ -123,6 +177,14 @@ struct SpotView: View {
                     }
             }
         }
+    }
+    
+    private func remove() {
+        withAnimation {
+            modelContext.delete(spot)
+            try? modelContext.save()
+        }
+        dismiss()
     }
 }
 
