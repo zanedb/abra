@@ -3,18 +3,18 @@
 //  Abra
 //
 
+import CoreLocation
 import SwiftData
 import SwiftUI
 
 struct LocationPicker: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(LocationProvider.self) private var locationProvider
-    
-    @Binding var lat: Double
-    @Binding var lng: Double
-    
+
+    var stream: ShazamStream
+
     @State private var searchText = ""
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -22,13 +22,13 @@ struct LocationPicker: View {
                     Button(action: setCurrentLocation) {
                         currentLocationRow
                     }
-                    
+
                     Section("Recents") {
-//                        ForEach(placemarks, id: \.id) { placemark in
-//                            Button(action: { setLocation(placemark) }) {
-//                                PlacemarkRow(placemark)
-//                            }
-//                        }
+                        //                        ForEach(placemarks, id: \.id) { placemark in
+                        //                            Button(action: { setLocation(placemark) }) {
+                        //                                PlacemarkRow(placemark)
+                        //                            }
+                        //                        }
                     }
                 } else {
                     ForEach(locationProvider.completions) { completion in
@@ -36,7 +36,7 @@ struct LocationPicker: View {
                             LocationRow(completion)
                         }
                     }
-                    
+
                     if locationProvider.completions.isEmpty {
                         ContentUnavailableView.search(text: searchText)
                             .listRowBackground(Color.clear)
@@ -47,7 +47,11 @@ struct LocationPicker: View {
             .listStyle(.inset)
             .navigationTitle("Select Location")
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find Places")
+            .searchable(
+                text: $searchText,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: "Find Places"
+            )
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     DismissButton()
@@ -58,7 +62,7 @@ struct LocationPicker: View {
             }
         }
     }
-    
+
     private var currentLocationRow: some View {
         HStack {
             Image(systemName: "location.circle.fill")
@@ -68,14 +72,14 @@ struct LocationPicker: View {
                 .foregroundStyle(.green)
                 .symbolRenderingMode(.hierarchical)
                 .padding(.trailing, 4)
-            
+
             VStack(alignment: .leading) {
                 Text("Current Location")
                     .font(.headline)
             }
         }
     }
-    
+
     private func LocationRow(_ completion: SearchCompletions) -> some View {
         HStack {
             VStack(alignment: .leading) {
@@ -89,24 +93,52 @@ struct LocationPicker: View {
             }
         }
     }
-    
+
     private func setLocation(_ completion: SearchCompletions) {
-        // Update lat/lng from placemark
+        // Attempt to fetch placemark and location from search
         Task {
-            if let singleLocation = try? await locationProvider.search(with: "\(completion.title) \(completion.subTitle)").first {
-                lat = singleLocation.location.latitude
-                lng = singleLocation.location.longitude
+            if let singleLocation = try? await locationProvider.search(
+                with: "\(completion.title) \(completion.subTitle)"
+            ).first {
+                let clLocation = CLLocation(
+                    latitude: singleLocation.location.latitude,
+                    longitude: singleLocation.location.longitude
+                )
+                let geocoder = CLGeocoder()
+
+                geocoder.reverseGeocodeLocation(clLocation) {
+                    (placemarks, error) in
+                    if error == nil {
+                        if let firstPlacemark = placemarks?.first {
+                            stream.updateLocation(
+                                clLocation,
+                                placemark: firstPlacemark
+                            )
+                        }
+                    } else {
+                        print(
+                            "Couldn't fetch placemark, updating location without"
+                        )
+                        stream.updateLocation(
+                            clLocation
+                        )
+                    }
+                }
             }
         }
         dismiss()
     }
-    
+
     private func setCurrentLocation() {
-        // Get user's location, update lat/lng
+        // Get user’s current loc + placemark, use it to update
         Task {
-            if let currentLocation = locationProvider.currentLocation {
-                lat = currentLocation.coordinate.latitude
-                lng = currentLocation.coordinate.longitude
+            if let currentLocation = locationProvider.currentLocation,
+                let currentPlacemark = locationProvider.currentPlacemark
+            {
+                stream.updateLocation(
+                    currentLocation,
+                    placemark: currentPlacemark
+                )
             }
         }
         dismiss()
@@ -115,10 +147,10 @@ struct LocationPicker: View {
 
 #Preview {
     @Previewable @State var stream: ShazamStream = .preview
-    
+
     VStack {}
         .popover(isPresented: .constant(true)) {
-            LocationPicker(lat: $stream.latitude, lng: $stream.longitude)
+            LocationPicker(stream: stream)
                 .presentationDetents([.fraction(0.999)])
                 .environment(LocationProvider())
                 .modelContainer(PreviewSampleData.container)

@@ -23,6 +23,7 @@ struct SongView: View {
     @State private var loadedMetadata: Bool = false
     @State private var showingConfirmation = false
     @State private var showingPlaylistPicker = false
+    @State private var showingLocationPicker = false
 
     var body: some View {
         NavigationStack {
@@ -40,6 +41,10 @@ struct SongView: View {
             }
             .popover(isPresented: $showingPlaylistPicker) {
                 PlaylistPicker(stream: stream)
+                    .presentationDetents([.large])
+            }
+            .popover(isPresented: $showingLocationPicker) {
+                LocationPicker(stream: stream)
                     .presentationDetents([.large])
             }
             .confirmationDialog(
@@ -124,6 +129,18 @@ struct SongView: View {
 
                 if let url = stream.appleMusicURL {
                     ShareLink("Music", item: url)
+                }
+
+                if stream.latitude == -1 && stream.longitude == -1 {
+                    Divider()
+                    Button(
+                        "Add Location",
+                        systemImage:
+                            "location.fill.viewfinder",
+                        action: {
+                            showingLocationPicker.toggle()
+                        }
+                    )
                 }
 
                 Divider()
