@@ -11,31 +11,31 @@ import StoreKit
 @Observable class MusicProvider {
     let musicPlayer = MPMusicPlayerController.systemMusicPlayer
     let musicKitPlayer = SystemMusicPlayer.shared
-    
+
     var authorizationStatus: MusicAuthorization.Status = .notDetermined
     var subscribed: Bool = false
-    
+
     private(set) var nowPlaying: String?
     private(set) var lastPlayed: String?
     private(set) var errorMessage: String?
     private var previewPlayer: AVPlayer?
-    
+
     init() {
         setupNotifications()
-        
+
         Task {
             if let subscription = try? await MusicSubscription.current {
                 subscribed = subscription.canPlayCatalogContent
             }
         }
     }
-    
+
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-    
+
     // MARK: - Notification Setup
-    
+
     private func setupNotifications() {
         NotificationCenter.default.addObserver(
             self,
@@ -45,25 +45,27 @@ import StoreKit
         )
         musicPlayer.beginGeneratingPlaybackNotifications()
     }
-    
+
     @objc private func playbackStateChanged() {
         Task { @MainActor in
-            nowPlaying = musicPlayer.playbackState == .playing ? musicPlayer.nowPlayingItem?.playbackStoreID : nil
+            nowPlaying =
+                musicPlayer.playbackState == .playing
+                ? musicPlayer.nowPlayingItem?.playbackStoreID : nil
             lastPlayed = musicPlayer.nowPlayingItem?.playbackStoreID
         }
     }
-    
+
     @objc private func previewDidFinishPlaying(_ notification: Notification) {
         stopPreviewPlayback()
     }
-    
+
     // MARK: - Playback
-    
+
     /// Play/pause according to whether ID is currently being played
     func playPause(id: String) {
         playPause(ids: [id])
     }
-    
+
     /// Play/pause according to whether IDs are currently being played
     func playPause(ids: [String]) {
         Task {
@@ -100,66 +102,81 @@ import StoreKit
             await play(ids: ids)
         }
     }
-    
+
     func play(id: String) async {
         await play(ids: [id])
     }
-    
+
     func play(ids: [String]) async {
         if lastPlayed == ids.first {
             // Resume if currently playing song is requested
             musicPlayer.play()
             return
         }
-        
+
         do {
             // Play next, skip one
             await queue(ids: ids, position: .afterCurrentEntry)
             try await musicKitPlayer.skipToNextEntry()
-            
+
             // Play using MPMusicPlayerController so it reports the event properly
             musicPlayer.play()
         } catch {
             print("Error playing: \(error)")
         }
     }
-    
+
     func stopPlayback() {
         musicPlayer.pause()
     }
-    
+
     // MARK: - Queue
-    
+
     func queue(
         ids: [String],
         position: MusicKit.MusicPlayer.Queue.EntryInsertionPosition = .tail
     ) async {
         let musicItemIDs = ids.map { MusicItemID($0) }
-        
+
         do {
-            let request = MusicCatalogResourceRequest<Song>(matching: \.id, memberOf: musicItemIDs)
+            let request = MusicCatalogResourceRequest<Song>(
+                matching: \.id,
+                memberOf: musicItemIDs
+            )
             let response = try await request.response()
-            try await musicKitPlayer.queue.insert(response.items, position: position)
+            try await musicKitPlayer.queue.insert(
+                response.items,
+                position: position
+            )
         } catch {
             print("Error inserting songs into queue: \(error)")
         }
     }
-    
+
     // MARK: - Preview Playback
-    
+
     /// Use AVPlayer to play the preview for non-subscribers
     func playPreview(for trackId: String) async {
         do {
-            let request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: MusicItemID(rawValue: trackId))
+            let request = MusicCatalogResourceRequest<Song>(
+                matching: \.id,
+                equalTo: MusicItemID(rawValue: trackId)
+            )
             let response = try await request.response()
-            guard let song = response.items.first, let previewURL = song.previewAssets?.first?.url else {
+            guard let song = response.items.first,
+                let previewURL = song.previewAssets?.first?.url
+            else {
                 print("No preview available for track ID: \(trackId)")
                 return
             }
             let playerItem = AVPlayerItem(url: previewURL)
 
             // For tracking end of playback
-            NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: previewPlayer?.currentItem)
+            NotificationCenter.default.removeObserver(
+                self,
+                name: .AVPlayerItemDidPlayToEndTime,
+                object: previewPlayer?.currentItem
+            )
             NotificationCenter.default.addObserver(
                 self,
                 selector: #selector(previewDidFinishPlaying(_:)),
@@ -180,15 +197,15 @@ import StoreKit
             print("Error fetching preview: \(error)")
         }
     }
-    
+
     func stopPreviewPlayback() {
         nowPlaying = nil
         previewPlayer?.pause()
         previewPlayer?.replaceCurrentItem(with: nil)
     }
-    
+
     // MARK: - Authorization
-    
+
     func authorize() async {
         let status = await MusicAuthorization.request()
         authorizationStatus = status
@@ -198,19 +215,24 @@ import StoreKit
             }
         }
     }
-    
+
     // MARK: - Track Info
-    
+
     /// Fetches track information from Apple Music using the track ID
     /// - Parameter trackId: The Apple Music ID for the track
     /// - Returns: MusicItemCollection<Song> Element with a bunch of metadata
     @discardableResult
-    func fetchTrackInfo(_ trackId: String) async throws -> MusicItemCollection<Song>.Element? {
+    func fetchTrackInfo(_ trackId: String) async throws -> MusicItemCollection<
+        Song
+    >.Element? {
         if authorizationStatus == .notDetermined {
             await authorize()
         }
         do {
-            let request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: MusicItemID(rawValue: trackId))
+            let request = MusicCatalogResourceRequest<Song>(
+                matching: \.id,
+                equalTo: MusicItemID(rawValue: trackId)
+            )
             let response = try await request.response()
             return response.items.first
         } catch {
@@ -220,7 +242,7 @@ import StoreKit
     }
     
     // MARK: - Playlist Creation
-    
+
     /// Creates a playlist in Apple Music from a collection of ShazamStreams and returns the link to the playlist
     /// - Parameters:
     ///   - streams: Collection of ShazamStreams to add to the playlist
@@ -239,36 +261,40 @@ import StoreKit
                 throw MusicError.notAuthorized
             }
         }
-            
+
         // Extract track IDs from ShazamStreams
         let trackIDs = streams.compactMap { $0.appleMusicID }
         guard !trackIDs.isEmpty else {
             throw MusicError.noTracksAvailable
         }
-            
+
         // Create a new playlist
         do {
             let creationMetadata = MPMediaPlaylistCreationMetadata(name: name)
             creationMetadata.descriptionText = description ?? ""
 
-            let playlist = try await MPMediaLibrary.default().getPlaylist(with: UUID(), creationMetadata: creationMetadata)
+            let playlist = try await MPMediaLibrary.default().getPlaylist(
+                with: UUID(),
+                creationMetadata: creationMetadata
+            )
 
             // Sometime in the future, it may be optimal to fetch MPMediaItem(s) and use .add() instead
             for id in trackIDs {
                 try await playlist.addItem(withProductID: id)
             }
-            
+
             return playlist.persistentID
         } catch {
             Task { @MainActor in
-                self.errorMessage = "Failed to create playlist: \(error.localizedDescription)"
+                self.errorMessage =
+                    "Failed to create playlist: \(error.localizedDescription)"
             }
             throw MusicError.playlistCreationFailed(error)
         }
     }
     
     // MARK: - Error Types
-    
+
     enum MusicError: Error {
         case notAuthorized
         case noTracksAvailable

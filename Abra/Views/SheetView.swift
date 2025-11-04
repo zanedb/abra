@@ -17,30 +17,37 @@ struct SheetView: View {
     @Environment(LocationProvider.self) private var location
     @Environment(LibraryProvider.self) private var library
     @Environment(MusicProvider.self) private var music
-    
-    @SectionedQuery(\.timeGroupedString, sort: [SortDescriptor(\.timestamp, order: .reverse)]) private var timeSectionedStreams: SectionedResults<String, ShazamStream>
-    
-    @Query(sort: \ShazamStream.timestamp, order: .reverse) private var allShazams: [ShazamStream]
+
+    @SectionedQuery(
+        \.timeGroupedString,
+        sort: [SortDescriptor(\.timestamp, order: .reverse)]
+    ) private var timeSectionedStreams: SectionedResults<String, ShazamStream>
+
+    @Query(sort: \ShazamStream.timestamp, order: .reverse) private
+        var allShazams: [ShazamStream]
     @Query(sort: \Spot.updatedAt, order: .reverse) private var allSpots: [Spot]
-    
+
     var shazams: [ShazamStream] {
         guard searchText.isEmpty == false else { return allShazams }
-        
+
         return allShazams.filter {
-            $0.title.localizedCaseInsensitiveContains(searchText) || $0.artist.localizedCaseInsensitiveContains(searchText) || $0.cityState.localizedCaseInsensitiveContains(searchText)
+            $0.title.localizedCaseInsensitiveContains(searchText)
+                || $0.artist.localizedCaseInsensitiveContains(searchText)
+                || $0.cityState.localizedCaseInsensitiveContains(searchText)
         }
     }
-    
+
     var spots: [Spot] {
         guard searchText.isEmpty == false else { return allSpots }
-        
+
         return allSpots.filter {
-            $0.name.localizedCaseInsensitiveContains(searchText) || $0.description.localizedCaseInsensitiveContains(searchText)
+            $0.name.localizedCaseInsensitiveContains(searchText)
+                || $0.description.localizedCaseInsensitiveContains(searchText)
         }
     }
-    
+
     @Namespace var animation
-    
+
     @State private var searchText: String = ""
     @State private var searchHidden: Bool = false
     @State private var searchFocused: Bool = false
@@ -126,7 +133,7 @@ struct SheetView: View {
         }
         .sensoryFeedback(.success, trigger: hapticTrigger)
     }
-    
+
     private var songsList: some View {
         LazyVStack(alignment: .leading, spacing: 0) {
             ForEach(timeSectionedStreams) { section in
@@ -137,7 +144,7 @@ struct SheetView: View {
                         }
                         .buttonStyle(.plain)
                         .padding(.bottom, shazam == section.last ? 12 : 0)
-                        
+
                         if shazam != section.last {
                             Divider()
                                 .padding(.leading, 125)
@@ -154,7 +161,7 @@ struct SheetView: View {
             }
         }
     }
-    
+
     private var searchResults: some View {
         LazyVStack(alignment: .leading) {
             Section {
@@ -164,20 +171,23 @@ struct SheetView: View {
                             .padding(.vertical, 4)
                     }
                     .buttonStyle(.plain)
-                    
+
                     Divider()
                         .padding(.leading, 60)
                 }
             }
-            
+
             Section {
                 ForEach(shazams, id: \.id) { stream in
-                    SongRowMini(stream: stream, onTapGesture: {
-                        view.show(stream)
-                    })
+                    SongRowMini(
+                        stream: stream,
+                        onTapGesture: {
+                            view.show(stream)
+                        }
+                    )
                     .padding(.vertical, 4)
                     .buttonStyle(.plain)
-                    
+
                     Divider()
                         .padding(.leading, 60)
                 }
@@ -185,12 +195,16 @@ struct SheetView: View {
         }
         .padding(.horizontal)
     }
-    
+
     private var searching: some View {
         Searching(namespace: animation)
             .overlay(alignment: .topTrailing) {
-                DismissButton(foreground: .white, font: .buttonLarge, action: { shazam.stopMatching() })
-                    .padding(.horizontal)
+                DismissButton(
+                    foreground: .white,
+                    font: .buttonLarge,
+                    action: { shazam.stopMatching() }
+                )
+                .padding(.horizontal)
             }
     }
     
@@ -224,7 +238,7 @@ struct SheetView: View {
         }
         .buttonStyle(.plain)
     }
-    
+
     private func song(_ stream: ShazamStream) -> some View {
         SongView(stream: stream)
             .presentationDetents([.fraction(0.50), .large])
@@ -232,52 +246,73 @@ struct SheetView: View {
             .edgesIgnoringSafeArea(.bottom)
             .prefersEdgeAttachedInCompactHeight()
     }
-    
+
     private func spot(_ spot: Spot) -> some View {
         SpotView(spot: spot)
             .presentationDetents([.fraction(0.50), .large])
             .presentationInspector()
             .prefersEdgeAttachedInCompactHeight()
     }
-    
+
     private func createShazamStream(_ mediaItem: SHMediaItem) {
         // Create and show ShazamStream
-        let stream = ShazamStream(mediaItem: mediaItem, location: location.currentLocation, placemark: location.currentPlacemark)
+        let stream = ShazamStream(
+            mediaItem: mediaItem,
+            location: location.currentLocation,
+            placemark: location.currentPlacemark
+        )
         modelContext.insert(stream)
         try? modelContext.save()
         view.show(stream)
         hapticTrigger.toggle()
-        
+
         // If Spot exists with similar latitude/longitude, set it automatically
         Task {
             stream.spotIt(context: modelContext)
         }
     }
-    
+
     private func handleShazamAPIError(_ error: ShazamError) {
         switch error {
         case .noMatch:
-            toast.show(message: "No match found", type: .info, symbol: "shazam.logo.fill")
+            toast.show(
+                message: "No match found",
+                type: .info,
+                symbol: "shazam.logo.fill"
+            )
         case .matchFailed(let error):
-            guard let errorCode = extractShazamErrorCode(from: error), errorCode != "(null)" else { return }
-            toast.show(message: errorCode, type: .error, symbol: "shazam.logo.fill")
+            guard let errorCode = extractShazamErrorCode(from: error),
+                errorCode != "(null)"
+            else { return }
+            //            SentrySDK.capture(error: error)
+            toast.show(
+                message: errorCode,
+                type: .error,
+                symbol: "shazam.logo.fill"
+            )
         default:
             break
         }
     }
-    
+
     // Maybe we get a grip on location first, save that, and then make a background task to update Placemarks from location?
     // Should probably do anyway..
     private func updateLocationlessStreams() {
         guard let currentLoc = location.currentLocation else { return }
-        
+
         // Find locationless streams within the past hour
-        let locationless = allShazams.filter { $0.latitude == -1 && $0.longitude == -1 && $0.timestamp > Date().addingTimeInterval(-60 * 60) }
-        
+        let locationless = allShazams.filter {
+            $0.latitude == -1 && $0.longitude == -1
+                && $0.timestamp > Date().addingTimeInterval(-60 * 60)
+        }
+
         print("Found \(locationless.count) locationless streams")
-        
+
         for stream in locationless {
-            stream.updateLocation(currentLoc, placemark: location.currentPlacemark)
+            stream.updateLocation(
+                currentLoc,
+                placemark: location.currentPlacemark
+            )
             stream.spotIt(context: modelContext)
             if view.now == .stream(stream) {
                 view.show(stream)

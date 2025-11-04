@@ -7,20 +7,6 @@ import Foundation
 import Photos
 import UIKit
 
-struct PHFetchResultCollection: RandomAccessCollection, Equatable {
-    typealias Element = PHAsset
-    typealias Index = Int
-    
-    var filteredResult: [PHAsset]
-    
-    var endIndex: Int { filteredResult.count }
-    var startIndex: Int { 0 }
-    
-    subscript(position: Int) -> PHAsset {
-        filteredResult[filteredResult.count - position - 1]
-    }
-}
-
 @Observable final class LibraryProvider {
     typealias PHAssetLocalIdentifier = String
     
@@ -31,7 +17,6 @@ struct PHFetchResultCollection: RandomAccessCollection, Equatable {
     var authorizationStatus: PHAuthorizationStatus = .notDetermined
     var authorized: Bool { authorizationStatus == .authorized || authorizationStatus == .limited }
     
-    var results = PHFetchResultCollection(filteredResult: [])
     var imageCachingManager = PHCachingImageManager()
     
     func requestAuthorization(callback: (() -> Void)? = nil) {
