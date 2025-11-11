@@ -47,7 +47,7 @@ struct MomentView: View {
         }
         .navigationTransition(
             .zoom(
-                sourceID: "MomentGallery",
+                sourceID: moment.id,
                 in: namespace
             )
         )

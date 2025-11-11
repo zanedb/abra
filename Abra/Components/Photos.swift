@@ -142,7 +142,7 @@ struct Photos: View {
                         Thumbnail(assetLocalId: mo.phAssets.first!.localIdentifier, targetSize: .init(width: 384, height: 576))
                             .aspectRatio(contentMode: .fill)
                             .aspectRatio(2 / 3, contentMode: .fit)
-                            .matchedTransitionSource(id: "MomentGallery", in: transitionNamespace)
+                            .matchedTransitionSource(id: mo.id, in: transitionNamespace)
                             .onTapGesture {
                                 moment = mo
                             }
@@ -166,7 +166,7 @@ struct Photos: View {
                         Thumbnail(assetLocalId: asset.localIdentifier, targetSize: .init(width: 384, height: 576))
                             .aspectRatio(contentMode: .fill)
                             .aspectRatio(2 / 3, contentMode: .fit)
-                            .matchedTransitionSource(id: asset.localIdentifier, in: transitionNamespace)
+                            .matchedTransitionSource(id: "MomentGallery", in: transitionNamespace)
                             .clipShape(RoundedRectangle(
                                 cornerRadius: 8
                             ))
