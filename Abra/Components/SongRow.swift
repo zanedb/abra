@@ -124,7 +124,6 @@ struct SongRowMini: View {
     
     var stream: ShazamStream
     var onTapGesture: () -> Void = {}
-    var blendMode: BlendMode = .normal
     
     private var nowPlaying: Bool { music.nowPlaying != nil && music.nowPlaying == stream.appleMusicID }
     private var lastPlayed: Bool { music.lastPlayed != nil && music.lastPlayed == stream.appleMusicID }
@@ -168,7 +167,6 @@ struct SongRowMini: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-            .blendMode(blendMode)
             
             Spacer()
         }

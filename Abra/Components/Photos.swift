@@ -142,7 +142,7 @@ struct Photos: View {
                         Thumbnail(assetLocalId: mo.phAssets.first!.localIdentifier, targetSize: .init(width: 384, height: 576))
                             .aspectRatio(contentMode: .fill)
                             .aspectRatio(2 / 3, contentMode: .fit)
-                            .matchedTransitionSource(id: mo.phAssets.first!.localIdentifier, in: transitionNamespace)
+                            .matchedTransitionSource(id: "MomentGallery", in: transitionNamespace)
                             .onTapGesture {
                                 moment = mo
                             }
