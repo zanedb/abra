@@ -3,9 +3,9 @@
 //  Abra
 //
 
-import SwiftUI
-import MapKit
 import Combine
+import MapKit
+import SwiftUI
 
 /// Presents a single sheet out of two data sources
 /// A possible ShazamStream, Spot can be selected
@@ -17,13 +17,13 @@ import Combine
 
     var stream: ShazamStream?
     var spot: Spot?
-    
+
     enum ViewState: Equatable {
         case none
         case stream(ShazamStream)
         case spot(Spot)
     }
-    
+
     var now: ViewState {
         get {
             if spot != nil {
@@ -33,7 +33,8 @@ import Combine
             } else {
                 return .none
             }
-        } set {
+        }
+        set {
             if newValue == .none {
                 stream = nil
                 spot = nil
@@ -41,18 +42,31 @@ import Combine
             }
         }
     }
-    
-    var isPresentedBinding: Binding<Bool> { Binding<Bool>(
-        get: { self.now != .none },
-        set: { _ in
-            self.now = .none
-        })
+
+    var isPresentedBinding: Binding<Bool> {
+        Binding<Bool>(
+            get: { self.now != .none },
+            set: { _ in
+                self.now = .none
+            }
+        )
     }
-    
+
     var isPresented: Bool {
         self.now != .none
     }
-    
+
+    var searchText: String = ""
+
+    var searchTextBinding: Binding<String> {
+        Binding<String>(
+            get: { self.searchText },
+            set: { newValue in
+                self.searchText = newValue
+            }
+        )
+    }
+
     var coordinate: CLLocationCoordinate2D? {
         switch now {
         case .spot(let spot):
@@ -63,13 +77,13 @@ import Combine
             return nil
         }
     }
-    
+
     func show(_ spot: Spot) {
         self.spot = spot
         stream = nil
         didChange.send()
     }
-    
+
     func show(_ stream: ShazamStream) {
         self.stream = stream
         spot = nil

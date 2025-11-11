@@ -4,14 +4,30 @@
 //
 
 import MusicKit
+import SwiftData
 import SwiftUI
 
 struct SongInfo: View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.toastProvider) private var toast
     @Environment(MusicProvider.self) private var music
+    @Environment(SheetProvider.self) private var sheet
 
     var stream: ShazamStream
+
+    @Query var matchedArtistStreams: [ShazamStream]
+
+    init(stream: ShazamStream) {
+        self.stream = stream
+
+        // Find instances of the matching artist
+        let artist = stream.artist
+        let predicate = #Predicate<ShazamStream> {
+            $0.artist == artist
+        }
+        _matchedArtistStreams = Query(filter: predicate, sort: \.timestamp)
+    }
 
     @State private var albumTitle: String = "Apple vs. 7G"
     @State private var released: String = "2021"
@@ -89,7 +105,26 @@ struct SongInfo: View {
                         .redacted(reason: loadedMetadata ? [] : .placeholder)
                 }
             }
-            .padding(.top)
+
+            if matchedArtistStreams.count > 1 {
+                Wrapper {
+                    Button {
+                        sheet.searchText = stream.artist
+                        dismiss()
+                    } label: {
+                        Image(systemName: "list.bullet.indent")
+                            .foregroundStyle(.link)
+                        Text(
+                            "^[\(matchedArtistStreams.count) song](inflect: true) by \(stream.artist) in library."
+                        )
+                        .foregroundStyle(.link)
+                        .lineLimit(1)
+                        Spacer()
+                    }
+                    .font(.callout)
+                }
+                .padding(.top, 12)
+            }
         }
         .padding()
 //        .padding(.top, -56)

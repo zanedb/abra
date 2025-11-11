@@ -28,35 +28,38 @@ struct SheetView: View {
     @Query(sort: \Spot.updatedAt, order: .reverse) private var allSpots: [Spot]
 
     var shazams: [ShazamStream] {
-        guard searchText.isEmpty == false else { return allShazams }
+        guard view.searchText.isEmpty == false else { return allShazams }
 
         return allShazams.filter {
-            $0.title.localizedCaseInsensitiveContains(searchText)
-                || $0.artist.localizedCaseInsensitiveContains(searchText)
-                || $0.cityState.localizedCaseInsensitiveContains(searchText)
+            $0.title.localizedCaseInsensitiveContains(view.searchText)
+                || $0.artist.localizedCaseInsensitiveContains(view.searchText)
+                || $0.cityState.localizedCaseInsensitiveContains(
+                    view.searchText
+                )
         }
     }
 
     var spots: [Spot] {
-        guard searchText.isEmpty == false else { return allSpots }
+        guard view.searchText.isEmpty == false else { return allSpots }
 
         return allSpots.filter {
-            $0.name.localizedCaseInsensitiveContains(searchText)
-                || $0.description.localizedCaseInsensitiveContains(searchText)
+            $0.name.localizedCaseInsensitiveContains(view.searchText)
+                || $0.description.localizedCaseInsensitiveContains(
+                    view.searchText
+                )
         }
     }
 
     @Namespace var animation
 
-    @State private var searchText: String = ""
     @State private var searchHidden: Bool = false
     @State private var searchFocused: Bool = false
     @State private var hapticTrigger = false
-    
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                if searchText.isEmpty {
+                if view.searchText.isEmpty {
                     SpotsList()
                         .padding(.horizontal)
                         .padding(.vertical, 8)
@@ -66,7 +69,7 @@ struct SheetView: View {
                         }
                         
                     songsList
-                    
+
                     if spots.isEmpty && shazams.isEmpty {
                         Text("Let‘s Discover")
                             .font(.headline)
@@ -78,7 +81,7 @@ struct SheetView: View {
                     }
                 } else {
                     if spots.isEmpty && shazams.isEmpty {
-                        ContentUnavailableView.search(text: searchText)
+                        ContentUnavailableView.search(text: view.searchText)
                             .padding()
                     } else {
                         searchResults
@@ -207,26 +210,8 @@ struct SheetView: View {
                 .padding(.horizontal)
             }
     }
-    
-    @ToolbarContentBuilder
-    private var toolbarItems: some ToolbarContent {
-            ToolbarItem(placement: .topBarLeading) {
-                Text("Abra")
-                    .font(.title2.weight(.medium))
-            }
-            ToolbarItem(placement: .automatic) {
-                HStack(spacing: 12) {
-                    Button(action: { if searchHidden { searchFocused = true } }) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 16))
-                            .tint(searchHidden ? .gray : .clear)
-                    }
 
-                    shazamButton
-                }
-            }
-    }
-    
+    // MARK: os18
     private var shazamButton: some View {
         Button(action: { Task { await shazam.startMatching() } }) {
             Image(systemName: "shazam.logo.fill")
@@ -238,6 +223,7 @@ struct SheetView: View {
         }
         .buttonStyle(.plain)
     }
+    // end os18
 
     private func song(_ stream: ShazamStream) -> some View {
         SongView(stream: stream)
