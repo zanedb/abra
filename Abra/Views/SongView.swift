@@ -23,13 +23,16 @@ struct SongView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack {
+                VStack(spacing: 2) {
                     Text(stream.title)
-                        .font(.headline)
+                        .font(.title3.weight(.bold))
+                        .lineLimit(1)
                     Text(stream.artist)
-                        .font(.caption)
+                        .font(.footnote.weight(.medium))
+                        .lineLimit(1)
                         .foregroundStyle(.secondary)
                 }
+                .frame(maxWidth: 250)
                 .padding(.top, -48)
 
                 SongInfo(stream: stream)
@@ -97,6 +100,30 @@ struct SongView: View {
 
         ToolbarItem(placement: .bottomBar) {
             Menu {
+                Button(
+                    "Delete from Library",
+                    systemImage:
+                        "trash.fill",
+                    role: .destructive,
+                    action: {
+                        showingConfirmation = true
+                    }
+                )
+
+                if stream.latitude == -1 && stream.longitude == -1 {
+                    Divider()
+                    Button(
+                        "Add Location",
+                        systemImage:
+                            "location.fill.viewfinder",
+                        action: {
+                            showingLocationPicker.toggle()
+                        }
+                    )
+                }
+
+                Divider()
+
                 if music.subscribed, let appleMusicID = stream.appleMusicID {
                     Button(
                         "Add to Queue",
@@ -135,29 +162,36 @@ struct SongView: View {
                     ShareLink("Music", item: url)
                 }
 
-                if stream.latitude == -1 && stream.longitude == -1 {
-                    Divider()
-                    Button(
-                        "Add Location",
-                        systemImage:
-                            "location.fill.viewfinder",
-                        action: {
-                            showingLocationPicker.toggle()
+                if let appleMusicID = stream.appleMusicID {
+                    ControlGroup {
+                        Button(
+                            music.nowPlaying == appleMusicID
+                                ? "Pause" : "Play",
+                            systemImage: music.nowPlaying == appleMusicID
+                                ? "pause.fill" : "play.fill",
+                            action: {
+                                music.playPause(id: appleMusicID)
+                            }
+                        )
+
+                        Button(
+                            "Add to Playlist",
+                            systemImage: "music.note.list",
+                            action: {
+                                showingPlaylistPicker.toggle()
+                            }
+                        )
+
+                        if let url = stream.appleMusicURL,
+                            let link = stream.songLink
+                        {
+                            Menu("Share", systemImage: "square.and.arrow.up") {
+                                ShareLink("Music", item: url)
+                                ShareLink("Song.link", item: link)
+                            }
                         }
-                    )
-                }
-
-                Divider()
-
-                Button(
-                    "Delete",
-                    systemImage:
-                        "trash.fill",
-                    role: .destructive,
-                    action: {
-                        showingConfirmation = true
                     }
-                )
+                }
             } label: {
                 Image(systemName: "ellipsis")
             }
