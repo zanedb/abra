@@ -23,6 +23,14 @@ struct SongView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
+                VStack {
+                    Text(stream.title)
+                        .font(.headline)
+                    Text(stream.artist)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, -48)
 
                 SongInfo(stream: stream)
 

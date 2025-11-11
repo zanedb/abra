@@ -128,7 +128,9 @@ struct Photos: View {
 
     private var heading: some View {
         Text("Moments")
-            .font(.subheadline.weight(.medium))
+            .font(.caption.weight(.medium))
+            .textCase(.uppercase)
+            .foregroundStyle(.secondary)
             .padding(.horizontal)
     }
 
@@ -184,11 +186,12 @@ struct Photos: View {
         ZStack {
             Rectangle()
                 .fill(.background)
-                .frame(height: 156)
                 .clipShape(.rect(cornerRadius: 14))
 
             VStack {
-                Text("See photos from when you discovered this song.")
+                Text("Grant permission to see moments.")
+                    .font(.callout)
+                    .foregroundStyle(.gray)
                     .multilineTextAlignment(.center)
 
                 Button(action: {
@@ -203,11 +206,12 @@ struct Photos: View {
                         Image(systemName: requestedAuthorization ? "xmark.app" : "photo.stack")
                             .font(.system(size: 20))
                         Text("Full Photo Library")
+                            .font(.callout)
                     }
                 })
-                .padding(.top, 8)
+                .padding(.top, 4)
             }
-            .frame(maxWidth: 244)
+            .padding()
         }
         .overlay {
             // MARK: "Ignore" button disabled until Settings view is implemented

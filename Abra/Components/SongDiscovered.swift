@@ -41,7 +41,8 @@ struct SongDiscovered: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text("Discovered")
-                .font(.subheadline.weight(.medium))
+                .font(.caption.weight(.medium))
+                .textCase(.uppercase)
                 .foregroundStyle(.secondary)
             
             Wrapper {

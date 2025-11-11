@@ -36,44 +36,44 @@ struct SongInfo: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 8) {
-            
-            HStack {
-                Button {
-                    if let url = stream.appleMusicURL {
-                        openURL(url)
+            if let appleMusicURL = stream.appleMusicURL,
+                let songLinkURL = stream.songLink
+            {
+                HStack {
+                    Button {
+                        openURL(appleMusicURL)
+                    } label: {
+                        Text("Open in Apple Music")
+                            .lineLimit(1)
+                            .padding()
+                            .frame(maxWidth: .infinity)
                     }
-                } label: {
-                    Text("Open in Apple Music")
-                        .lineLimit(1)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                }
-                .disabled(stream.appleMusicURL == nil)
-                .fontWeight(.medium)
-                .background(.link)
-                .foregroundStyle(.background)
-                .clipShape(RoundedRectangle(cornerRadius: 18))
-                
-                Button {
-                    if let url = stream.songLink {
-                        openURL(url)
+                    .disabled(stream.appleMusicURL == nil)
+                    .fontWeight(.medium)
+                    .background(.blue)
+                    .foregroundStyle(.background)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+
+                    Button {
+                        openURL(songLinkURL)
+                    } label: {
+                        Text("Song.link")
+                            .padding(.horizontal)
+                            .padding()
                     }
-                } label: {
-                    Text("Song.link")
-                        .padding(.horizontal)
-                        .padding()
+                    .disabled(stream.appleMusicURL == nil)
+                    .fontWeight(.medium)
+                    .background(.thinMaterial)
+                    .foregroundStyle(.link)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
                 }
-                .disabled(stream.appleMusicURL == nil)
-                .fontWeight(.medium)
-                .background(.bar)
-                .foregroundStyle(.link)
-                .clipShape(RoundedRectangle(cornerRadius: 18))
+                .padding(.bottom)
             }
 
             HStack(spacing: 6) {
                 VStack(alignment: .leading) {
                     Text("Album")
-                        .font(.caption)
+                        .font(.caption.weight(.medium))
                         .textCase(.uppercase)
                         .foregroundStyle(.secondary)
                     Text(albumTitle)
@@ -85,7 +85,7 @@ struct SongInfo: View {
 
                 VStack(alignment: .leading) {
                     Text("Genre")
-                        .font(.caption)
+                        .font(.caption.weight(.medium))
                         .textCase(.uppercase)
                         .foregroundStyle(.secondary)
                     Text(genre)
@@ -97,7 +97,7 @@ struct SongInfo: View {
 
                 VStack(alignment: .leading) {
                     Text("Released")
-                        .font(.caption)
+                        .font(.caption.weight(.medium))
                         .textCase(.uppercase)
                         .foregroundStyle(.secondary)
                     Text(released)
@@ -127,7 +127,7 @@ struct SongInfo: View {
             }
         }
         .padding()
-//        .padding(.top, -56)
+        .padding(.top, -12)
         .frame(maxWidth: .infinity, alignment: .center)
         .task(id: stream.persistentModelID, loadMetadata)
 

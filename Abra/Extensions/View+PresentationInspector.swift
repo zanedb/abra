@@ -1,5 +1,5 @@
 //
-//  View+PresentationInspector.swift
+//  View+presentationInspector.swift
 //  Abra
 //
 
