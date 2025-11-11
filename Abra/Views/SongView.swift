@@ -52,13 +52,6 @@ struct SongView: View {
                 LocationPicker(stream: stream)
                     .presentationDetents([.large])
             }
-            .confirmationDialog(
-                "This song will be deleted from your Abra and Shazam libraries.",
-                isPresented: $showingConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("Delete Song", role: .destructive, action: remove)
-            }
         }
     }
 
@@ -189,6 +182,14 @@ struct SongView: View {
                 }
             } label: {
                 Image(systemName: "ellipsis")
+            }
+            .accessibilityLabel("More Options")
+            .confirmationDialog(
+                "This song will be deleted from your Abra and Shazam libraries.",
+                isPresented: $showingConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete Song", role: .destructive, action: remove)
             }
         }
     }
