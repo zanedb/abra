@@ -67,40 +67,44 @@ struct SongInfo: View {
                     .foregroundStyle(.link)
                     .clipShape(RoundedRectangle(cornerRadius: 18))
                 }
+                .padding(.top, -12)
                 .padding(.bottom)
             }
 
             HStack(spacing: 6) {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Album")
                         .font(.caption.weight(.medium))
                         .textCase(.uppercase)
                         .foregroundStyle(.secondary)
                     Text(albumTitle)
+                        .fontWeight(.medium)
                         .lineLimit(1)
                         .redacted(reason: loadedMetadata ? [] : .placeholder)
                 }
 
                 Spacer()
 
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Genre")
                         .font(.caption.weight(.medium))
                         .textCase(.uppercase)
                         .foregroundStyle(.secondary)
                     Text(genre)
+                        .fontWeight(.medium)
                         .lineLimit(1)
                         .redacted(reason: loadedMetadata ? [] : .placeholder)
                 }
 
                 Spacer()
 
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Released")
                         .font(.caption.weight(.medium))
                         .textCase(.uppercase)
                         .foregroundStyle(.secondary)
                     Text(released)
+                        .fontWeight(.medium)
                         .lineLimit(1)
                         .redacted(reason: loadedMetadata ? [] : .placeholder)
                 }
@@ -127,7 +131,6 @@ struct SongInfo: View {
             }
         }
         .padding()
-        .padding(.top, -12)
         .frame(maxWidth: .infinity, alignment: .center)
         .task(id: stream.persistentModelID, loadMetadata)
 
