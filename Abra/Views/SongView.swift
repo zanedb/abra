@@ -70,7 +70,11 @@ struct SongView: View {
 
         if let url = stream.appleMusicURL {
             ToolbarItem(placement: .topBarLeading) {
-                ShareLink("Music", item: url)
+                ShareLink(item: url) {
+                    Image(systemName:"square.and.arrow.up")
+                }
+                .accessibilityLabel("Share Apple Music Link")
+                .backportCircleSymbolVariant(fill: false)
             }
         }
 
@@ -153,15 +157,6 @@ struct SongView: View {
                     )
                 }
 
-                if let link = stream.songLink {
-                    Divider()
-                    ShareLink("Song.link", item: link)
-                }
-
-                if let url = stream.appleMusicURL {
-                    ShareLink("Music", item: url)
-                }
-
                 if let appleMusicID = stream.appleMusicID {
                     ControlGroup {
                         Button(
@@ -175,7 +170,7 @@ struct SongView: View {
                         )
 
                         Button(
-                            "Add to Playlist",
+                            "+ Playlist",
                             systemImage: "music.note.list",
                             action: {
                                 showingPlaylistPicker.toggle()
