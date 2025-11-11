@@ -101,7 +101,7 @@ struct SheetView: View {
             }
         }
         .fullScreenCover(isPresented: shazam.isMatchingBinding) {
-            searching
+            Searching(namespace: animation)
         }
         .sheet(isPresented: view.isPresentedBinding) {
             switch view.now {
@@ -197,18 +197,6 @@ struct SheetView: View {
             }
         }
         .padding(.horizontal)
-    }
-
-    private var searching: some View {
-        Searching(namespace: animation)
-            .overlay(alignment: .topTrailing) {
-                DismissButton(
-                    foreground: .white,
-                    font: .buttonLarge,
-                    action: { shazam.stopMatching() }
-                )
-                .padding(.horizontal)
-            }
     }
 
     // MARK: os18

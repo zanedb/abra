@@ -15,34 +15,42 @@ struct Searching: View {
     @State private var basePulse: CGFloat = 1
 
     var body: some View {
-        VStack(spacing: 0) {
-            logoAnimation
-                .padding(.bottom)
-
-            Waveform(on: true, size: 4)
-                .padding(.vertical)
-
-            Text("Listening for music")
-                .font(.title2.bold())
-                .foregroundStyle(.white)
-            Text("Make sure your device can hear the song clearly")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.white.opacity(0.75))
-                .multilineTextAlignment(.center)
-                .padding(8)
-        }
-        .saturation(motion.isUpsideDown ? 0 : 1)
-        .opacity(motion.isUpsideDown ? 0.25 : 1)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            LinearGradient(gradient: Gradient(
-                colors: motion.isUpsideDown
+        NavigationStack {
+            VStack(spacing: 0) {
+                logoAnimation
+                    .padding(.bottom)
+                
+                Waveform(on: true, size: 4)
+                    .padding(.vertical)
+                
+                Text("Listening for music")
+                    .font(.title2.bold())
+                    .foregroundStyle(.white)
+                Text("Make sure your device can hear the song clearly")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.white.opacity(0.75))
+                    .multilineTextAlignment(.center)
+                    .padding(8)
+            }
+            .saturation(motion.isUpsideDown ? 0 : 1)
+            .opacity(motion.isUpsideDown ? 0.25 : 1)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(
+                LinearGradient(gradient: Gradient(
+                    colors: motion.isUpsideDown
                     ? [.black, .black]
                     : colorScheme == .dark
                     ? [.black.opacity(0.5), .black]
                     : [.blue.opacity(0.75), .blue]),
-            startPoint: .top, endPoint: .bottom)
-        )
+                               startPoint: .top, endPoint: .bottom)
+            )
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    DismissButton(foreground: .white)
+                }
+            }
+        }
+        .navigationTransition(.zoom(sourceID: "ShazamButton", in: namespace))
     }
 
     private var logoAnimation: some View {
@@ -65,7 +73,6 @@ struct Searching: View {
                 .font(.system(size: 72))
                 .scaleEffect(scaleForRadius(72))
                 .symbolRenderingMode(.multicolor)
-                .navigationTransition(.zoom(sourceID: "ShazamButton", in: namespace))
         }
         .overlay {
             // Large outer circle
