@@ -40,8 +40,9 @@ struct NewPlaylist: View {
                     .padding(.horizontal)
                 
                 Toggle(isOn: $includingSpotStreams) {
-                    Text("Include All Songs from \(streams.first?.spot?.name ?? "Spot")")
-                        .font(.subheadline.weight(.regular))
+                    Text("Add Songs from \(streams.first?.spot?.name ?? "Spot")")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
                 }
                 .padding(.horizontal)
                 .padding(.bottom)

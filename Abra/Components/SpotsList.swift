@@ -10,13 +10,13 @@ struct SpotsList: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(SheetProvider.self) private var view
     @Environment(MusicProvider.self) private var music
-    
+
     @Query(sort: \Spot.updatedAt, order: .reverse)
     private var spots: [Spot]
-    
+
     @State private var pendingDeletion: Spot? = nil
     @State private var confirmationShown: Bool = false
-    
+
     var body: some View {
         if spots == [] {
             EmptyView()
@@ -28,7 +28,7 @@ struct SpotsList: View {
                         .font(.subheadline.weight(.medium))
                 }
                 .padding(.bottom, 8)
-                
+
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 0) {
                         ForEach(spots, id: \.id) { spot in
@@ -43,11 +43,17 @@ struct SpotsList: View {
             }
         }
     }
-    
+
     private func spotView(_ spot: Spot) -> some View {
-        Button { view.show(spot) } label: {
+        Button {
+            view.show(spot)
+        } label: {
             VStack(alignment: .center) {
-                SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: 48)
+                SpotIcon(
+                    symbol: spot.symbol,
+                    color: Color(spot.color),
+                    size: 48
+                )
                 Text(spot.name)
                     .font(.system(size: 12))
                     .tint(.primary)
@@ -58,28 +64,50 @@ struct SpotsList: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 6)
         .contextMenu {
-            Button("Delete", systemImage: "trash", role: .destructive, action: { pendingDeletion = spot; confirmationShown = true })
+            Button(
+                "Play",
+                systemImage: "play.fill",
+                action: { spot.play(music) }
+            )
+            Button(
+                "Shuffle",
+                systemImage: "shuffle",
+                action: { spot.play(music, shuffle: true) }
+            )
+
             Divider()
-            Button("Shuffle", systemImage: "shuffle", action: { spot.play(music, shuffle: true) })
-            Button("Play", systemImage: "play.fill", action: { spot.play(music) })
+
+            Button(
+                "Delete from Abra",
+                systemImage: "trash",
+                role: .destructive,
+                action: {
+                    pendingDeletion = spot
+                    confirmationShown = true
+                }
+            )
         }
-        .confirmationDialog("This spot will be deleted from your Abra library, though the contents will not be deleted.", isPresented: $confirmationShown, titleVisibility: .visible) {
+        .confirmationDialog(
+            "This spot will be deleted from your Abra library, though the contents will not be deleted.",
+            isPresented: $confirmationShown,
+            titleVisibility: .visible
+        ) {
             Button("Delete Spot", role: .destructive, action: deleteSpot)
         }
     }
-    
+
     private func deleteSpots(offsets: IndexSet) {
         withAnimation {
             offsets.map { spots[$0] }.forEach(modelContext.delete)
             try? modelContext.save()
         }
     }
-    
+
     private func deleteSpot() {
         confirmationShown = false
         guard let pending = pendingDeletion else { return }
         pendingDeletion = nil
-        
+
         withAnimation {
             modelContext.delete(pending)
             try? modelContext.save()

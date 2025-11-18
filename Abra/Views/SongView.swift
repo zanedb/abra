@@ -98,7 +98,7 @@ struct SongView: View {
         ToolbarItem(placement: .bottomBar) {
             Menu {
                 Button(
-                    "Delete from Library",
+                    "Delete from Abra",
                     systemImage:
                         "trash.fill",
                     role: .destructive,

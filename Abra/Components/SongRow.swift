@@ -12,13 +12,13 @@ struct SongRow: View {
     @Environment(SheetProvider.self) var view
     @Environment(ShazamProvider.self) private var shazam
     @Environment(MusicProvider.self) private var music
-    
+
     var stream: ShazamStream
-    
+
     @State private var confirmationShown = false
-    
+
     private var nowPlaying: Bool { music.nowPlaying == stream.appleMusicID }
-    
+
     var body: some View {
         HStack {
             KFImage(stream.artworkURL)
@@ -29,28 +29,28 @@ struct SongRow: View {
                 .frame(width: 96, height: 96)
                 .clipShape(.rect(cornerRadius: 8))
                 .padding(.trailing, 5)
-            
+
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .top) {
                     Text(stream.title)
                         .font(.headline)
                         .lineLimit(2)
-                    
+
                     Spacer()
-                    
+
                     Text(stream.relativeDateTime)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
                 .padding(.bottom, 3)
-                
+
                 Text(stream.artist)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .padding(.bottom, 3)
-                
+
                 Spacer()
-                
+
                 VStack(alignment: .leading, spacing: 4) {
                     if let spot = stream.spot {
                         HStack(spacing: 4) {
@@ -64,7 +64,7 @@ struct SongRow: View {
                                 .font(.footnote)
                         }
                     }
-                    
+
                     Text(stream.cityState)
                         .foregroundStyle(.secondary)
                         .font(.footnote)
@@ -76,37 +76,54 @@ struct SongRow: View {
         .padding(.vertical, 8)
         .contentShape(Rectangle())
         .contextMenu {
-            Button("Delete", systemImage: "trash", role: .destructive, action: { confirmationShown = true })
-            
-            if let appleMusicURL = stream.appleMusicURL {
+            if let spot = stream.spot {
+                Button(
+                    "Show in Spot",
+                    systemImage: "arrow.up.forward",
+                    action: { view.show(spot) }
+                )
                 Divider()
-                Link(destination: appleMusicURL) {
-                    Label("Open in Apple Music", systemImage: "arrow.up.forward.app")
-                }
+            }
+
+            if let appleMusicURL = stream.appleMusicURL,
+                let appleMusicID = stream.appleMusicID
+            {
                 ShareLink(item: appleMusicURL) {
                     Label("Share", systemImage: "square.and.arrow.up")
                 }
-            }
-            
-            if let spot = stream.spot {
+
                 Divider()
-                Button("Show in Spot", systemImage: "arrow.up.forward", action: { view.show(spot) })
-            }
-            
-            if let appleMusicID = stream.appleMusicID {
-                Divider()
+
+                Link(destination: appleMusicURL) {
+                    Label(
+                        "Open in Music",
+                        systemImage: "arrow.up.forward"
+                    )
+                }
                 Button(
                     nowPlaying ? "Pause" : "Play",
                     systemImage: nowPlaying ? "pause.fill" : "play.fill",
                     action: { music.playPause(id: appleMusicID) }
                 )
+                Divider()
             }
+
+            Button(
+                "Delete from Abra",
+                systemImage: "trash",
+                role: .destructive,
+                action: { confirmationShown = true }
+            )
         }
-        .confirmationDialog("This song will be deleted from your Abra and Shazam libraries.", isPresented: $confirmationShown, titleVisibility: .visible) {
+        .confirmationDialog(
+            "This song will be deleted from your Abra and Shazam libraries.",
+            isPresented: $confirmationShown,
+            titleVisibility: .visible
+        ) {
             Button("Delete Song", role: .destructive, action: deleteStream)
         }
     }
-    
+
     private func deleteStream() {
         withAnimation {
             modelContext.delete(stream)
@@ -121,13 +138,17 @@ struct SongRow: View {
 struct SongRowMini: View {
     @Environment(SheetProvider.self) var view
     @Environment(MusicProvider.self) private var music
-    
+
     var stream: ShazamStream
     var onTapGesture: () -> Void = {}
-    
-    private var nowPlaying: Bool { music.nowPlaying != nil && music.nowPlaying == stream.appleMusicID }
-    private var lastPlayed: Bool { music.lastPlayed != nil && music.lastPlayed == stream.appleMusicID }
-    
+
+    private var nowPlaying: Bool {
+        music.nowPlaying != nil && music.nowPlaying == stream.appleMusicID
+    }
+    private var lastPlayed: Bool {
+        music.lastPlayed != nil && music.lastPlayed == stream.appleMusicID
+    }
+
     var body: some View {
         HStack {
             KFImage(stream.artworkURL)
@@ -145,10 +166,12 @@ struct SongRowMini: View {
                             .background(.black.opacity(0.4))
                             .clipShape(.rect(cornerRadius: 3))
                             .padding(.trailing, 5)
-                            .transition(.opacity.animation(.easeInOut(duration: 0.25)))
+                            .transition(
+                                .opacity.animation(.easeInOut(duration: 0.25))
+                            )
                     }
                 }
-                
+
             VStack(alignment: .leading) {
                 HStack {
                     Text(stream.title)
@@ -161,13 +184,13 @@ struct SongRowMini: View {
                             .accessibilityLabel("Explicit")
                     }
                 }
-                
+
                 Text(stream.artist)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-            
+
             Spacer()
         }
         .frame(maxHeight: 44)
@@ -178,15 +201,23 @@ struct SongRowMini: View {
         .contextMenu {
             if let appleMusicURL = stream.appleMusicURL {
                 Link(destination: appleMusicURL) {
-                    Label("Open in Apple Music", systemImage: "arrow.up.forward.app")
+                    Label(
+                        "Open in Music",
+                        systemImage: "arrow.up.forward"
+                    )
                 }
+                Divider()
                 ShareLink(item: appleMusicURL) {
                     Label("Share", systemImage: "square.and.arrow.up")
                 }
-                Divider()
+                //                Divider()
             }
-            
-            Button("View", systemImage: "arrow.up.right", action: { view.show(stream) })
+
+            //            Button(
+            //                "View",
+            //                systemImage: "arrow.up.right",
+            //                action: { view.show(stream) }
+            //            )
         }
     }
 }
@@ -194,14 +225,19 @@ struct SongRowMini: View {
 #Preview {
     VStack(alignment: .leading) {
         SongRow(stream: .preview)
-            
+
         Text("Discovered")
             .font(.subheadline)
             .bold()
             .foregroundStyle(.gray)
             .padding(.horizontal)
             .padding(.top, 12)
-        EditableList(Binding(get: { [ShazamStream.preview, ShazamStream.preview] }, set: { _ in })) { $stream in
+        EditableList(
+            Binding(
+                get: { [ShazamStream.preview, ShazamStream.preview] },
+                set: { _ in }
+            )
+        ) { $stream in
             SongRowMini(stream: stream)
         }
         .listStyle(.plain)
