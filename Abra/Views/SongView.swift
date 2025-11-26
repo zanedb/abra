@@ -3,6 +3,7 @@
 //  Abra
 //
 
+import MusadoraKit
 import MusicKit
 import SwiftData
 import SwiftUI
@@ -19,6 +20,7 @@ struct SongView: View {
     @State private var showingConfirmation = false
     @State private var showingPlaylistPicker = false
     @State private var showingLocationPicker = false
+    @State private var existsInLibrary: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -64,7 +66,7 @@ struct SongView: View {
         if let url = stream.appleMusicURL {
             ToolbarItem(placement: .topBarLeading) {
                 ShareLink(item: url) {
-                    Image(systemName:"square.and.arrow.up")
+                    Image(systemName: "square.and.arrow.up")
                 }
                 .accessibilityLabel("Share Apple Music Link")
                 .backportCircleSymbolVariant(fill: false)
@@ -73,10 +75,17 @@ struct SongView: View {
 
         if let appleMusicID = stream.appleMusicID {
             ToolbarItem(placement: .bottomBar) {
-                Button(action: { music.playPause(id: appleMusicID) }) {
+                Button {
+                    guard !existsInLibrary else { return }
+
+                    Task {
+                        existsInLibrary = try await MLibrary.addSong(
+                            id: MusicItemID(stringLiteral: appleMusicID)
+                        )
+                    }
+                } label: {
                     Image(
-                        systemName: music.nowPlaying == appleMusicID
-                            ? "pause" : "play"
+                        systemName: existsInLibrary ? "checkmark" : "plus"
                     )
                 }
                 .backportCircleSymbolVariant()
@@ -121,7 +130,8 @@ struct SongView: View {
 
                 Divider()
 
-                if music.subscribed, let appleMusicID = stream.appleMusicID {
+                if /*music.subscribed, */
+                let appleMusicID = stream.appleMusicID {
                     Button(
                         "Add to Queue",
                         systemImage:
@@ -153,17 +163,21 @@ struct SongView: View {
                 if let appleMusicID = stream.appleMusicID {
                     ControlGroup {
                         Button(
-                            music.nowPlaying == appleMusicID
-                                ? "Pause" : "Play",
-                            systemImage: music.nowPlaying == appleMusicID
-                                ? "pause.fill" : "play.fill",
+                            existsInLibrary ? "Added" : "Add",
+                            systemImage: existsInLibrary ? "checkmark" : "plus",
                             action: {
-                                music.playPause(id: appleMusicID)
+                                guard !existsInLibrary else { return }
+
+                                Task {
+                                    existsInLibrary = try await MLibrary.addSong(
+                                        id: MusicItemID(stringLiteral: appleMusicID)
+                                    )
+                                }
                             }
                         )
 
                         Button(
-                            "+ Playlist",
+                            "Playlist",
                             systemImage: "music.note.list",
                             action: {
                                 showingPlaylistPicker.toggle()

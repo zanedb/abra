@@ -18,7 +18,7 @@ struct PlaylistPicker: View {
     @State private var searchText = ""
     @State private var loading: MPMediaEntityPersistentID? = nil
     @State private var showingNewPlaylist = false
-    @State private var newPlaylistID: MPMediaEntityPersistentID?
+    @State private var newPlaylist: Playlist?
     
     private var allPlaylists: [MPMediaPlaylist] = []
     private var recents: [MPMediaPlaylist] = []
@@ -67,11 +67,11 @@ struct PlaylistPicker: View {
                 }
             }
             .sheet(isPresented: $showingNewPlaylist) {
-                NewPlaylist(initial: [stream], playlistID: $newPlaylistID)
+                NewPlaylist(initial: [stream], playlist: $newPlaylist)
                     .presentationDetents([.large])
             }
-            .onChange(of: newPlaylistID) {
-                if let id = newPlaylistID {
+            .onChange(of: newPlaylist) {
+                if let id = newPlaylist {
                     showingNewPlaylist = false
                     dismiss()
                     toast.show(message: "Playlist created", type: .success, symbol: "music.note.list", action: {

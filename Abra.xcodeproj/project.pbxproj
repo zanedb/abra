@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2F00B44A2EAD7452004B4EFD /* SongInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F00B4492EAD7451004B4EFD /* SongInfo.swift */; };
 		2F0BF5E22E82113E008582C2 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F0BF5E12E82113E008582C2 /* Kingfisher */; };
 		2F1727442C719B2700EEA500 /* Spot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1727432C719B2700EEA500 /* Spot.swift */; };
-		2F25ED1D2E2EF0E600BD2FEE /* SongActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F25ED1C2E2EF0E200BD2FEE /* SongActions.swift */; };
+		2F2D2A3E2ED7818200BC2291 /* View+backportCircleSymbolVariant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */; };
+		2F2D2A412ED79B0100BC2291 /* MusadoraKit in Frameworks */ = {isa = PBXBuildFile; productRef = 2F2D2A402ED79B0100BC2291 /* MusadoraKit */; };
 		2F30A7C72DA77EB500DFE607 /* VariableBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */; };
 		2F3C12D12E3B31930080C310 /* SpotRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3C12D02E3B31920080C310 /* SpotRow.swift */; };
 		2F3DAB772DA89C69001004B9 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB762DA89C67001004B9 /* OnboardingView.swift */; };
@@ -41,7 +43,7 @@
 		2F736BBF2DC05A6C0078F1BB /* ToastProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBE2DC05A6C0078F1BB /* ToastProvider.swift */; };
 		2F8908882C73106D0002850C /* Photos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8908872C73106D0002850C /* Photos.swift */; };
 		2F8919F02A4442BA0012DFF6 /* SpotsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8919EF2A4442BA0012DFF6 /* SpotsList.swift */; };
-		2F9090212E614F4C00828E6D /* View+PresentationInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9090202E614F3E00828E6D /* View+PresentationInspector.swift */; };
+		2F9090212E614F4C00828E6D /* View+presentationInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9090202E614F3E00828E6D /* View+presentationInspector.swift */; };
 		2F9090232E614F8B00828E6D /* View+PrefersEdgeAttachedInCompactHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9090222E614F8300828E6D /* View+PrefersEdgeAttachedInCompactHeight.swift */; };
 		2F9090252E61505600828E6D /* UISheetPresentationController++.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9090242E61505100828E6D /* UISheetPresentationController++.swift */; };
 		2F9D49532A79CECE002CB9E5 /* SpotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9D49522A79CECE002CB9E5 /* SpotView.swift */; };
@@ -111,8 +113,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2F00B4492EAD7451004B4EFD /* SongInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongInfo.swift; sourceTree = "<group>"; };
 		2F1727432C719B2700EEA500 /* Spot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spot.swift; sourceTree = "<group>"; };
-		2F25ED1C2E2EF0E200BD2FEE /* SongActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongActions.swift; sourceTree = "<group>"; };
+		2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+backportCircleSymbolVariant.swift"; sourceTree = "<group>"; };
 		2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableBlur.swift; sourceTree = "<group>"; };
 		2F3C12D02E3B31920080C310 /* SpotRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotRow.swift; sourceTree = "<group>"; };
 		2F3DAB762DA89C67001004B9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -146,7 +149,7 @@
 		2F736BBE2DC05A6C0078F1BB /* ToastProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastProvider.swift; sourceTree = "<group>"; };
 		2F8908872C73106D0002850C /* Photos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photos.swift; sourceTree = "<group>"; };
 		2F8919EF2A4442BA0012DFF6 /* SpotsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotsList.swift; sourceTree = "<group>"; };
-		2F9090202E614F3E00828E6D /* View+PresentationInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+PresentationInspector.swift"; sourceTree = "<group>"; };
+		2F9090202E614F3E00828E6D /* View+presentationInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+presentationInspector.swift"; sourceTree = "<group>"; };
 		2F9090222E614F8300828E6D /* View+PrefersEdgeAttachedInCompactHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+PrefersEdgeAttachedInCompactHeight.swift"; sourceTree = "<group>"; };
 		2F9090242E61505100828E6D /* UISheetPresentationController++.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UISheetPresentationController++.swift"; sourceTree = "<group>"; };
 		2F9D49522A79CECE002CB9E5 /* SpotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotView.swift; sourceTree = "<group>"; };
@@ -204,9 +207,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F2D2A412ED79B0100BC2291 /* MusadoraKit in Frameworks */,
 				2F0BF5E22E82113E008582C2 /* Kingfisher in Frameworks */,
 				2F3DAB822DAA0E95001004B9 /* SwiftUIIntrospect in Frameworks */,
 				2FC8CCEF2AC399B600523478 /* SectionedQuery in Frameworks */,
+				2FCB5C402E1E4FDE0053E33D /* SentrySwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -336,9 +341,10 @@
 		2F90901F2E614EE300828E6D /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */,
 				2F9090242E61505100828E6D /* UISheetPresentationController++.swift */,
 				2F9090222E614F8300828E6D /* View+PrefersEdgeAttachedInCompactHeight.swift */,
-				2F9090202E614F3E00828E6D /* View+PresentationInspector.swift */,
+				2F9090202E614F3E00828E6D /* View+presentationInspector.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -377,8 +383,8 @@
 				2FFE243B2E564288005F4A67 /* DismissButton.swift */,
 				2FF310C92A4A6DE900DA2A80 /* Searching.swift */,
 				2FE766D12A30515E00952513 /* SongRow.swift */,
+				2F00B4492EAD7451004B4EFD /* SongInfo.swift */,
 				2FAF74B62E0C55AA003D246C /* SongDiscovered.swift */,
-				2F25ED1C2E2EF0E200BD2FEE /* SongActions.swift */,
 				2F8919EF2A4442BA0012DFF6 /* SpotsList.swift */,
 				2F3C12D02E3B31920080C310 /* SpotRow.swift */,
 				2FE893742E25D12000244DEF /* SpotIcon.swift */,
@@ -438,6 +444,7 @@
 				2F3DAB812DAA0E95001004B9 /* SwiftUIIntrospect */,
 				2FCB5C3F2E1E4FDE0053E33D /* SentrySwiftUI */,
 				2F0BF5E12E82113E008582C2 /* Kingfisher */,
+				2F2D2A402ED79B0100BC2291 /* MusadoraKit */,
 			);
 			productName = abra;
 			productReference = 2F60936C2A2EDFB30092A6DD /* Abra.app */;
@@ -519,6 +526,7 @@
 				2F3DAB802DAA0E95001004B9 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */,
 				2FCB5C3A2E1E4FDE0053E33D /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				2F0BF5E02E82113E008582C2 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				2F2D2A3F2ED79B0100BC2291 /* XCRemoteSwiftPackageReference "MusadoraKit" */,
 			);
 			productRefGroup = 2F60936D2A2EDFB30092A6DD /* Products */;
 			projectDirPath = "";
@@ -585,7 +593,7 @@
 				2F3DAB7F2DA9CEF1001004B9 /* RoundedButton.swift in Sources */,
 				2F3C12D12E3B31930080C310 /* SpotRow.swift in Sources */,
 				2F6093A22A2EEC960092A6DD /* ContentView.swift in Sources */,
-				2F9090212E614F4C00828E6D /* View+PresentationInspector.swift in Sources */,
+				2F9090212E614F4C00828E6D /* View+presentationInspector.swift in Sources */,
 				2F736BBF2DC05A6C0078F1BB /* ToastProvider.swift in Sources */,
 				2FE893782E25D92100244DEF /* Wrapper.swift in Sources */,
 				2FFE243C2E56428B005F4A67 /* DismissButton.swift in Sources */,
@@ -598,13 +606,13 @@
 				2F4C61F32E4EC48900B1E0AF /* Waveform.swift in Sources */,
 				2FE8937C2E26EBA700244DEF /* SpotSelector.swift in Sources */,
 				2FA7D81E2AC0EA240039AD5C /* PreviewSampleData.swift in Sources */,
+				2F2D2A3E2ED7818200BC2291 /* View+backportCircleSymbolVariant.swift in Sources */,
 				2F4BE1F82D80B6DB006AFFC2 /* ActivityAttributes.swift in Sources */,
 				2F6093702A2EDFB30092A6DD /* AbraApp.swift in Sources */,
 				2FE766D22A30515E00952513 /* SongRow.swift in Sources */,
 				2FA7D81C2AC0E9780039AD5C /* ModelContainerPreview.swift in Sources */,
 				2F4C61F12E4EBBAA00B1E0AF /* MotionProvider.swift in Sources */,
 				2F8919F02A4442BA0012DFF6 /* SpotsList.swift in Sources */,
-				2F25ED1D2E2EF0E600BD2FEE /* SongActions.swift in Sources */,
 				2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */,
 				2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */,
 				2F9090252E61505600828E6D /* UISheetPresentationController++.swift in Sources */,
@@ -614,6 +622,7 @@
 				2FFE24402E56711F005F4A67 /* MomentView.swift in Sources */,
 				2FFE24422E570786005F4A67 /* PhotoView.swift in Sources */,
 				2FE893752E25D12100244DEF /* SpotIcon.swift in Sources */,
+				2F00B44A2EAD7452004B4EFD /* SongInfo.swift in Sources */,
 				2FEACDFB2C7320B000F79E2D /* Thumbnail.swift in Sources */,
 				2F736BB92DBD8D030078F1BB /* Toast.swift in Sources */,
 				2FD307AE2E344A00004ED2AD /* NewPlaylist.swift in Sources */,
@@ -1054,6 +1063,14 @@
 				minimumVersion = 8.5.0;
 			};
 		};
+		2F2D2A3F2ED79B0100BC2291 /* XCRemoteSwiftPackageReference "MusadoraKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/rryam/MusadoraKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.2.1;
+			};
+		};
 		2F3DAB802DAA0E95001004B9 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/siteline/SwiftUI-Introspect";
@@ -1085,6 +1102,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2F0BF5E02E82113E008582C2 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		2F2D2A402ED79B0100BC2291 /* MusadoraKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2F2D2A3F2ED79B0100BC2291 /* XCRemoteSwiftPackageReference "MusadoraKit" */;
+			productName = MusadoraKit;
 		};
 		2F3DAB812DAA0E95001004B9 /* SwiftUIIntrospect */ = {
 			isa = XCSwiftPackageProductDependency;

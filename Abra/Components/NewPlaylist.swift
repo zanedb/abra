@@ -5,18 +5,20 @@
 
 import MediaPlayer
 import SwiftUI
+import MusadoraKit
 
 struct NewPlaylist: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(MusicProvider.self) private var music
-    
+
     var initial: [ShazamStream] = []
-    @Binding var playlistID: MPMediaEntityPersistentID?
-    
+    @Binding var playlist: Playlist?
+    var showIncludeToggle: Bool
+
     @State var title: String = ""
     @State var loading = false
     @State var includingSpotStreams = false
-    
+
     private var spotStreams: [ShazamStream] {
         initial.first?.spot?.shazamStreams ?? initial
     }
@@ -24,35 +26,52 @@ struct NewPlaylist: View {
     private var streams: [ShazamStream] {
         includingSpotStreams ? spotStreams : initial
     }
-    
+
+    init(
+        initial: [ShazamStream],
+        playlist: Binding<Playlist?> = .constant(nil),
+        showIncludeToggle: Bool = true
+    ) {
+        self.initial = initial
+        self._playlist = playlist
+        self.showIncludeToggle = showIncludeToggle
+    }
+
     var body: some View {
         NavigationStack {
             VStack {
                 PlaylistImage
-                
+
                 TextField("Playlist Title", text: $title)
                     .font(.headline)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                     .padding(.vertical, 4)
-                
+
                 Divider()
                     .padding(.horizontal)
-                
-                Toggle(isOn: $includingSpotStreams) {
-                    Text("Add Songs from \(streams.first?.spot?.name ?? "Spot")")
+
+                if showIncludeToggle {
+                    Toggle(isOn: $includingSpotStreams) {
+                        Text(
+                            "Add Songs from \(streams.first?.spot?.name ?? "Spot")"
+                        )
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom)
                 }
-                .padding(.horizontal)
-                .padding(.bottom)
-                
+
                 List(streams) { stream in
-                    SongRowMini(stream: stream, onTapGesture: {
-                        if let appleMusicID = stream.appleMusicID {
-                            music.playPause(id: appleMusicID)
+                    SongRowMini(
+                        stream: stream,
+                        onTapGesture: {
+                            if let appleMusicID = stream.appleMusicID {
+                                music.playPause(id: appleMusicID)
+                            }
                         }
-                    })
+                    )
                 }
                 .listStyle(.inset)
             }
@@ -74,27 +93,33 @@ struct NewPlaylist: View {
             }
         }
     }
-    
+
     private var PlaylistImage: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 8)
                 .fill(.foreground)
-            
+
             Text(title.isEmpty ? "Playlist Title" : title)
                 .foregroundStyle(.background)
                 .font(.headline)
                 .padding(20)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .frame(
+                    maxWidth: .infinity,
+                    maxHeight: .infinity,
+                    alignment: .topLeading
+                )
         }
         .frame(width: 176, height: 176)
         .padding()
     }
-    
+
     private func createPlaylist() {
         loading = true
         Task {
             do {
-                playlistID = try await music.createPlaylist(from: streams, name: title)
+                let trackIDs = streams.compactMap { $0.appleMusicID }
+                let musicItemIDs: [MusicItemID] = trackIDs.compactMap { MusicItemID($0) }
+                playlist = try await MLibrary.createPlaylist(with: title, songIds: musicItemIDs)
             } catch {
                 print(error)
             }
@@ -104,12 +129,15 @@ struct NewPlaylist: View {
 
 #Preview {
     @Previewable @State var initial: Spot = .preview
-    
+
     VStack {}
         .popover(isPresented: .constant(true)) {
-            NewPlaylist(initial: initial.shazamStreams ?? [], playlistID: .constant(nil))
-                .environment(SheetProvider())
-                .environment(MusicProvider())
-                .modelContainer(PreviewSampleData.container)
+            NewPlaylist(
+                initial: initial.shazamStreams ?? [],
+                playlist: .constant(nil)
+            )
+            .environment(SheetProvider())
+            .environment(MusicProvider())
+            .modelContainer(PreviewSampleData.container)
         }
 }

@@ -1,5 +1,5 @@
 {
-  "originHash" : "127d56d5a49ec4f7d15814fed599650c14380f04bfe0fc631cee1ee91acb3e6f",
+  "originHash" : "00ed271770f531ffa5a3de93dc29d41dbed33e832e24a7aed9c6516324b1e581",
   "pins" : [
     {
       "identity" : "kingfisher",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "2015fda791daa72c8058619545a593bf8c1dd59f",
         "version" : "8.5.0"
+      }
+    },
+    {
+      "identity" : "musadorakit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/rryam/MusadoraKit.git",
+      "state" : {
+        "revision" : "bc0ba820304a41fd844d37b80bf180cf2bfed7e4",
+        "version" : "8.2.1"
       }
     },
     {
