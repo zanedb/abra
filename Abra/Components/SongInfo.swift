@@ -37,35 +37,45 @@ struct SongInfo: View {
     var body: some View {
         VStack(alignment: .center, spacing: 8) {
             if let appleMusicURL = stream.appleMusicURL,
-                let songLinkURL = stream.songLink
+                let appleMusicID = stream.appleMusicID
             {
                 HStack {
                     Button {
                         openURL(appleMusicURL)
                     } label: {
-                        Text("Open in Apple Music")
-                            .lineLimit(1)
-                            .padding()
-                            .frame(maxWidth: .infinity)
+                        Label(
+                            "Open in Music",
+                            systemImage: "arrow.up.right"
+                        )
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
                     }
-                    .disabled(stream.appleMusicURL == nil)
                     .fontWeight(.medium)
-                    .background(.blue)
-                    .foregroundStyle(.background)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .adaptiveGlass(
+                        prominent: true,
+                        tint:
+                            LinearGradient(
+                                colors: [.red.opacity(0.8), .red.opacity(0.9)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                    )
 
                     Button {
-                        openURL(songLinkURL)
+                        music.playPause(id: appleMusicID)
                     } label: {
-                        Text("Song.link")
-                            .padding(.horizontal)
-                            .padding()
+                        Label(
+                            music.nowPlaying == appleMusicID
+                                ? "Pause" : "Play",
+                            systemImage: music.nowPlaying == appleMusicID
+                                ? "pause.fill" : "play.fill"
+                        )
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
                     }
-                    .disabled(stream.appleMusicURL == nil)
                     .fontWeight(.medium)
-                    .background(.thinMaterial)
                     .foregroundStyle(.link)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .adaptiveGlass()
                 }
                 .padding(.top, -12)
                 .padding(.bottom)
