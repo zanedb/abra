@@ -13,6 +13,7 @@
 		2F2D2A3E2ED7818200BC2291 /* View+backportCircleSymbolVariant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */; };
 		2F2D2A412ED79B0100BC2291 /* MusadoraKit in Frameworks */ = {isa = PBXBuildFile; productRef = 2F2D2A402ED79B0100BC2291 /* MusadoraKit */; };
 		2F2D2A452ED7B7E300BC2291 /* Button+adaptiveGlass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F2D2A442ED7B7DD00BC2291 /* Button+adaptiveGlass.swift */; };
+		2F2D2A482ED7B9C700BC2291 /* View+backportSearchable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F2D2A472ED7B9C300BC2291 /* View+backportSearchable.swift */; };
 		2F30A7C72DA77EB500DFE607 /* VariableBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */; };
 		2F3C12D12E3B31930080C310 /* SpotRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3C12D02E3B31920080C310 /* SpotRow.swift */; };
 		2F3DAB772DA89C69001004B9 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3DAB762DA89C67001004B9 /* OnboardingView.swift */; };
@@ -118,6 +119,7 @@
 		2F1727432C719B2700EEA500 /* Spot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spot.swift; sourceTree = "<group>"; };
 		2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+backportCircleSymbolVariant.swift"; sourceTree = "<group>"; };
 		2F2D2A442ED7B7DD00BC2291 /* Button+adaptiveGlass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Button+adaptiveGlass.swift"; sourceTree = "<group>"; };
+		2F2D2A472ED7B9C300BC2291 /* View+backportSearchable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+backportSearchable.swift"; sourceTree = "<group>"; };
 		2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableBlur.swift; sourceTree = "<group>"; };
 		2F3C12D02E3B31920080C310 /* SpotRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotRow.swift; sourceTree = "<group>"; };
 		2F3DAB762DA89C67001004B9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -345,6 +347,7 @@
 			children = (
 				2F2D2A442ED7B7DD00BC2291 /* Button+adaptiveGlass.swift */,
 				2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */,
+				2F2D2A472ED7B9C300BC2291 /* View+backportSearchable.swift */,
 				2F9090242E61505100828E6D /* UISheetPresentationController++.swift */,
 				2F9090222E614F8300828E6D /* View+PrefersEdgeAttachedInCompactHeight.swift */,
 				2F9090202E614F3E00828E6D /* View+presentationInspector.swift */,
@@ -615,6 +618,7 @@
 				2F6093702A2EDFB30092A6DD /* AbraApp.swift in Sources */,
 				2FE766D22A30515E00952513 /* SongRow.swift in Sources */,
 				2FA7D81C2AC0E9780039AD5C /* ModelContainerPreview.swift in Sources */,
+				2F2D2A482ED7B9C700BC2291 /* View+backportSearchable.swift in Sources */,
 				2F4C61F12E4EBBAA00B1E0AF /* MotionProvider.swift in Sources */,
 				2F8919F02A4442BA0012DFF6 /* SpotsList.swift in Sources */,
 				2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */,

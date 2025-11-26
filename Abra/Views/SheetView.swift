@@ -4,6 +4,7 @@
 //
 
 import SectionedQuery
+import Sentry
 import ShazamKit
 import SwiftData
 import SwiftUI
@@ -63,11 +64,7 @@ struct SheetView: View {
                     SpotsList()
                         .padding(.horizontal)
                         .padding(.vertical, 8)
-                        .scrollTransition(.animated.threshold(.visible(0.4))) { content, phase in
-                            content
-                                .opacity(phase.isIdentity ? 1 : 0)
-                        }
-                        
+
                     songsList
 
                     if spots.isEmpty && shazams.isEmpty {
@@ -88,17 +85,15 @@ struct SheetView: View {
                     }
                 }
             }
-            .searchable(text: $searchText, isPresented: $searchFocused, placement: .toolbar, prompt: "Shazams, Spots, Places, and More")
-            .onScrollGeometryChange(for: CGFloat.self, of: { geometry in
-                geometry.contentOffset.y
-            }) { oldValue, newValue in
-                if oldValue != newValue && newValue > -120 && newValue < 0 {
-                    withAnimation { searchHidden = newValue > -57 }
-                }
-            }
             .toolbar {
-                toolbarItems
+                ToolbarItems
             }
+            .backportSearchable(
+                text: view.searchTextBinding,
+                isPresented: $searchFocused,
+                placement: .toolbar,
+                prompt: "Shazams, Spots, Places, and More"
+            )
         }
         .fullScreenCover(isPresented: shazam.isMatchingBinding) {
             Searching(namespace: animation)
@@ -117,7 +112,7 @@ struct SheetView: View {
             if case .matched(let song) = shazam.status {
                 createShazamStream(song)
             }
-            
+
             if case .error(let error) = shazam.status {
                 handleShazamAPIError(error)
             }
@@ -135,6 +130,79 @@ struct SheetView: View {
             location.requestLocation()
         }
         .sensoryFeedback(.success, trigger: hapticTrigger)
+    }
+
+    @ToolbarContentBuilder
+    private var ToolbarItems: some ToolbarContent {
+        if #available(iOS 26, *) {
+            ToolbarItem(placement: .principal) {
+                TextField(
+                    "Shazams, Spots, Places, and More",
+                    text: view.searchTextBinding
+                )
+                .fontWeight(.medium)
+                .padding(.horizontal)
+                .padding(.trailing, 12)
+                .padding(.vertical, 11)
+                .clipShape(ConcentricRectangle())
+                .glassEffect()
+            }
+
+            ToolbarItem(placement: .primaryAction) {
+                if view.searchText.isEmpty {
+                    Button {
+                        Task {
+                            await shazam.startMatching()
+                        }
+                    } label: {
+                        Image(systemName: "shazam.logo")
+                            .font(.headline)
+                            .contentTransition(.symbolEffect(.replace))
+                            .symbolRenderingMode(.multicolor)
+                            .foregroundStyle(.white)
+                            .matchedTransitionSource(
+                                id: "ShazamButton",
+                                in: animation
+                            )
+                    }
+                    .buttonStyle(GlassProminentButtonStyle())
+                    .accessibilityLabel("Shazam")
+                } else {
+                    Button {
+                        view.searchText = ""
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.headline)
+                            .contentTransition(.symbolEffect(.replace))
+                            .accessibilityLabel("Dismiss Search")
+                            .matchedTransitionSource(
+                                id: "ShazamButton",
+                                in: animation
+                            )
+                    }
+                    .accessibilityLabel("Dismiss Search")
+                }
+            }
+        } else {
+            ToolbarItem(placement: .topBarLeading) {
+                Text("Abra")
+                    .font(.title2.weight(.medium))
+            }
+            ToolbarItem(placement: .automatic) {
+                Button(action: { Task { await shazam.startMatching() } }) {
+                    Image(systemName: "shazam.logo.fill")
+                        .fontWeight(.medium)
+                        .font(.button)
+                        .symbolRenderingMode(.multicolor)
+                        .foregroundStyle(.blue)
+                        .matchedTransitionSource(
+                            id: "ShazamButton",
+                            in: animation
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 
     private var songsList: some View {
@@ -199,20 +267,6 @@ struct SheetView: View {
         .padding(.horizontal)
     }
 
-    // MARK: os18
-    private var shazamButton: some View {
-        Button(action: { Task { await shazam.startMatching() } }) {
-            Image(systemName: "shazam.logo.fill")
-                .fontWeight(.medium)
-                .font(.button)
-                .symbolRenderingMode(.multicolor)
-                .foregroundStyle(.blue)
-                .matchedTransitionSource(id: "ShazamButton", in: animation)
-        }
-        .buttonStyle(.plain)
-    }
-    // end os18
-
     private func song(_ stream: ShazamStream) -> some View {
         SongView(stream: stream)
             .presentationDetents([.fraction(0.50), .large])
@@ -258,7 +312,7 @@ struct SheetView: View {
             guard let errorCode = extractShazamErrorCode(from: error),
                 errorCode != "(null)"
             else { return }
-            //            SentrySDK.capture(error: error)
+            SentrySDK.capture(error: error)
             toast.show(
                 message: errorCode,
                 type: .error,
