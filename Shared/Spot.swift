@@ -57,7 +57,7 @@ import SwiftData
         self.country = locationFrom.country
         self.countryCode = locationFrom.countryCode
     }
-    
+
     init(from featureAnnotation: MKMapFeatureAnnotation) {
         self.name = featureAnnotation.title ?? ""
         self.symbol = ""
@@ -76,10 +76,12 @@ extension Spot {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
-    /// i.e. "San Francisco, CA"
+    /// i.e. "San Francisco, CA" / "Switzerland" / "Unknown"
     public var description: String {
-        if city != nil && state != nil {
-            "\(city!), \(state!)"
+        if let city = city, let state = state {
+            city + ", " + state
+        } else if let country = country {
+            country
         } else {
             "Unknown"
         }
