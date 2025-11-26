@@ -65,9 +65,17 @@ struct SpotsList: View {
         .padding(.horizontal, 6)
         .contextMenu {
             Button(
-                "Play",
-                systemImage: "play.fill",
-                action: { spot.play(music) }
+                spot.streams.compactMap(\.appleMusicID)
+                    .contains(music.nowPlaying ?? "NIL")
+                    ? "Pause" : "Play",
+                systemImage: spot.streams.compactMap(\.appleMusicID)
+                    .contains(music.nowPlaying ?? "NIL")
+                    ? "pause.fill" : "play.fill",
+                action: {
+                    music.playPause(
+                        ids: spot.streams.compactMap(\.appleMusicID)
+                    )
+                }
             )
             Button(
                 "Shuffle",
