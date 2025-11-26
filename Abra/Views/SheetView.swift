@@ -223,8 +223,9 @@ struct SheetView: View {
                     }
                 } header: {
                     Text("\(section.id)")
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(.secondary)
                         .font(.subheadline.weight(.medium))
+                        .textCase(.uppercase)
                         .padding(.horizontal)
                         .padding(.vertical, 4)
                         .frame(maxWidth: .infinity, alignment: .leading)

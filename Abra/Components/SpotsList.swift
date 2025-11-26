@@ -24,8 +24,9 @@ struct SpotsList: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 0) {
                     Text("Spots")
-                        .foregroundStyle(.gray)
                         .font(.subheadline.weight(.medium))
+                        .textCase(.uppercase)
+                        .foregroundStyle(.secondary)
                 }
                 .padding(.bottom, 8)
 
