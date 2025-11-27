@@ -13,12 +13,14 @@ public extension View {
     func backportCircleSymbolVariant(foreground: Color? = nil, fill: Bool = true) -> some View {
         if #available(iOS 26, macOS 26, visionOS 26, *) {
             return self
+                .font(.headline)
                 .symbolVariant(fill ? .fill : .none)
         } else {
             return self
                 .font(foreground != nil ? .buttonLarge : .button)
                 .foregroundStyle(foreground ?? .gray)
-                .symbolVariant(fill ? .circle.fill : .circle)
+                .symbolVariant(.circle.fill)
+//                .symbolVariant(fill ? .circle.fill : .circle)
                 .symbolRenderingMode(.hierarchical)
         }
     }

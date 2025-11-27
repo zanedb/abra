@@ -36,8 +36,9 @@ struct SpotView: View {
                     .foregroundStyle(.gray)
 
                 Text("^[\(spot.streams.count) Song](inflect: true)")
+                    .foregroundStyle(.secondary)
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.gray)
+                    .textCase(.uppercase)
                     .padding(.horizontal)
                     .padding(.top, 12)
 
@@ -56,7 +57,7 @@ struct SpotView: View {
                 .listStyle(.plain)
             }
             .toolbar {
-                toolbarItems
+                ToolbarItems
             }
             .popover(isPresented: $showingIconDesigner) {
                 IconDesigner(
@@ -105,7 +106,7 @@ struct SpotView: View {
     }
 
     @ToolbarContentBuilder
-    private var toolbarItems: some ToolbarContent {
+    private var ToolbarItems: some ToolbarContent {
         ToolbarItem(placement: .primaryAction) {
             DismissButton()
         }
