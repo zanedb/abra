@@ -159,6 +159,12 @@ struct MapView: UIViewControllerRepresentable {
             if let mapView = mapView,
                 let coord = parent.sheetProvider.coordinate
             {
+                // Disable user tracking mode when centering on a selected annotation
+                // This prevents the map from snapping back to user location on iOS 26+
+                if mapView.userTrackingMode != .none {
+                    mapView.setUserTrackingMode(.none, animated: false)
+                }
+
                 // Animate if <10km from current center
                 let center = CLLocation(
                     latitude: mapView.centerCoordinate.latitude,
