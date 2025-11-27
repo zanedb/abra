@@ -39,11 +39,14 @@ class SpotAnnotation: NSObject, MKAnnotation {
 
 final class ShazamAnnotationView: MKAnnotationView {
     private let imageView = UIImageView()
+    private let glassContainerView = UIView()
+    private let glassEffectView = UIVisualEffectView()
     private let size: CGFloat = 32
+    private let borderWidth: CGFloat = 3
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        
+
         collisionMode = .circle
 
         setupUI()
@@ -66,17 +69,52 @@ final class ShazamAnnotationView: MKAnnotationView {
         backgroundColor = .clear
         frame = CGRect(x: 0, y: 0, width: size, height: size)
 
-        imageView.frame = bounds
+        if #available(iOS 26.0, *) {
+            // Create glass container that's slightly larger to show glass border
+            glassContainerView.frame = bounds
+            glassContainerView.backgroundColor = .clear
+            glassContainerView.layer.cornerRadius = 8
+            glassContainerView.clipsToBounds = true
+            if glassContainerView.superview == nil {
+                addSubview(glassContainerView)
+            }
+
+            // Use actual UIGlassEffect for true glass appearance
+            glassEffectView.effect = UIGlassEffect()
+            glassEffectView.frame = glassContainerView.bounds
+            glassEffectView.layer.cornerRadius = 8
+            glassEffectView.clipsToBounds = true
+
+            if glassEffectView.superview == nil {
+                glassContainerView.addSubview(glassEffectView)
+            }
+
+            // Image inset slightly to show glass border
+            let inset = borderWidth
+            imageView.frame = bounds.insetBy(dx: inset, dy: inset)
+            imageView.layer.cornerRadius = 6
+
+            // Add inner shadow to image for depth
+            imageView.layer.shadowColor = UIColor.black.cgColor
+            imageView.layer.shadowOffset = CGSize(width: 0, height: 1)
+            imageView.layer.shadowOpacity = 0.3
+            imageView.layer.shadowRadius = 2
+        } else {
+            // iOS 25 and below - use white background
+            imageView.frame = bounds
+            imageView.layer.cornerRadius = 8
+            imageView.backgroundColor = .systemBackground
+            imageView.layer.borderColor = UIColor.white.cgColor
+            imageView.layer.borderWidth = 2
+        }
+
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 8
-        imageView.backgroundColor = .systemBackground
+        imageView.backgroundColor = .clear
 
-        // White circular outline
-        imageView.layer.borderColor = UIColor.white.cgColor
-        imageView.layer.borderWidth = 2
-
-        addSubview(imageView)
+        if imageView.superview == nil {
+            addSubview(imageView)
+        }
 
         // Subtle shadow (spotlight effect)
         layer.shadowColor = UIColor.black.cgColor
