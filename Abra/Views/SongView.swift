@@ -20,7 +20,7 @@ struct SongView: View {
     @State private var showingConfirmation = false
     @State private var showingPlaylistPicker = false
     @State private var showingLocationPicker = false
-    @State private var existsInLibrary: Bool = false
+    @State private var inLibrary: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -54,6 +54,15 @@ struct SongView: View {
                 LocationPicker(stream: stream)
                     .presentationDetents([.large])
             }
+            .task(id: stream.persistentModelID) {
+                guard let appleMusicID = stream.appleMusicID else { return }
+
+                // Check if song exists in user's library
+                let song = try? await MLibrary.song(
+                    id: MusicItemID(stringLiteral: appleMusicID)
+                )
+                if song != nil { inLibrary = true }
+            }
         }
     }
 
@@ -76,16 +85,10 @@ struct SongView: View {
         if let appleMusicID = stream.appleMusicID {
             ToolbarItem(placement: .bottomBar) {
                 Button {
-                    guard !existsInLibrary else { return }
-
-                    Task {
-                        existsInLibrary = try await MLibrary.addSong(
-                            id: MusicItemID(stringLiteral: appleMusicID)
-                        )
-                    }
+                    addToMusicLibrary(appleMusicID)
                 } label: {
                     Image(
-                        systemName: existsInLibrary ? "checkmark" : "plus"
+                        systemName: inLibrary ? "checkmark" : "plus"
                     )
                 }
                 .backportCircleSymbolVariant()
@@ -163,16 +166,10 @@ struct SongView: View {
                 if let appleMusicID = stream.appleMusicID {
                     ControlGroup {
                         Button(
-                            existsInLibrary ? "Added" : "Add",
-                            systemImage: existsInLibrary ? "checkmark" : "plus",
+                            inLibrary ? "Added" : "Add",
+                            systemImage: inLibrary ? "checkmark" : "plus",
                             action: {
-                                guard !existsInLibrary else { return }
-
-                                Task {
-                                    existsInLibrary = try await MLibrary.addSong(
-                                        id: MusicItemID(stringLiteral: appleMusicID)
-                                    )
-                                }
+                                addToMusicLibrary(appleMusicID)
                             }
                         )
 
@@ -205,6 +202,16 @@ struct SongView: View {
             ) {
                 Button("Delete Song", role: .destructive, action: remove)
             }
+        }
+    }
+
+    private func addToMusicLibrary(_ appleMusicID: String) {
+        guard !inLibrary else { return }
+
+        Task {
+            inLibrary = try await MLibrary.addSong(
+                id: MusicItemID(stringLiteral: appleMusicID)
+            )
         }
     }
 
