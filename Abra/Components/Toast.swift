@@ -70,10 +70,16 @@ struct Toast: View {
         }
         .padding()
         .background {
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Material.thick)
+            if #available(iOS 26.0, *) {
+                ConcentricRectangle()
+                    .fill(.clear)
+                    .glassEffect()
+            } else {
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(Material.thick)
+            }
         }
-        .position(x: UIScreen.main.bounds.width / 2, y: 26)
+        .position(x: UIScreen.main.bounds.width / 2, y: 38/*26*/)
         .transition(.asymmetric(
             insertion: .opacity.animation(.easeInOut(duration: 0.25)),
             removal: .opacity.animation(.easeInOut(duration: 0.25))
