@@ -128,9 +128,7 @@ struct Photos: View {
 
     private var heading: some View {
         Text("Moments")
-            .font(.caption.weight(.medium))
-            .textCase(.uppercase)
-            .foregroundStyle(.secondary)
+            .font(.headline)
             .padding(.horizontal)
     }
 
@@ -185,7 +183,7 @@ struct Photos: View {
     private var permissionView: some View {
         ZStack {
             Rectangle()
-                .fill(.background)
+                .fill(.quinary)
                 .clipShape(.rect(cornerRadius: 14))
 
             VStack {

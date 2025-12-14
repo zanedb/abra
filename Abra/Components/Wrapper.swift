@@ -7,24 +7,41 @@ import SwiftUI
 import _MapKit_SwiftUI
 
 struct Wrapper<Content: View>: View {
+    let padding: Bool
     let content: Content
 
-    init(@ViewBuilder content: () -> Content) {
+    init(padding: Bool = true, @ViewBuilder content: () -> Content) {
+        self.padding = padding
         self.content = content()
     }
 
     var body: some View {
         ZStack {
             Rectangle()
-                .fill(.background)
-                .clipShape(.rect(cornerRadius: 14))
+                .fill(.quinary)
+                .clipShape(.rect(cornerRadius: 18))
 
-            content
-                .padding()
+            if padding {
+                content
+                    .padding()
+            } else {
+                content
+            }
         }
     }
 }
 
+#Preview {
+    VStack {}
+        .sheet(isPresented: .constant(true)) {
+            SongView(stream: .preview)
+                .environment(SheetProvider())
+                .environment(LibraryProvider())
+                .environment(MusicProvider())
+                .environment(LocationProvider())
+                .environment(ShazamProvider())
+        }
+}
 
 #Preview {
     Map()
