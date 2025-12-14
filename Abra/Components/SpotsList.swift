@@ -29,18 +29,17 @@ struct SpotsList: View {
                         .foregroundStyle(.secondary)
                 }
                 .padding(.bottom, 8)
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 0) {
-                        ForEach(spots, id: \.id) { spot in
-                            spotView(spot)
+                
+                Wrapper(padding: false) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 0) {
+                            ForEach(spots, id: \.id) { spot in
+                                spotView(spot)
+                            }
                         }
+                        .padding(.horizontal, 8)
                     }
-                    .padding(.horizontal, 8)
                 }
-                .frame(maxHeight: 96)
-                .background(.background)
-                .clipShape(.rect(cornerRadius: 14))
             }
         }
     }
