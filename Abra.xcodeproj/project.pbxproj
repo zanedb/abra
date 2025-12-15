@@ -43,6 +43,7 @@
 		2F736BBB2DBD9E120078F1BB /* ShazamProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */; };
 		2F736BBD2DC04ED20078F1BB /* LocationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */; };
 		2F736BBF2DC05A6C0078F1BB /* ToastProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBE2DC05A6C0078F1BB /* ToastProvider.swift */; };
+		2F7EDBD72EEF9A8800CDAEBC /* Date++.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7EDBD62EEF9A8700CDAEBC /* Date++.swift */; };
 		2F8908882C73106D0002850C /* Photos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8908872C73106D0002850C /* Photos.swift */; };
 		2F8919F02A4442BA0012DFF6 /* SpotsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8919EF2A4442BA0012DFF6 /* SpotsList.swift */; };
 		2F9090212E614F4C00828E6D /* View+presentationInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9090202E614F3E00828E6D /* View+presentationInspector.swift */; };
@@ -150,6 +151,7 @@
 		2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamProvider.swift; sourceTree = "<group>"; };
 		2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationProvider.swift; sourceTree = "<group>"; };
 		2F736BBE2DC05A6C0078F1BB /* ToastProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastProvider.swift; sourceTree = "<group>"; };
+		2F7EDBD62EEF9A8700CDAEBC /* Date++.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date++.swift"; sourceTree = "<group>"; };
 		2F8908872C73106D0002850C /* Photos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photos.swift; sourceTree = "<group>"; };
 		2F8919EF2A4442BA0012DFF6 /* SpotsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotsList.swift; sourceTree = "<group>"; };
 		2F9090202E614F3E00828E6D /* View+presentationInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+presentationInspector.swift"; sourceTree = "<group>"; };
@@ -342,6 +344,7 @@
 		2F90901F2E614EE300828E6D /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				2F7EDBD62EEF9A8700CDAEBC /* Date++.swift */,
 				2F2D2A442ED7B7DD00BC2291 /* Button+adaptiveGlass.swift */,
 				2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */,
 				2F2D2A472ED7B9C300BC2291 /* View+backportSearchable.swift */,
@@ -604,6 +607,7 @@
 				2FC1E0952A622A7B00EF92D4 /* IconDesigner.swift in Sources */,
 				2F3DAB792DA8C361001004B9 /* Utils.swift in Sources */,
 				2F8908882C73106D0002850C /* Photos.swift in Sources */,
+				2F7EDBD72EEF9A8800CDAEBC /* Date++.swift in Sources */,
 				2FEACDF72C7317AF00F79E2D /* LibraryProvider.swift in Sources */,
 				2F9D49532A79CECE002CB9E5 /* SpotView.swift in Sources */,
 				2F4C61F32E4EC48900B1E0AF /* Waveform.swift in Sources */,
@@ -888,7 +892,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -926,7 +930,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
