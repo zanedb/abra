@@ -63,21 +63,15 @@ extension Date {
     }
 
     var day: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM d"
-        return formatter.string(from: self)
+        self.formatted(.dateTime.month().day())
     }
 
     var month: String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MMMM"
-        return dateFormatter.string(from: self)
+        self.formatted(.dateTime.month())
     }
 
     var year: String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy"
-        return dateFormatter.string(from: self)
+        self.formatted(.dateTime.year())
     }
 
     var timeSince: String {
@@ -102,9 +96,9 @@ extension Date {
         } else if isInLastThirtyDays {
             return "Last 30 Days"
         } else if isThisYear {
-            return month
+            return self.formatted(.dateTime.month())
         } else {
-            return "\(month) \(year)"
+            return self.formatted(.dateTime.month().year())
         }
     }
 }
