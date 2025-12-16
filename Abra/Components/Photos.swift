@@ -19,7 +19,8 @@ struct Photos: View {
     @Environment(LibraryProvider.self) private var library
     @Environment(\.openURL) private var openURL
 
-    @AppStorage("hasRequestedPhotosAuthorization") var requestedAuthorization: Bool = false
+    @AppStorage("hasRequestedPhotosAuthorization") var requestedAuthorization:
+        Bool = false
     @AppStorage("hasIgnoredPhotosRequest") var ignoredRequest: Bool = false
 
     @Namespace var transitionNamespace
@@ -57,17 +58,25 @@ struct Photos: View {
                 var momentDict: [String: Moment] = [:]
 
                 for stream in streams {
-                    let photos = library.fetchSelectedPhotos(date: stream.timestamp, location: stream.location)
+                    let photos = library.fetchSelectedPhotos(
+                        date: stream.timestamp,
+                        location: stream.location
+                    )
                     guard !photos.isEmpty else { continue }
 
                     // Create a key based on date (day) and place to group similar moments
                     let calendar = Calendar.current
-                    let dayComponent = calendar.startOfDay(for: stream.timestamp)
-                    let key = "\(stream.place)_\(dayComponent.timeIntervalSince1970)"
+                    let dayComponent = calendar.startOfDay(
+                        for: stream.timestamp
+                    )
+                    let key =
+                        "\(stream.place)_\(dayComponent.timeIntervalSince1970)"
 
                     if var existingMoment = momentDict[key] {
                         // Add this stream to existing moment if photos are the same
-                        let existingPhotoIds = Set(existingMoment.phAssets.map(\.localIdentifier))
+                        let existingPhotoIds = Set(
+                            existingMoment.phAssets.map(\.localIdentifier)
+                        )
                         let newPhotoIds = Set(photos.map(\.localIdentifier))
 
                         if existingPhotoIds == newPhotoIds {
@@ -96,7 +105,9 @@ struct Photos: View {
                     }
                 }
 
-                moments = Array(momentDict.values).sorted { $0.timestamp > $1.timestamp }.reversed()
+                moments = Array(momentDict.values).sorted {
+                    $0.timestamp > $1.timestamp
+                }.reversed()
             }
         }
     }
@@ -104,11 +115,9 @@ struct Photos: View {
     var body: some View {
         VStack(alignment: .leading) {
             if library.authorized && !moments.isEmpty {
-                heading
-                libraryView
+                LibraryView
             } else if !library.authorized && stream != nil {
-                heading
-                permissionView
+                PermissionView
             }
         }
         .task(id: id) {
@@ -126,61 +135,73 @@ struct Photos: View {
         }
     }
 
-    private var heading: some View {
-        Text("Moments")
-            .font(.headline)
-            .padding(.horizontal)
-    }
-
-    private var libraryView: some View {
+    private var LibraryView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack {
                 if moments.count > 1 {
                     ForEach(moments.reversed(), id: \.id) { mo in
-                        Thumbnail(assetLocalId: mo.phAssets.first!.localIdentifier, targetSize: .init(width: 384, height: 576))
-                            .aspectRatio(contentMode: .fill)
-                            .aspectRatio(2 / 3, contentMode: .fit)
-                            .matchedTransitionSource(id: mo.id, in: transitionNamespace)
-                            .onTapGesture {
-                                moment = mo
+                        Thumbnail(
+                            assetLocalId: mo.phAssets.first!.localIdentifier,
+                            targetSize: .init(width: 384, height: 576)
+                        )
+                        .aspectRatio(contentMode: .fill)
+                        .aspectRatio(2 / 3, contentMode: .fit)
+                        .matchedTransitionSource(
+                            id: mo.id,
+                            in: transitionNamespace
+                        )
+                        .onTapGesture {
+                            moment = mo
+                        }
+                        .overlay(alignment: .bottomLeading) {
+                            HStack(alignment: .bottom) {
+                                Text(mo.timestamp.day)
+                                    .font(.headline)
+                                    .foregroundStyle(.white)
+                                    .padding()
+                                Spacer()
                             }
-                            .overlay(alignment: .bottomLeading) {
-                                HStack(alignment: .bottom) {
-                                    Text(mo.timestamp.day)
-                                        .font(.headline)
-                                        .foregroundStyle(.white)
-                                        .padding()
-                                    Spacer()
-                                }
-                                .frame(maxWidth: .infinity)
-                                .background(.thinMaterial)
-                            }
-                            .clipShape(RoundedRectangle(
-                                cornerRadius: 8
-                            ))
+                            .frame(maxWidth: .infinity)
+                            .background(.thinMaterial)
+                        }
+                        .clipShape(
+                            RoundedRectangle(
+                                cornerRadius: 18
+                            )
+                        )
                     }
                 } else if let thisMoment = moments.first {
                     ForEach(thisMoment.phAssets, id: \.self) { asset in
-                        Thumbnail(assetLocalId: asset.localIdentifier, targetSize: .init(width: 384, height: 576))
-                            .aspectRatio(contentMode: .fill)
-                            .aspectRatio(2 / 3, contentMode: .fit)
-                            .matchedTransitionSource(id: "MomentGallery", in: transitionNamespace)
-                            .clipShape(RoundedRectangle(
-                                cornerRadius: 8
-                            ))
-                            .onTapGesture {
-                                moment = thisMoment
-                            }
+                        Thumbnail(
+                            assetLocalId: asset.localIdentifier,
+                            targetSize: .init(width: 384, height: 576)
+                        )
+                        .aspectRatio(contentMode: .fill)
+                        .aspectRatio(2 / 3, contentMode: .fit)
+                        .matchedTransitionSource(
+                            id: "MomentGallery",
+                            in: transitionNamespace
+                        )
+                        .clipShape(
+                            RoundedRectangle(
+                                cornerRadius: 18
+                            )
+                        )
+                        .onTapGesture {
+                            // TODO: if moment has single photo, open PhotoView instead
+                            moment = thisMoment
+                        }
                     }
                 }
             }
             .padding(.horizontal)
             .frame(height: 192)
         }
+        .padding(.top, -8)
         .padding(.bottom, 8)
     }
 
-    private var permissionView: some View {
+    private var PermissionView: some View {
         ZStack {
             Rectangle()
                 .fill(.quinary)
@@ -192,21 +213,31 @@ struct Photos: View {
                     .foregroundStyle(.gray)
                     .multilineTextAlignment(.center)
 
-                Button(action: {
-                    if requestedAuthorization {
-                        // If we've already prompted, go to app-specific settings
-                        openURL(URL(string: UIApplication.openSettingsURLString)!)
-                    } else {
-                        loadPhotos()
-                    }
-                }, label: {
-                    HStack {
-                        Image(systemName: requestedAuthorization ? "xmark.app" : "photo.stack")
+                Button(
+                    action: {
+                        if requestedAuthorization {
+                            // If we've already prompted, go to app-specific settings
+                            openURL(
+                                URL(
+                                    string: UIApplication.openSettingsURLString
+                                )!
+                            )
+                        } else {
+                            loadPhotos()
+                        }
+                    },
+                    label: {
+                        HStack {
+                            Image(
+                                systemName: requestedAuthorization
+                                    ? "xmark.app" : "photo.stack"
+                            )
                             .font(.system(size: 20))
-                        Text("Full Photo Library")
-                            .font(.callout)
+                            Text("Full Photo Library")
+                                .font(.callout)
+                        }
                     }
-                })
+                )
                 .padding(.top, 4)
             }
             .padding()
@@ -215,15 +246,15 @@ struct Photos: View {
             // MARK: "Ignore" button disabled until Settings view is implemented
 
             // Show ignore button if user has interacted with permission prompt
-//            HStack(alignment: .top) {
-//                Spacer()
-//                Button(action: {
-//                    ignoredRequest = true
-//                }) {
-//                    Image(systemName: "xmark")
-//                }
-//                .tint(.primary)
-//            }
+            //            HStack(alignment: .top) {
+            //                Spacer()
+            //                Button(action: {
+            //                    ignoredRequest = true
+            //                }) {
+            //                    Image(systemName: "xmark")
+            //                }
+            //                .tint(.primary)
+            //            }
         }
         .padding(.horizontal)
         .padding(.bottom, 8)
@@ -232,7 +263,10 @@ struct Photos: View {
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: ShazamStream.self, configurations: config)
+    let container = try! ModelContainer(
+        for: ShazamStream.self,
+        configurations: config
+    )
 
     let s = ShazamStream.preview
     return Photos(stream: s)
