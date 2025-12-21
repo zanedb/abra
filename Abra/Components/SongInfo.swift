@@ -38,85 +38,8 @@ struct SongInfo: View {
     @State private var loadedMetadata: Bool = false
 
     var body: some View {
-        let t = smooth(expansion)
-        let gatedT = remapHalfRange(t)
-        let opacity = CGFloat(lerp(0, 1, gatedT))
-        let imageSize = CGFloat(lerp(0, 144, gatedT))
-        let imagePadding = CGFloat(lerp(-24, 16, gatedT))
-        let titleFontSize = CGFloat(lerp(20, 22, t))  // .title3 -> .title2
-        let artistFontSize = CGFloat(lerp(13, 20, t))  // .footnote -> .title3
-        let maxWidth = CGFloat(lerp(230, 350, t))
-        let descMaxWidth = CGFloat(lerp(0, 275, gatedT))
-        let descPadding = CGFloat(lerp(0, 16, gatedT))
-        let topPadding = CGFloat(lerp(-52, 8, t))
-
-        VStack(alignment: .center, spacing: 8) {
-            if expansion > 0.5 {
-                KFImage(stream.artworkURL)
-                    .cancelOnDisappear(true)
-                    .resizable()
-                    .placeholder { ProgressView() }
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: imageSize, height: imageSize)
-                    .clipShape(.rect(cornerRadius: 18))
-                    .padding(.bottom, imagePadding)
-                    .opacity(opacity)
-            }
-
-            Text(stream.title)
-                .font(
-                    .system(
-                        size: titleFontSize,
-                        weight: expansion > 0.5 ? .bold : .semibold
-                    )
-                )
-                .lineLimit(1)
-                .frame(maxWidth: maxWidth)
-            Button {
-                sheet.searchText = stream.artist
-                dismiss()
-            } label: {
-                Text(stream.artist)
-                    .lineLimit(1)
-                // If other Shazams by artist exist, indicate via icon
-                if matchedArtistStreams.count > 1 && expansion > 0.5 {
-                    Text("\(matchedArtistStreams.count)")
-                        .font(.footnote)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 1)
-                        .background(.quaternary)
-                        .clipShape(Capsule())
-                        .padding(.leading, -2)
-                }
-            }
-            .font(
-                .system(
-                    size: artistFontSize,
-                    weight: expansion > 0.5 ? .medium : .regular
-                )
-            )
-            .foregroundStyle(expansion > 0.5 ? .red : .secondary)
-            .padding(.top, expansion > 0.5 ? -6 : -8)
-            .frame(maxWidth: maxWidth)
-
-            HStack(spacing: 4) {
-                Text(genre)
-                    .foregroundStyle(.secondary)
-                    .font(.subheadline.weight(.medium))
-                    .lineLimit(1)
-                    .redacted(reason: loadedMetadata ? [] : .placeholder)
-                Text("·")
-                    .foregroundStyle(.secondary)
-                    .font(.subheadline.weight(.medium))
-                Text(released)
-                    .foregroundStyle(.secondary)
-                    .font(.subheadline.weight(.medium))
-                    .lineLimit(1)
-                    .redacted(reason: loadedMetadata ? [] : .placeholder)
-            }
-            .padding(.top, -4)
-            .padding(.bottom, descPadding)
-            .frame(maxWidth: descMaxWidth)
+        VStack(alignment: .center, spacing: 0) {
+            Heading
 
             if let appleMusicURL = stream.appleMusicURL,
                 let appleMusicID = stream.appleMusicID
@@ -159,14 +82,96 @@ struct SongInfo: View {
                             )
                     )
                 }
-                .padding(.bottom)
+                .padding(.bottom, 8)
             }
         }
         .padding(.horizontal)
-        .padding(.top, topPadding)
         .frame(maxWidth: .infinity, alignment: .center)
         .task(id: stream.persistentModelID, loadMetadata)
 
+    }
+
+    private var Heading: some View {
+        let t = smooth(expansion)
+        let gatedT = remapHalfRange(t)
+        let opacity = CGFloat(lerp(-0.25, 1, t))
+        let imagePadding = CGFloat(lerp(-144, 16, t))
+        let imageScale = CGFloat(lerp(0.5, 1, gatedT))
+        let titleFontSize = CGFloat(lerp(20, 22, t))  // .title3 -> .title2
+        let artistFontSize = CGFloat(lerp(13, 20, t))  // .footnote -> .title3
+        let maxWidth = CGFloat(lerp(230, 350, t))
+        let descMaxWidth = CGFloat(lerp(0, 275, gatedT))
+        let descPadding = CGFloat(lerp(0, 16, t))
+        let topPadding = CGFloat(lerp(-52, 8, t))
+
+        return VStack(alignment: .center, spacing: 0) {
+            KFImage(stream.artworkURL)
+                .cancelOnDisappear(true)
+                .resizable()
+                .placeholder { ProgressView() }
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 144, height: 144)
+                .clipShape(.rect(cornerRadius: 18))
+                .padding(.bottom, imagePadding)
+                .opacity(opacity)
+                .scaleEffect(imageScale)
+
+            Text(stream.title)
+                .font(
+                    .system(
+                        size: titleFontSize,
+                        weight: expansion > 0.5 ? .bold : .semibold
+                    )
+                )
+                .lineLimit(1)
+                .frame(maxWidth: maxWidth)
+            Button {
+                sheet.searchText = stream.artist
+                dismiss()
+            } label: {
+                Text(stream.artist)
+                    .lineLimit(1)
+                // If other Shazams by artist exist, indicate via icon
+                if matchedArtistStreams.count > 1 && expansion > 0.5 {
+                    Text("\(matchedArtistStreams.count)")
+                        .font(.footnote)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 1)
+                        .background(.quaternary)
+                        .clipShape(Capsule())
+                        .padding(.leading, -2)
+                }
+            }
+            .font(
+                .system(
+                    size: artistFontSize,
+                    weight: expansion > 0.5 ? .medium : .regular
+                )
+            )
+            .foregroundStyle(expansion > 0.5 ? .red : .secondary)
+            .padding(.top, expansion > 0.5 ? 2 : 0)
+            .frame(maxWidth: maxWidth)
+
+            HStack(spacing: 4) {
+                Text(genre)
+                    .foregroundStyle(.secondary)
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(1)
+                    .redacted(reason: loadedMetadata ? [] : .placeholder)
+                Text("·")
+                    .foregroundStyle(.secondary)
+                    .font(.subheadline.weight(.medium))
+                Text(released)
+                    .foregroundStyle(.secondary)
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(1)
+                    .redacted(reason: loadedMetadata ? [] : .placeholder)
+            }
+            .padding(.top, 4)
+            .padding(.bottom, descPadding)
+            .frame(maxWidth: descMaxWidth)
+        }
+        .padding(.top, topPadding)
     }
 
     @Sendable private func loadMetadata() async {
