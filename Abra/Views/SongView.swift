@@ -28,11 +28,11 @@ struct SongView: View {
             ScrollView {
                 SongInfo(stream: stream, expansion: expansion)
 
-                SongInfo(stream: stream)
+                Moments(stream: stream)
 
                 SongDiscovered(stream: stream)
 
-                Moments(stream: stream)
+                SongDetails(stream: stream)
             }
             .toolbar {
                 ToolbarItems
