@@ -1,5 +1,5 @@
 //
-//  Photos.swift
+//  Moments.swift
 //  Abra
 //
 
@@ -15,7 +15,7 @@ struct Moment: Identifiable {
     var streams: [ShazamStream] = []
 }
 
-struct Photos: View {
+struct Moments: View {
     @Environment(LibraryProvider.self) private var library
     @Environment(\.openURL) private var openURL
 
@@ -269,7 +269,7 @@ struct Photos: View {
     )
 
     let s = ShazamStream.preview
-    return Photos(stream: s)
+    return Moments(stream: s)
         .modelContainer(container)
         .environment(LibraryProvider())
 }

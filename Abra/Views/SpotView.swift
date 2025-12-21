@@ -31,7 +31,7 @@ struct SpotView: View {
                 heading
                     .padding(.top, -40)
 
-                Photos(spot: spot)
+                Moments(spot: spot)
                     .padding(.top, 8)
                     .foregroundStyle(.gray)
 

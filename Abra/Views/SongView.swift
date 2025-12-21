@@ -41,7 +41,7 @@ struct SongView: View {
 
                 SongDiscovered(stream: stream)
 
-                Photos(stream: stream)
+                Moments(stream: stream)
             }
             .toolbar {
                 ToolbarItems
