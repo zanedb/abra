@@ -10,7 +10,8 @@ import SwiftData
 @Model final class Spot {
     var name: String = ""
     var symbol: String = "mappin.and.ellipse"
-    @Attribute(.transformable(by: UIColorValueTransformer.self)) var color: UIColor = UIColor.systemIndigo
+    @Attribute(.transformable(by: UIColorValueTransformer.self)) var color:
+        UIColor = UIColor.systemIndigo
 
     var latitude: Double = 37.721941
     var longitude: Double = -122.4739084
@@ -31,7 +32,14 @@ import SwiftData
     var createdAt: Date = Date.now
     var updatedAt: Date = Date.now
 
-    init(name: String = "", symbol: String = "house", color: UIColor = .systemIndigo, latitude: Double = 37.3316876, longitude: Double = -122.0327261, shazamStreams: [ShazamStream] = []) {
+    init(
+        name: String = "",
+        symbol: String = "house",
+        color: UIColor = .systemIndigo,
+        latitude: Double = 37.3316876,
+        longitude: Double = -122.0327261,
+        shazamStreams: [ShazamStream] = []
+    ) {
         self.name = name
         self.symbol = symbol
         self.color = color
@@ -45,7 +53,7 @@ import SwiftData
     init(locationFrom: ShazamStream, streams: [ShazamStream]) {
         self.name = ""
         self.symbol = ""
-        self.color = .systemGray3 // TODO: random selection
+        self.color = .systemGray3  // TODO: random selection
         self.shazamStreams = streams
         self.createdAt = .now
         self.updatedAt = .now
@@ -61,13 +69,32 @@ import SwiftData
     init(from featureAnnotation: MKMapFeatureAnnotation) {
         self.name = featureAnnotation.title ?? ""
         self.symbol = ""
-        self.color = featureAnnotation.iconStyle?.backgroundColor ?? .systemGray3
+        self.color =
+            featureAnnotation.iconStyle?.backgroundColor ?? .systemGray3
         self.shazamStreams = []
         self.createdAt = .now
         self.updatedAt = .now
 
         self.latitude = featureAnnotation.coordinate.latitude
         self.longitude = featureAnnotation.coordinate.longitude
+    }
+    
+    @available(iOS 26.0, *)
+    init(mapItem: MKMapItem) {
+        self.name = mapItem.name ?? ""
+        self.symbol = "" // TODO: get from MKMapItem. easy.
+        self.color = .systemGray3  // TODO: get from MKMapItem. easy.
+        self.mapItemIdentifier = mapItem.identifier?.rawValue
+        
+        self.latitude = mapItem.location.coordinate.latitude
+        self.longitude = mapItem.location.coordinate.longitude
+        self.city = mapItem.addressRepresentations?.cityName
+        self.state = mapItem.addressRepresentations?.cityWithContext?.split(separator: ", ").last.map(String.init) // does this work?
+        self.country = mapItem.addressRepresentations?.regionName
+        self.countryCode = "" // TODO
+        
+        self.createdAt = .now
+        self.updatedAt = .now
     }
 }
 
@@ -118,11 +145,14 @@ extension Spot {
         let lonMax = longitude + halfPrecision
 
         let predicate = #Predicate<ShazamStream> {
-            $0.latitude >= latMin && $0.latitude < latMax &&
-                $0.longitude >= lonMin && $0.longitude < lonMax && $0.spot == nil
+            $0.latitude >= latMin && $0.latitude < latMax
+                && $0.longitude >= lonMin && $0.longitude < lonMax
+                && $0.spot == nil
         }
 
-        let fetchDescriptor = FetchDescriptor<ShazamStream>(predicate: predicate)
+        let fetchDescriptor = FetchDescriptor<ShazamStream>(
+            predicate: predicate
+        )
 
         do {
             let streams = try context.fetch(fetchDescriptor)
@@ -132,8 +162,12 @@ extension Spot {
         }
     }
 
-    public func affiliateMapItem(from mapFeatureAnnotation: MKMapFeatureAnnotation) async {
-        let mapItem = try? await MKMapItemRequest(mapFeatureAnnotation: mapFeatureAnnotation).mapItem
+    public func affiliateMapItem(
+        from mapFeatureAnnotation: MKMapFeatureAnnotation
+    ) async {
+        let mapItem = try? await MKMapItemRequest(
+            mapFeatureAnnotation: mapFeatureAnnotation
+        ).mapItem
 
         city = mapItem?.placemark.locality
         state = mapItem?.placemark.administrativeArea
@@ -145,9 +179,16 @@ extension Spot {
         url = mapItem?.url
         timeZoneIdentifier = mapItem?.timeZone?.identifier
     }
-    
+
     static var preview: Spot {
-        Spot(name: "Sioux Falls", symbol: "magnifyingglass", latitude: 37.3316876, longitude: -122.0327261, shazamStreams: [ShazamStream.preview])
+//        Spot(locationFrom: .preview, streams: [.preview])
+        Spot(
+            name: "Sioux Falls",
+            symbol: "magnifyingglass",
+            latitude: 37.3316876,
+            longitude: -122.0327261,
+            shazamStreams: [ShazamStream.preview]
+        )
     }
 }
 
@@ -161,7 +202,10 @@ final class UIColorValueTransformer: ValueTransformer {
     override func transformedValue(_ value: Any?) -> Any? {
         guard let color = value as? UIColor else { return nil }
         do {
-            let data = try NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: true)
+            let data = try NSKeyedArchiver.archivedData(
+                withRootObject: color,
+                requiringSecureCoding: true
+            )
             return data
         } catch {
             return nil
@@ -172,7 +216,10 @@ final class UIColorValueTransformer: ValueTransformer {
         guard let data = value as? Data else { return nil }
 
         do {
-            let color = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data)
+            let color = try NSKeyedUnarchiver.unarchivedObject(
+                ofClass: UIColor.self,
+                from: data
+            )
             return color
         } catch {
             return nil

@@ -9,6 +9,7 @@ import Foundation
 import MapKit
 import ShazamKit
 import SwiftData
+import GeoToolbox
 
 @Model final class ShazamStream {
     var timestamp: Date = Date.now
@@ -165,6 +166,20 @@ extension ShazamStream {
             timestamp: timestamp
         )
     }
+    
+    /*
+    @available(iOS 26.0, *)
+    public var placeDescriptor: PlaceDescriptor {
+        PlaceDescriptor(
+            representations: [.deviceLocation(location)],
+            commonName: <#T##String?#>
+        )
+    }
+    
+    
+    let request = MKMapItemRequest(placeDescriptor: placeDescriptor)
+    mapItem = try await request.mapItem
+     */
 
     public var cityState: String {
         if let city = city, let state = state {
