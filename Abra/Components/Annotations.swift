@@ -126,10 +126,9 @@ final class ShazamAnnotationView: MKAnnotationView {
 
     private func loadImage() {
         guard let shazamAnnotation = annotation as? ShazamAnnotation else { return }
-
+        
         imageView.kf.setImage(
             with: shazamAnnotation.shazamStream.artworkURL,
-            placeholder: UIImage(systemName: "exclamationmark.circle.fill"),
             options: [
                 .transition(.fade(0.2)),
                 .cacheOriginalImage
