@@ -35,17 +35,19 @@ struct SongInfo: View {
     @State private var albumTitle: String = "Apple vs. 7G"
     @State private var released: String = "2021"
     @State private var genre: String = "Electronic"
-    @State private var loadedMetadata: Bool = true//false
+    @State private var loadedMetadata: Bool = false
 
     var body: some View {
         let t = smooth(expansion)
-        let opacity = CGFloat(lerp(-1, 1, t))
-        let imageSize = CGFloat(lerp(0, 144, t)) // 144
-        let imagePadding = CGFloat(lerp(-144, 16, t))
+        let gatedT = remapHalfRange(t)
+        let opacity = CGFloat(lerp(0, 1, gatedT))
+        let imageSize = CGFloat(lerp(0, 144, gatedT))
+        let imagePadding = CGFloat(lerp(-24, 16, gatedT))
         let titleFontSize = CGFloat(lerp(20, 22, t))  // .title3 -> .title2
         let artistFontSize = CGFloat(lerp(13, 20, t))  // .footnote -> .title3
         let maxWidth = CGFloat(lerp(230, 350, t))
-        let descPadding = CGFloat(lerp(-12, 16, t))
+        let descMaxWidth = CGFloat(lerp(0, 275, gatedT))
+        let descPadding = CGFloat(lerp(0, 16, gatedT))
         let topPadding = CGFloat(lerp(-52, 8, t))
 
         VStack(alignment: .center, spacing: 8) {
@@ -114,7 +116,7 @@ struct SongInfo: View {
             }
             .padding(.top, -4)
             .padding(.bottom, descPadding)
-            .opacity(opacity)
+            .frame(maxWidth: descMaxWidth)
 
             if let appleMusicURL = stream.appleMusicURL,
                 let appleMusicID = stream.appleMusicID
