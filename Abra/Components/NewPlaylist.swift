@@ -72,6 +72,7 @@ struct NewPlaylist: View {
                             }
                         }
                     )
+                    .padding(.vertical, -4)
                 }
                 .listStyle(.inset)
             }
@@ -137,6 +138,7 @@ struct NewPlaylist: View {
                 playlist: .constant(nil)
             )
             .environment(SheetProvider())
+            .environment(ShazamProvider())
             .environment(MusicProvider())
             .modelContainer(PreviewSampleData.container)
         }

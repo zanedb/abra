@@ -197,8 +197,6 @@ struct Moments: View {
             .padding(.horizontal)
             .frame(height: 192)
         }
-        .padding(.top, -8)
-        .padding(.bottom, 8)
     }
 
     private var PermissionView: some View {
