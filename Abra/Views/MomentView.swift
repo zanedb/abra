@@ -67,6 +67,7 @@ struct MomentView: View {
             }
         }
 
+        /*
         ToolbarItem(placement: .bottomBar) {
             ForEach(moment.streams, id: \.id) { stream in
                 SongRowMini(
@@ -80,6 +81,7 @@ struct MomentView: View {
                 .padding(.horizontal)
             }
         }
+        */
     }
 
     private var Images: some View {

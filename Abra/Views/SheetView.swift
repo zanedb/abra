@@ -65,7 +65,7 @@ struct SheetView: View {
                         .padding(.horizontal)
                         .padding(.vertical, 8)
 
-                    songsList
+                    SongsList
 
                     if spots.isEmpty && shazams.isEmpty {
                         Text("Let‘s Discover")
@@ -192,7 +192,6 @@ struct SheetView: View {
                 Button(action: { Task { await shazam.startMatching() } }) {
                     Image(systemName: "shazam.logo.fill")
                         .fontWeight(.medium)
-                        .font(.button)
                         .symbolRenderingMode(.multicolor)
                         .foregroundStyle(.blue)
                         .matchedTransitionSource(
@@ -205,7 +204,7 @@ struct SheetView: View {
         }
     }
 
-    private var songsList: some View {
+    private var SongsList: some View {
         LazyVStack(alignment: .leading, spacing: 0) {
             ForEach(timeSectionedStreams) { section in
                 Section {

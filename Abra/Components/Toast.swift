@@ -79,7 +79,7 @@ struct Toast: View {
                     .fill(Material.thick)
             }
         }
-        .position(x: UIScreen.main.bounds.width / 2, y: 38/*26*/)
+        .position(x: UIScreen.main.bounds.width / 2, y: 38/*26*/) // TODO: place on top
         .transition(.asymmetric(
             insertion: .opacity.animation(.easeInOut(duration: 0.25)),
             removal: .opacity.animation(.easeInOut(duration: 0.25))

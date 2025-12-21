@@ -117,6 +117,7 @@ struct SearchResult: Identifiable, Hashable {
 
         return response.mapItems.compactMap { mapItem in
             guard let location = mapItem.placemark.location?.coordinate else { return nil }
+            // mapItem.location.coordinate in os26
 
             return .init(location: location)
         }
