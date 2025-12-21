@@ -21,21 +21,12 @@ struct SongView: View {
     @State private var showingPlaylistPicker = false
     @State private var showingLocationPicker = false
     @State private var inLibrary: Bool = false
+    @State private var expansion: CGFloat = 0
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 2) {
-                    Text(stream.title)
-                        .font(.title3.weight(.bold))
-                        .lineLimit(1)
-                    Text(stream.artist)
-                        .font(.footnote.weight(.medium))
-                        .lineLimit(1)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: 250)
-                .padding(.top, -48)
+                SongInfo(stream: stream, expansion: expansion)
 
                 SongInfo(stream: stream)
 
@@ -62,6 +53,16 @@ struct SongView: View {
                     id: MusicItemID(stringLiteral: appleMusicID)
                 )
                 if song != nil { inLibrary = true }
+            }
+            .onGeometryChange(for: CGSize.self) { proxy in
+                proxy.size
+            } action: {
+                // TODO: test this on iPad / come up with a better system..
+                self.expansion =
+                    (($0.height - 300) / (UIScreen.main.bounds.height - 520))
+                    .clamped(
+                        to: 0...1
+                    )
             }
         }
     }
@@ -231,6 +232,7 @@ struct SongView: View {
     VStack {}
         .sheet(isPresented: .constant(true)) {
             SongView(stream: .preview)
+                .presentationDetents([.medium, .large])
                 .environment(SheetProvider())
                 .environment(LibraryProvider())
                 .environment(MusicProvider())

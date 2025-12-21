@@ -3,6 +3,7 @@
 //  Abra
 //
 
+import Kingfisher
 import MusicKit
 import SwiftData
 import SwiftUI
@@ -15,11 +16,13 @@ struct SongInfo: View {
     @Environment(SheetProvider.self) private var sheet
 
     var stream: ShazamStream
+    var expansion: CGFloat // amount from 0-1
 
     @Query var matchedArtistStreams: [ShazamStream]
 
-    init(stream: ShazamStream) {
+    init(stream: ShazamStream, expansion: CGFloat) {
         self.stream = stream
+        self.expansion = expansion
 
         // Find instances of the matching artist
         let artist = stream.artist
@@ -32,14 +35,107 @@ struct SongInfo: View {
     @State private var albumTitle: String = "Apple vs. 7G"
     @State private var released: String = "2021"
     @State private var genre: String = "Electronic"
-    @State private var loadedMetadata: Bool = false
+    @State private var loadedMetadata: Bool = true//false
 
     var body: some View {
+        let t = smooth(expansion)
+        let opacity = CGFloat(lerp(-1, 1, t))
+        let imageSize = CGFloat(lerp(0, 144, t)) // 144
+        let imagePadding = CGFloat(lerp(-144, 16, t))
+        let titleFontSize = CGFloat(lerp(20, 22, t))  // .title3 -> .title2
+        let artistFontSize = CGFloat(lerp(13, 20, t))  // .footnote -> .title3
+        let maxWidth = CGFloat(lerp(230, 350, t))
+        let descPadding = CGFloat(lerp(-12, 16, t))
+        let topPadding = CGFloat(lerp(-52, 8, t))
+
         VStack(alignment: .center, spacing: 8) {
+            if expansion > 0.5 {
+                KFImage(stream.artworkURL)
+                    .cancelOnDisappear(true)
+                    .resizable()
+                    .placeholder { ProgressView() }
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: imageSize, height: imageSize)
+                    .clipShape(.rect(cornerRadius: 18))
+                    .padding(.bottom, imagePadding)
+                    .opacity(opacity)
+            }
+
+            Text(stream.title)
+                .font(
+                    .system(
+                        size: titleFontSize,
+                        weight: expansion > 0.5 ? .bold : .semibold
+                    )
+                )
+                .lineLimit(1)
+                .frame(maxWidth: maxWidth)
+            Button {
+                sheet.searchText = stream.artist
+                dismiss()
+            } label: {
+                Text(stream.artist)
+                    .lineLimit(1)
+                // If other Shazams by artist exist, indicate via icon
+                if matchedArtistStreams.count > 1 && expansion > 0.5 {
+                    Text("\(matchedArtistStreams.count)")
+                        .font(.footnote)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 1)
+                        .background(.quaternary)
+                        .clipShape(Capsule())
+                        .padding(.leading, -2)
+                }
+            }
+            .font(
+                .system(
+                    size: artistFontSize,
+                    weight: expansion > 0.5 ? .medium : .regular
+                )
+            )
+            .foregroundStyle(expansion > 0.5 ? .red : .secondary)
+            .padding(.top, expansion > 0.5 ? -6 : -8)
+            .frame(maxWidth: maxWidth)
+
+            HStack(spacing: 4) {
+                Text(genre)
+                    .foregroundStyle(.secondary)
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(1)
+                    .redacted(reason: loadedMetadata ? [] : .placeholder)
+                Text("·")
+                    .foregroundStyle(.secondary)
+                    .font(.subheadline.weight(.medium))
+                Text(released)
+                    .foregroundStyle(.secondary)
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(1)
+                    .redacted(reason: loadedMetadata ? [] : .placeholder)
+            }
+            .padding(.top, -4)
+            .padding(.bottom, descPadding)
+            .opacity(opacity)
+
             if let appleMusicURL = stream.appleMusicURL,
                 let appleMusicID = stream.appleMusicID
             {
                 HStack {
+                    Button {
+                        music.playPause(id: appleMusicID)
+                    } label: {
+                        Label(
+                            music.nowPlaying == appleMusicID
+                                ? "Pause" : "Play",
+                            systemImage: music.nowPlaying == appleMusicID
+                                ? "pause.fill" : "play.fill"
+                        )
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
+                    }
+                    .fontWeight(.medium)
+                    .foregroundStyle(.link)
+                    .adaptiveGlass()
+
                     Button {
                         openURL(appleMusicURL)
                     } label: {
@@ -60,87 +156,12 @@ struct SongInfo: View {
                                 endPoint: .bottom
                             )
                     )
-
-                    Button {
-                        music.playPause(id: appleMusicID)
-                    } label: {
-                        Label(
-                            music.nowPlaying == appleMusicID
-                                ? "Pause" : "Play",
-                            systemImage: music.nowPlaying == appleMusicID
-                                ? "pause.fill" : "play.fill"
-                        )
-                        .padding(.vertical, 8)
-                        .frame(maxWidth: .infinity)
-                    }
-                    .fontWeight(.medium)
-                    .foregroundStyle(.link)
-                    .adaptiveGlass()
                 }
-                .padding(.top, -12)
                 .padding(.bottom)
             }
-
-            HStack(spacing: 6) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Album")
-                        .font(.caption.weight(.medium))
-                        .textCase(.uppercase)
-                        .foregroundStyle(.secondary)
-                    Text(albumTitle)
-                        .fontWeight(.medium)
-                        .lineLimit(1)
-                        .redacted(reason: loadedMetadata ? [] : .placeholder)
-                }
-
-                Spacer()
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Genre")
-                        .font(.caption.weight(.medium))
-                        .textCase(.uppercase)
-                        .foregroundStyle(.secondary)
-                    Text(genre)
-                        .fontWeight(.medium)
-                        .lineLimit(1)
-                        .redacted(reason: loadedMetadata ? [] : .placeholder)
-                }
-
-                Spacer()
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Released")
-                        .font(.caption.weight(.medium))
-                        .textCase(.uppercase)
-                        .foregroundStyle(.secondary)
-                    Text(released)
-                        .fontWeight(.medium)
-                        .lineLimit(1)
-                        .redacted(reason: loadedMetadata ? [] : .placeholder)
-                }
-            }
-
-            if matchedArtistStreams.count > 1 {
-                Wrapper {
-                    Button {
-                        sheet.searchText = stream.artist
-                        dismiss()
-                    } label: {
-                        Image(systemName: "list.bullet.indent")
-                            .foregroundStyle(.link)
-                        Text(
-                            "^[\(matchedArtistStreams.count) song](inflect: true) by \(stream.artist) in library."
-                        )
-                        .foregroundStyle(.link)
-                        .lineLimit(1)
-                        Spacer()
-                    }
-                    .font(.callout)
-                }
-                .padding(.top, 12)
-            }
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.top, topPadding)
         .frame(maxWidth: .infinity, alignment: .center)
         .task(id: stream.persistentModelID, loadMetadata)
 
@@ -194,6 +215,7 @@ struct SongInfo: View {
     VStack {}
         .sheet(isPresented: .constant(true)) {
             SongView(stream: .preview)
+                .presentationDetents([.medium, .large])
                 .environment(SheetProvider())
                 .environment(LibraryProvider())
                 .environment(MusicProvider())

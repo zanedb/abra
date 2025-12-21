@@ -124,9 +124,9 @@ public extension Date {
         } else if isInLastThirtyDays {
             return "Last 30 Days"
         } else if isThisYear {
-            return self.formatted(.dateTime.month())
+            return self.formatted(.dateTime.month(.wide))
         } else {
-            return self.formatted(.dateTime.month().year())
+            return self.formatted(.dateTime.month(.wide).year())
         }
     }
 }

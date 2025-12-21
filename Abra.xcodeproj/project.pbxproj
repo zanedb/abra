@@ -43,6 +43,7 @@
 		2F736BBB2DBD9E120078F1BB /* ShazamProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */; };
 		2F736BBD2DC04ED20078F1BB /* LocationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */; };
 		2F736BBF2DC05A6C0078F1BB /* ToastProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBE2DC05A6C0078F1BB /* ToastProvider.swift */; };
+		2F75767E2EF7A98E00135402 /* Math++.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F75767D2EF7A98B00135402 /* Math++.swift */; };
 		2F7EDBD72EEF9A8800CDAEBC /* Date++.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7EDBD62EEF9A8700CDAEBC /* Date++.swift */; };
 		2F8908882C73106D0002850C /* Moments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8908872C73106D0002850C /* Moments.swift */; };
 		2F8919F02A4442BA0012DFF6 /* SpotsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8919EF2A4442BA0012DFF6 /* SpotsList.swift */; };
@@ -151,6 +152,7 @@
 		2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamProvider.swift; sourceTree = "<group>"; };
 		2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationProvider.swift; sourceTree = "<group>"; };
 		2F736BBE2DC05A6C0078F1BB /* ToastProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastProvider.swift; sourceTree = "<group>"; };
+		2F75767D2EF7A98B00135402 /* Math++.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Math++.swift"; sourceTree = "<group>"; };
 		2F7EDBD62EEF9A8700CDAEBC /* Date++.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date++.swift"; sourceTree = "<group>"; };
 		2F8908872C73106D0002850C /* Moments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Moments.swift; sourceTree = "<group>"; };
 		2F8919EF2A4442BA0012DFF6 /* SpotsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotsList.swift; sourceTree = "<group>"; };
@@ -344,6 +346,7 @@
 		2F90901F2E614EE300828E6D /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				2F75767D2EF7A98B00135402 /* Math++.swift */,
 				2F7EDBD62EEF9A8700CDAEBC /* Date++.swift */,
 				2F2D2A442ED7B7DD00BC2291 /* Button+adaptiveGlass.swift */,
 				2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */,
@@ -637,6 +640,7 @@
 				2FD307AE2E344A00004ED2AD /* NewPlaylist.swift in Sources */,
 				2F1727442C719B2700EEA500 /* Spot.swift in Sources */,
 				2FA7D81A2AC0E60F0039AD5C /* ShazamStream.swift in Sources */,
+				2F75767E2EF7A98E00135402 /* Math++.swift in Sources */,
 				2F63DEE02E0D2AF800DAA30F /* SheetProvider.swift in Sources */,
 				2F6A2BF42E297DC400032845 /* LocationPicker.swift in Sources */,
 				2FD307AC2E3426C5004ED2AD /* PlaylistPicker.swift in Sources */,
