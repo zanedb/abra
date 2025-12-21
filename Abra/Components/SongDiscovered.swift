@@ -11,28 +11,7 @@ struct SongDiscovered: View {
     @Environment(SheetProvider.self) private var view
     
     @Bindable var stream: ShazamStream
-    
-    @Query var identicalShazamStreams: [ShazamStream]
-    
     @Query(sort: \Spot.updatedAt, order: .reverse) private var spots: [Spot]
-    
-    init(stream: ShazamStream) {
-        self.stream = stream
-        
-        // Find instances of the same Shazam via matching title & artist
-        let title = stream.title
-        let artist = stream.artist
-        let id = stream.persistentModelID
-        let predicate = #Predicate<ShazamStream> {
-            $0.title == title && $0.artist == artist && $0.persistentModelID != id
-        }
-        _identicalShazamStreams = Query(filter: predicate, sort: \.timestamp)
-    }
-    
-    private var identicalShazamStream: ShazamStream? {
-        identicalShazamStreams.last // Show most recent
-    }
-    
     // TODO: sort by location, updatedAt, limit to 5
     private var recentNearbySpots: [Spot] {
         spots.sorted { $0.updatedAt > $1.updatedAt }.reversed()
@@ -54,9 +33,6 @@ struct SongDiscovered: View {
                         Text(stream.timestamp, style: .date)
                             .foregroundStyle(.secondary)
                             .font(.callout)
-                        if let identical = identicalShazamStream {
-                            previouslyDiscovered(identical)
-                        }
                     }
                     
                     Spacer()
@@ -97,15 +73,6 @@ struct SongDiscovered: View {
             })
     }
     
-    private func previouslyDiscovered(_ identical: ShazamStream) -> some View {
-        Button(action: { view.show(identical) }) {
-            Image(systemName: "clock.fill")
-            Text("Previously \(identical.attributedPlace)")
-                .lineLimit(1)
-                .font(.callout)
-                .padding(.leading, -2)
-        }
-        .padding(.top)
     }
     
     private func createSpot() {
