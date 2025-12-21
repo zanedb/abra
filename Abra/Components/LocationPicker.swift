@@ -3,7 +3,7 @@
 //  Abra
 //
 
-import CoreLocation
+import MapKit
 import SwiftData
 import SwiftUI
 
@@ -45,7 +45,7 @@ struct LocationPicker: View {
                 }
             }
             .listStyle(.inset)
-            .navigationTitle("Select Location")
+            .navigationTitle("Adjust Location")
             .navigationBarTitleDisplayMode(.inline)
             .searchable(
                 text: $searchText,
@@ -139,9 +139,9 @@ struct LocationPicker: View {
                     currentLocation,
                     placemark: currentPlacemark
                 )
+                dismiss()
             }
         }
-        dismiss()
     }
 }
 
