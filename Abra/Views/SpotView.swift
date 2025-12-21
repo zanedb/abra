@@ -24,37 +24,17 @@ struct SpotView: View {
     @State private var showingConfirmation: Bool = false
     @State private var showingNewPlaylist = false
     @State private var newPlaylist: Playlist?
+    @State private var expansion: CGFloat = 0
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading) {
-                heading
-                    .padding(.top, -40)
+            ScrollView {
+                Heading
 
                 Moments(spot: spot)
-                    .padding(.top, 8)
                     .foregroundStyle(.gray)
 
-                Text("^[\(spot.streams.count) Song](inflect: true)")
-                    .foregroundStyle(.secondary)
-                    .font(.subheadline.weight(.medium))
-                    .textCase(.uppercase)
-                    .padding(.horizontal)
-                    .padding(.top, 12)
-
-                List(spot.streams) { stream in
-                    SongRowMini(
-                        stream: stream,
-                        onTapGesture: {
-                            if let appleMusicID = stream.appleMusicID {
-                                music.playPause(id: appleMusicID)
-                            }
-                        }
-                    )
-                    .listRowBackground(Color.clear)
-                }
-                .scrollContentBackground(.hidden)
-                .listStyle(.plain)
+                SongsList
             }
             .toolbar {
                 ToolbarItems
@@ -101,6 +81,16 @@ struct SpotView: View {
                     modelContext.delete(spot)
                     try? modelContext.save()
                 }
+            }
+            .onGeometryChange(for: CGSize.self) { proxy in
+                proxy.size
+            } action: {
+                // TODO: test this on iPad / come up with a better system..
+                self.expansion =
+                    (($0.height - 300) / (UIScreen.main.bounds.height - 520))
+                    .clamped(
+                        to: 0...1
+                    )
             }
         }
     }
@@ -222,31 +212,71 @@ struct SpotView: View {
         }
     }
 
-    private var heading: some View {
-        HStack {
-            Button(action: { showingIconDesigner.toggle() }) {
-                SpotIcon(
-                    symbol: spot.symbol,
-                    color: Color(spot.color),
-                    size: 80
-                )
-                .matchedTransitionSource(id: spot.id, in: animation)
-                .padding(.trailing, 4)
-            }
+    private var Heading: some View {
+        let t = smooth(expansion)
+        let padding = CGFloat(lerp(-52, -8, t))
+        let titleFontSize = CGFloat(lerp(22, 28, t))  // .title2 -> .title
+        let descFontSize = CGFloat(lerp(13, 20, t))  // .footnote -> .title3
+        let iconPadding = CGFloat(lerp(-70, 12, t))
+        let iconOpacity = CGFloat(lerp(-1, 1, t))
+        let maxWidth = CGFloat(lerp(230, 350, t))
 
-            VStack(alignment: .leading, spacing: 0) {
+        return
+            VStack(alignment: .center, spacing: 0) {
+                Button(action: { showingIconDesigner.toggle() }) {
+                    SpotIcon(
+                        symbol: spot.symbol,
+                        color: Color(spot.color),
+                        size: 72
+                    )
+                    .matchedTransitionSource(id: spot.id, in: animation)
+                }
+                .padding(.bottom, iconPadding)
+                .opacity(iconOpacity)
+
                 TextField("Name", text: $spot.name)
-                    .font(.title)
-                    .frame(maxWidth: 180, alignment: .leading)
+                    .font(.system(size: titleFontSize))
+                    .multilineTextAlignment(.center)
                     .bold()
+                    .frame(maxWidth: maxWidth)
                 Text(spot.description)
+                    .font(.system(size: descFontSize))
                     .foregroundStyle(.gray)
             }
-            .padding(.leading, 6)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal)
+            .padding(.top, padding)
+            .padding(.bottom)
+    }
+
+    private var SongsList: some View {
+        LazyVStack(alignment: .leading, spacing: 0) {
+            Text("^[\(spot.streams.count) Song](inflect: true)")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .padding(.horizontal)
+                .padding(.top)
+                .padding(.bottom, 8)
+
+            ForEach(spot.streams) { stream in
+                SongRowMini(
+                    stream: stream,
+                    onTapGesture: {
+                        if let appleMusicID = stream.appleMusicID {
+                            music.playPause(id: appleMusicID)
+                        }
+                    }
+                )
+                .padding()
+                .padding(.bottom, stream == spot.streams.last ? 12 : -4)
+                .padding(.top, -4)
+
+                if stream != spot.streams.last {
+                    Divider()
+                        .padding(.leading)
+                }
+            }
         }
-        .padding(.horizontal)
-        .padding(.vertical, 8)
     }
 
     private func remove() {
@@ -272,6 +302,7 @@ struct SpotView: View {
         .sheet(isPresented: .constant(true)) {
             SpotView(spot: spot)
                 .environment(SheetProvider())
+                .environment(ShazamProvider())
                 .environment(MusicProvider())
                 .environment(LibraryProvider())
                 .presentationDetents([.fraction(0.50), .fraction(0.999)])
