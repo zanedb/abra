@@ -27,7 +27,7 @@ struct SongRow: View {
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 96, height: 96)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 18))
                 .padding(.trailing, 5)
 
             VStack(alignment: .leading, spacing: 0) {
@@ -138,6 +138,7 @@ struct SongRow: View {
 struct SongRowMini: View {
     @Environment(SheetProvider.self) var view
     @Environment(MusicProvider.self) private var music
+    @Environment(ShazamProvider.self) private var shazam
 
     var stream: ShazamStream
     var onTapGesture: () -> Void = {}
@@ -157,7 +158,7 @@ struct SongRowMini: View {
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 48, height: 48)
-                .clipShape(.rect(cornerRadius: 4))
+                .clipShape(.rect(cornerRadius: 8))
                 .padding(.trailing, 5)
                 .overlay {
                     if nowPlaying || lastPlayed {
@@ -218,6 +219,14 @@ struct SongRowMini: View {
             //                systemImage: "arrow.up.right",
             //                action: { view.show(stream) }
             //            )
+        } preview: {
+            SongRow(stream: stream)
+                .environment(view)
+                .environment(music)
+                .environment(shazam)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 4)
+                .frame(minWidth: 320)
         }
     }
 }
