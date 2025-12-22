@@ -67,16 +67,15 @@ struct PlaylistPicker: View {
                 }
             }
             .sheet(isPresented: $showingNewPlaylist) {
-                NewPlaylist(initial: [stream], playlist: $newPlaylist)
+                NewPlaylist(initial: [stream], playlist: $newPlaylist, showAppendSpotStreams: stream.spot != nil)
                     .presentationDetents([.large])
             }
             .onChange(of: newPlaylist) {
-                if let id = newPlaylist {
+                if let playlist = newPlaylist {
                     showingNewPlaylist = false
                     dismiss()
                     toast.show(message: "Playlist created", type: .success, symbol: "music.note.list", action: {
-                        // Note: this doesn't actually work. I don't think there is a URL scheme for this.
-                        openURL(URL(string: "music://playlist/\(id)")!)
+                        openURL(playlist.url ?? URL(string: "music://playlist/\(playlist.id)")!)
                     })
                 }
             }
@@ -207,6 +206,7 @@ struct PlaylistPicker: View {
         .popover(isPresented: .constant(true)) {
             PlaylistPicker(stream: stream)
                 .environment(SheetProvider())
+                .environment(ShazamProvider())
                 .environment(MusicProvider())
                 .presentationDetents([.fraction(0.999)])
                 .modelContainer(PreviewSampleData.container)

@@ -51,8 +51,7 @@ struct SpotView: View {
             .sheet(isPresented: $showingNewPlaylist) {
                 NewPlaylist(
                     initial: spot.streams,
-                    playlist: $newPlaylist,
-                    showIncludeToggle: false
+                    playlist: $newPlaylist
                 )
                 .presentationDetents([.large])
             }
@@ -65,10 +64,7 @@ struct SpotView: View {
                         type: .success,
                         symbol: "music.note.list",
                         action: {
-                            // Note: this doesn't actually work. I don't think there is a URL scheme for this.
-                            openURL(
-                                URL(string: "music://playlist/\(playlist.id)")!
-                            )
+                            openURL(playlist.url ?? URL(string: "music://playlist/\(playlist.id)")!)
                         }
                     )
                 }
@@ -273,7 +269,7 @@ struct SpotView: View {
 
                 if stream != spot.streams.last {
                     Divider()
-                        .padding(.leading)
+                        .padding(.leading, 60)
                 }
             }
         }

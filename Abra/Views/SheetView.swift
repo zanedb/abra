@@ -81,7 +81,7 @@ struct SheetView: View {
                         ContentUnavailableView.search(text: view.searchText)
                             .padding()
                     } else {
-                        searchResults
+                        SearchResults
                     }
                 }
             }
@@ -233,7 +233,7 @@ struct SheetView: View {
         }
     }
 
-    private var searchResults: some View {
+    private var SearchResults: some View {
         LazyVStack(alignment: .leading) {
             Section {
                 ForEach(spots, id: \.id) { spot in
