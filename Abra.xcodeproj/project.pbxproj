@@ -39,6 +39,7 @@
 		2F63DEE02E0D2AF800DAA30F /* SheetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F63DEDF2E0D2AF600DAA30F /* SheetProvider.swift */; };
 		2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F659BC12A403A0000EA43F9 /* SongView.swift */; };
 		2F6A2BF42E297DC400032845 /* LocationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6A2BF32E297DC200032845 /* LocationPicker.swift */; };
+		2F722B3D2F077590004243CD /* MKMapItem+symbol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F722B3C2F07758E004243CD /* MKMapItem+symbol.swift */; };
 		2F736BB92DBD8D030078F1BB /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BB82DBD8D020078F1BB /* Toast.swift */; };
 		2F736BBB2DBD9E120078F1BB /* ShazamProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */; };
 		2F736BBD2DC04ED20078F1BB /* LocationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */; };
@@ -149,6 +150,7 @@
 		2F63DEDF2E0D2AF600DAA30F /* SheetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetProvider.swift; sourceTree = "<group>"; };
 		2F659BC12A403A0000EA43F9 /* SongView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongView.swift; sourceTree = "<group>"; };
 		2F6A2BF32E297DC200032845 /* LocationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPicker.swift; sourceTree = "<group>"; };
+		2F722B3C2F07758E004243CD /* MKMapItem+symbol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MKMapItem+symbol.swift"; sourceTree = "<group>"; };
 		2F736BB82DBD8D020078F1BB /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
 		2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamProvider.swift; sourceTree = "<group>"; };
 		2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationProvider.swift; sourceTree = "<group>"; };
@@ -348,6 +350,7 @@
 		2F90901F2E614EE300828E6D /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				2F722B3C2F07758E004243CD /* MKMapItem+symbol.swift */,
 				2F75767D2EF7A98B00135402 /* Math++.swift */,
 				2F7EDBD62EEF9A8700CDAEBC /* Date++.swift */,
 				2F2D2A442ED7B7DD00BC2291 /* Button+adaptiveGlass.swift */,
@@ -629,6 +632,7 @@
 				2F4C61F12E4EBBAA00B1E0AF /* MotionProvider.swift in Sources */,
 				2F8919F02A4442BA0012DFF6 /* SpotsList.swift in Sources */,
 				2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */,
+				2F722B3D2F077590004243CD /* MKMapItem+symbol.swift in Sources */,
 				2FF310CA2A4A6DE900DA2A80 /* Searching.swift in Sources */,
 				2F9090252E61505600828E6D /* UISheetPresentationController++.swift in Sources */,
 				2FAF74B72E0C55AD003D246C /* SongDiscovered.swift in Sources */,

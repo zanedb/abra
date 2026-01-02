@@ -68,7 +68,7 @@ import SwiftData
 
     init(from featureAnnotation: MKMapFeatureAnnotation) {
         self.name = featureAnnotation.title ?? ""
-        self.symbol = ""
+        self.symbol = "" // Will be set in `affiliateMapItem()`
         self.color =
             featureAnnotation.iconStyle?.backgroundColor ?? .systemGray3
         self.shazamStreams = []
@@ -162,22 +162,35 @@ extension Spot {
         }
     }
 
+    /// Associates properties from MKMapItem by way of MKMapFeatureAnnotation (helper)
     public func affiliateMapItem(
         from mapFeatureAnnotation: MKMapFeatureAnnotation
     ) async {
-        let mapItem = try? await MKMapItemRequest(
+        if let mapItem = try? await MKMapItemRequest(
             mapFeatureAnnotation: mapFeatureAnnotation
-        ).mapItem
-
-        city = mapItem?.placemark.locality
-        state = mapItem?.placemark.administrativeArea
-        country = mapItem?.placemark.country
-        countryCode = mapItem?.placemark.isoCountryCode
-        mapItemIdentifier = mapItem?.identifier?.rawValue
-        pointOfInterestCategory = mapItem?.pointOfInterestCategory?.rawValue
-        phoneNumber = mapItem?.phoneNumber
-        url = mapItem?.url
-        timeZoneIdentifier = mapItem?.timeZone?.identifier
+        ).mapItem {
+            await affiliateMapItem(from: mapItem)
+        }
+    }
+    
+    /// Associates properties from MKMapItem
+    public func affiliateMapItem(
+        from mapItem: MKMapItem
+    ) async {
+        city = mapItem.placemark.locality
+        state = mapItem.placemark.administrativeArea
+        country = mapItem.placemark.country
+        countryCode = mapItem.placemark.isoCountryCode
+        mapItemIdentifier = mapItem.identifier?.rawValue
+        pointOfInterestCategory = mapItem.pointOfInterestCategory?.rawValue
+        phoneNumber = mapItem.phoneNumber
+        url = mapItem.url
+        timeZoneIdentifier = mapItem.timeZone?.identifier
+        
+        // Assign icon from pointOfInterestCategory if symbol is empty
+        if symbol.isEmpty {
+            symbol = mapItem.symbol
+        }
     }
 
     static var preview: Spot {
@@ -226,3 +239,4 @@ final class UIColorValueTransformer: ValueTransformer {
         }
     }
 }
+

@@ -67,7 +67,10 @@ struct SongDiscovered: View {
                         Button {
                             if #available(iOS 26.0, *) {
                                 spot = Spot(mapItem: item)
-                                spot?.appendNearbyShazamStreams(modelContext)
+                                Task {
+                                    spot?.appendNearbyShazamStreams(modelContext)
+                                    await spot?.affiliateMapItem(from: item)
+                                }
                             }
                         } label: {
                             MapItemCard(mapItem: item)
@@ -118,28 +121,6 @@ struct SongDiscovered: View {
                 .presentationDetents([.fraction(0.50), .large])
                 .presentationInspector()
                 .prefersEdgeAttachedInCompactHeight()
-        }
-    }
-
-    private func spotBinding(_ spot: Spot, stream: ShazamStream) -> Binding<
-        Bool
-    > {
-        Binding<Bool>(
-            get: { stream.spot == spot },
-            set: {
-                stream.spot = $0 ? spot : nil
-            }
-        )
-    }
-
-    private func createSpot() {
-        // Create new Spot, insert into modelContext, and open for immediate editing
-        let spot = Spot(locationFrom: stream, streams: [stream])
-        modelContext.insert(spot)
-        view.show(spot)
-
-        Task {
-            spot.appendNearbyShazamStreams(modelContext)
         }
     }
 }
