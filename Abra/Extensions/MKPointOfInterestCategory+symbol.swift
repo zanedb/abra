@@ -1,5 +1,5 @@
 //
-//  MKMapItem+symbol.swift
+//  MKPointOfInterestCategory+symbol.swift
 //  Abra
 //
 //  Created by Zane Davis-Barrs on 1/1/26.
@@ -8,12 +8,11 @@
 import Foundation
 import MapKit
 
-extension MKMapItem {
+extension MKPointOfInterestCategory {
     /// Maps MKPointOfInterestCategory to an appropriate SFSymbol name string
     /// https://developer.apple.com/documentation/mapkit/mkpointofinterestcategory
     var symbol: String {
-        guard let value = pointOfInterestCategory else { return "mappin" }
-        switch value {
+        switch self {
         // Arts and culture
         case MKPointOfInterestCategory.museum: return "building"
         case MKPointOfInterestCategory.musicVenue: return "music.note"
@@ -101,4 +100,6 @@ extension MKMapItem {
         default: return "mappin"
         }
     }
+    
+    // TODO: color
 }

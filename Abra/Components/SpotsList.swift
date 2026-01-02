@@ -50,7 +50,7 @@ struct SpotsList: View {
         } label: {
             VStack(alignment: .center) {
                 SpotIcon(
-                    symbol: spot.symbol,
+                    symbol: spot.sfSymbol,
                     color: Color(spot.color),
                     size: 48
                 )

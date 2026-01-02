@@ -10,7 +10,7 @@ struct SpotRow: View {
 
     var body: some View {
         HStack {
-            SpotIcon(symbol: spot.symbol, color: Color(spot.color), size: 48, renderingMode: .hierarchical)
+            SpotIcon(symbol: spot.sfSymbol, color: Color(spot.color), size: 48, renderingMode: .hierarchical)
                 .padding(.trailing, 5)
 
             VStack(alignment: .leading) {

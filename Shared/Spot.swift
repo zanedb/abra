@@ -68,7 +68,7 @@ import SwiftData
 
     init(from featureAnnotation: MKMapFeatureAnnotation) {
         self.name = featureAnnotation.title ?? ""
-        self.symbol = "" // Will be set in `affiliateMapItem()`
+        self.symbol = ""
         self.color =
             featureAnnotation.iconStyle?.backgroundColor ?? .systemGray3
         self.shazamStreams = []
@@ -117,6 +117,13 @@ extension Spot {
     /// Unwrapped .shazamStreams
     public var streams: [ShazamStream] {
         shazamStreams ?? []
+    }
+    
+    /// Load `symbol`, otherwise load default icon for `pointOfInterestCategory` if available
+    public var sfSymbol: String {
+        guard symbol.isEmpty else { return symbol }
+        guard let category = pointOfInterestCategory else { return "mappin" }
+        return MKPointOfInterestCategory(rawValue: category).symbol
     }
 
     /// Plays the Spot's contents; optionally shuffle
@@ -186,11 +193,6 @@ extension Spot {
         phoneNumber = mapItem.phoneNumber
         url = mapItem.url
         timeZoneIdentifier = mapItem.timeZone?.identifier
-        
-        // Assign icon from pointOfInterestCategory if symbol is empty
-        if symbol.isEmpty {
-            symbol = mapItem.symbol
-        }
     }
 
     static var preview: Spot {

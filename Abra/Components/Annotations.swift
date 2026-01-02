@@ -169,8 +169,8 @@ final class SpotAnnotationView: MKMarkerAnnotationView {
 
     private func configure(with spotAnnotation: SpotAnnotation) {
         markerTintColor = spotAnnotation.spot.color
-        if spotAnnotation.spot.symbol != "" {
-            glyphImage = UIImage(systemName: spotAnnotation.spot.symbol)
+        if spotAnnotation.spot.sfSymbol != "" {
+            glyphImage = UIImage(systemName: spotAnnotation.spot.sfSymbol)
         }
         displayPriority = .required
     }
