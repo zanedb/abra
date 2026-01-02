@@ -20,14 +20,14 @@ extension MKPointOfInterestCategory {
         // Education
         case MKPointOfInterestCategory.library: return "books.vertical.fill"
         case MKPointOfInterestCategory.planetarium: return "moon.stars.fill"
-        case MKPointOfInterestCategory.school: return "pencil.and.ruler.fill"
+        case MKPointOfInterestCategory.school: return "building.columns.fill"
         case MKPointOfInterestCategory.university: return "graduationcap.fill"
         // Entertainment
         case MKPointOfInterestCategory.movieTheater: return "film"
-        case MKPointOfInterestCategory.nightlife: return "theatermask.and.paintbrush.fill"
+        case MKPointOfInterestCategory.nightlife: return "laser.burst"
         // Health and safety
         case MKPointOfInterestCategory.fireStation: return "flame.fill"
-        case MKPointOfInterestCategory.hospital: return "cross.case.fill"
+        case MKPointOfInterestCategory.hospital: return "cross.fill"
         case MKPointOfInterestCategory.pharmacy: return "pills.fill"
         case MKPointOfInterestCategory.police: return "shield.lefthalf.filled"
         // Historical and cultural landmarks
@@ -40,14 +40,14 @@ extension MKPointOfInterestCategory {
         case MKPointOfInterestCategory.brewery: return "mug.fill"
         case MKPointOfInterestCategory.cafe: return "cup.and.saucer.fill"
         case MKPointOfInterestCategory.distillery: return "mug.fill"
-        case MKPointOfInterestCategory.foodMarket: return "cart.fill"
+        case MKPointOfInterestCategory.foodMarket: return "basket.fill"
         case MKPointOfInterestCategory.restaurant: return "fork.knife"
         case MKPointOfInterestCategory.winery: return "wineglass.fill"
         // Personal services
         case MKPointOfInterestCategory.animalService: return "pawprint.fill"
         case MKPointOfInterestCategory.atm: return "creditcard.fill"
         case MKPointOfInterestCategory.automotiveRepair: return "book.and.wrench.fill"
-        case MKPointOfInterestCategory.bank: return "building.columns.fill"
+        case MKPointOfInterestCategory.bank: return "dollarsign.bank.building.fill"
         case MKPointOfInterestCategory.beauty: return "comb.fill"
         case MKPointOfInterestCategory.evCharger: return "bolt.car.fill"
         case MKPointOfInterestCategory.fitnessCenter: return "dumbbell.fill"
