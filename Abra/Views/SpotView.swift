@@ -70,10 +70,9 @@ struct SpotView: View {
                 }
             }
             .onDisappear {
-                // Destroy Spot if not saved
-                // TODO: test if there are cases where this isn't triggered
-                // TODO: clear if there are no songs perhaps? and symbol check will change soon..
-                if spot.name == "" || spot.symbol == "" {
+                // Destroy Spot if empty
+                // TODO: fix cases where this isn't triggered
+                if spot.streams.isEmpty || spot.sfSymbol.isEmpty || spot.name.isEmpty {
                     modelContext.delete(spot)
                     try? modelContext.save()
                 }
@@ -221,7 +220,7 @@ struct SpotView: View {
             VStack(alignment: .center, spacing: 0) {
                 Button(action: { showingIconDesigner.toggle() }) {
                     SpotIcon(
-                        symbol: spot.symbol,
+                        symbol: spot.sfSymbol,
                         color: Color(spot.color),
                         size: 72
                     )
