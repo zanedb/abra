@@ -13,6 +13,7 @@ import GeoToolbox
 
 @Model final class ShazamStream {
     var timestamp: Date = Date.now
+    var note: String = ""
 
     // SHMediaItem
     var title: String = ""

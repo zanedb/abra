@@ -8,9 +8,7 @@
 import SwiftUI
 
 struct SongDetails: View {
-    var stream: ShazamStream
-
-    @State private var note: String = ""
+    @Bindable var stream: ShazamStream
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -45,7 +43,7 @@ struct SongDetails: View {
 
             Text("Notes")
                 .foregroundStyle(.secondary)
-            TextField("Add Note", text: $note)
+            TextField("Add Note", text: $stream.note)
                 .padding(.top, -4)
         }
         .padding(.horizontal)
