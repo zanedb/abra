@@ -16,7 +16,7 @@ struct SongInfo: View {
     @Environment(SheetProvider.self) private var sheet
 
     var stream: ShazamStream
-    var expansion: CGFloat // amount from 0-1
+    var expansion: CGFloat  // amount from 0-1
 
     @Query var matchedArtistStreams: [ShazamStream]
 
@@ -152,25 +152,26 @@ struct SongInfo: View {
             .padding(.top, expansion > 0.5 ? 2 : 0)
             .frame(maxWidth: maxWidth)
 
-            HStack(spacing: 4) {
-                Text(genre)
-                    .foregroundStyle(.secondary)
-                    .font(.subheadline.weight(.medium))
-                    .lineLimit(1)
-                    .redacted(reason: loadedMetadata ? [] : .placeholder)
-                Text("·")
-                    .foregroundStyle(.secondary)
-                    .font(.subheadline.weight(.medium))
-                Text(released)
-                    .foregroundStyle(.secondary)
-                    .font(.subheadline.weight(.medium))
-                    .lineLimit(1)
-                    .redacted(reason: loadedMetadata ? [] : .placeholder)
+            if loadedMetadata {
+                HStack(spacing: 4) {
+                    Text(genre)
+                        .foregroundStyle(.secondary)
+                        .font(.subheadline.weight(.medium))
+                        .lineLimit(1)
+                    Text("·")
+                        .foregroundStyle(.secondary)
+                        .font(.subheadline.weight(.medium))
+                    Text(released)
+                        .foregroundStyle(.secondary)
+                        .font(.subheadline.weight(.medium))
+                        .lineLimit(1)
+                }
+                .padding(.top, 4)
+                .padding(.bottom, descPadding)
+                .frame(maxWidth: descMaxWidth)
             }
-            .padding(.top, 4)
-            .padding(.bottom, descPadding)
-            .frame(maxWidth: descMaxWidth)
         }
+        .padding(.bottom, descPadding)
         .padding(.top, topPadding)
     }
 
