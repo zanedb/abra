@@ -629,7 +629,7 @@ struct MapView: UIViewControllerRepresentable {
                 as? [ShazamAnnotation]
             {
                 let streams = shazamAnnotations.compactMap(\.shazamStream)
-                let spot = Spot(locationFrom: streams.first!, streams: streams)
+                let spot = Spot(locationFrom: streams.first!)
                 parent.modelContext.insert(spot)
                 parent.sheetProvider.show(spot)
                 mapView.deselectAnnotation(clusterAnnotation, animated: false)

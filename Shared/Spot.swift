@@ -50,11 +50,11 @@ import SwiftData
         self.updatedAt = .now
     }
 
-    init(locationFrom: ShazamStream, streams: [ShazamStream]) {
+    init(locationFrom: ShazamStream) {
         self.name = ""
         self.symbol = ""
         self.color = .systemGray3  // TODO: random selection
-        self.shazamStreams = streams
+        self.shazamStreams = []
         self.createdAt = .now
         self.updatedAt = .now
 
