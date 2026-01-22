@@ -96,7 +96,7 @@ struct SpotsList: View {
             )
         }
         .confirmationDialog(
-            "This spot will be deleted from your Abra library, though the contents will not be deleted.",
+            "This spot will be deleted from your Abra library, though the songs will not be deleted.",
             isPresented: $confirmationShown,
             titleVisibility: .visible
         ) {

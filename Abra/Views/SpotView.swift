@@ -198,7 +198,7 @@ struct SpotView: View {
                 Image(systemName: "ellipsis")
             }
             .confirmationDialog(
-                "This spot will be deleted from your Abra library, though the contents will not be deleted.",
+                "This spot will be deleted from your Abra library, though the songs will not be deleted.",
                 isPresented: $showingConfirmation,
                 titleVisibility: .visible
             ) {
