@@ -330,7 +330,7 @@ struct SheetView: View {
 
         // Find locationless streams within the past hour
         let locationless = allShazams.filter {
-            $0.latitude == -1 && $0.longitude == -1
+            $0.latitude == 0 && $0.longitude == 0
                 && $0.timestamp > Date().addingTimeInterval(-60 * 60)
         }
 

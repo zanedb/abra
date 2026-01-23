@@ -120,7 +120,9 @@ struct SongView: View {
                     }
                 )
 
-                if stream.latitude == -1 && stream.longitude == -1 {
+                if (stream.latitude == -1 && stream.longitude == -1)
+                    || (stream.latitude == 0 && stream.longitude == 0)
+                {
                     Divider()
                     Button(
                         "Add Location",

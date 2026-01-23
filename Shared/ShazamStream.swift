@@ -36,8 +36,8 @@ import GeoToolbox
     var frequencySkewRanges: [Range<Float>] = []
 
     // CLLocation
-    var latitude: Double = -1
-    var longitude: Double = -1
+    var latitude: Double = 0 // join me in null island..
+    var longitude: Double = 0
     var altitude: CLLocationDistance?
     var isProducedByAccessory: Bool?
     var isSimulatedBySoftware: Bool?
@@ -91,8 +91,8 @@ import GeoToolbox
         self.frequencySkewRanges = mediaItem.frequencySkewRanges
 
         // CLLocation
-        self.latitude = location?.coordinate.latitude ?? -1
-        self.longitude = location?.coordinate.longitude ?? -1
+        self.latitude = location?.coordinate.latitude ?? 0
+        self.longitude = location?.coordinate.longitude ?? 0
         self.altitude = location?.altitude
         self.isProducedByAccessory =
             location?.sourceInformation?.isProducedByAccessory
