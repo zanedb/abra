@@ -7,10 +7,9 @@ import SwiftUI
 
 struct Searching: View {
     @Environment(\.colorScheme) var colorScheme
+    @Environment(MotionProvider.self) var motion
 
     var namespace: Namespace.ID
-
-    @State private var motion = MotionProvider()
 
     @State private var basePulse: CGFloat = 1
 

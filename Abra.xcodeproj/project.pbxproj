@@ -898,6 +898,7 @@
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "To look up songs and optionally save to your library.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "To map your musical discoveries.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "To use Shazam.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "To provide context to Shazams.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "To show relevant photos alongside Shazams. Nothing leaves your device.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -936,6 +937,7 @@
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "To look up songs and optionally save to your library.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "To map your musical discoveries.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "To use Shazam.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "To provide context to Shazams.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "To show relevant photos alongside Shazams. Nothing leaves your device.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

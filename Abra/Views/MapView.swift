@@ -19,6 +19,7 @@ struct MapView: UIViewControllerRepresentable {
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
     @Environment(LibraryProvider.self) private var library
+    @Environment(MotionProvider.self) private var motion
     @Environment(MusicProvider.self) private var music
 
     @Query(
@@ -105,6 +106,7 @@ struct MapView: UIViewControllerRepresentable {
                 .environment(shazam)
                 .environment(location)
                 .environment(library)
+                .environment(motion)
                 .environment(music)
         )
         sheetVC.sheetLayoutChangeHandler = { presentedFrame in
