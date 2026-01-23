@@ -4,12 +4,14 @@
 //
 
 import Combine
+import MapKit
 import SwiftUI
 
 struct OnboardingView: View {
     @Environment(\.openURL) private var openURL
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
+    @Environment(MotionProvider.self) private var motion
     @Environment(MusicProvider.self) private var music
 
     // Control animation properties
@@ -20,7 +22,11 @@ struct OnboardingView: View {
     // Permissions
     @State private var micAuth: Bool = false
     private var locAuth: Bool {
-        location.authorizationStatus == .authorizedWhenInUse || location.authorizationStatus == .authorizedAlways
+        location.authorizationStatus == .authorizedWhenInUse
+            || location.authorizationStatus == .authorizedAlways
+    }
+    private var motionAuth: Bool {
+        motion.authorizationStatus == .authorized || !motion.isAvailable
     }
     private var musicAuth: Bool {
         music.authorizationStatus == .authorized
@@ -34,7 +40,7 @@ struct OnboardingView: View {
     }
 
     private var step: OnboardingState {
-        if !locAuth || !micAuth || !musicAuth {
+        if !locAuth || !micAuth || !motionAuth || !musicAuth {
             return .permissions
         } else {
             return .control
@@ -44,30 +50,38 @@ struct OnboardingView: View {
     var body: some View {
         Group {
             if step == .control {
-                plus
+                Plus
                     .ignoresSafeArea()
 
-                addAControl
+                AddAControl
 
-                arrow
+                Arrow
             }
 
             VStack {
                 switch step {
                 case .permissions:
-                    permissions
+                    Permissions
                         .transition(
                             .asymmetric(
-                                insertion: .opacity.animation(.easeInOut(duration: 3)),
-                                removal: .opacity.animation(.easeInOut(duration: 0.25))
+                                insertion: .opacity.animation(
+                                    .easeInOut(duration: 3)
+                                ),
+                                removal: .opacity.animation(
+                                    .easeInOut(duration: 0.25)
+                                )
                             )
                         )
                 case .control:
-                    control
+                    Control
                         .transition(
                             .asymmetric(
-                                insertion: .opacity.animation(.easeInOut(duration: 1)),
-                                removal: .opacity.animation(.easeInOut(duration: 0.5))
+                                insertion: .opacity.animation(
+                                    .easeInOut(duration: 1)
+                                ),
+                                removal: .opacity.animation(
+                                    .easeInOut(duration: 0.5)
+                                )
                             )
                         )
                 }
@@ -77,17 +91,24 @@ struct OnboardingView: View {
         }
     }
 
-    private var permissions: some View {
+    private var Permissions: some View {
         VStack(alignment: .leading) {
-            Text("Abra puts your Shazams on a map.")
-                .font(.system(size: 34, weight: .black))
-                .padding(.bottom, 4)
-                .shadow(color: .theme, radius: 12)
+            if #available(iOS 26.0, *) {
+                Text("Abra puts your Shazams on a map.")
+                    .font(.system(size: 34, weight: .black))
+                    .lineHeight(.tight)
+                    .padding(.bottom, 6)
+            } else {
+                Text("Abra puts your Shazams on a map.")
+                    .font(.system(size: 34, weight: .black))
+                    .padding(.bottom, 4)
+            }
             Text("Grant permissions to get started.")
+                .foregroundStyle(.secondary)
                 .padding(.bottom)
 
             RoundedButton(
-                label: locAuth ? "" : "Location",
+                label: "Location",
                 systemImage: locAuth ? "checkmark" : "location.fill",
                 color: locAuth ? .green : .blue,
                 onFirstTap: {
@@ -95,13 +116,15 @@ struct OnboardingView: View {
                 },
                 onSubsequentTaps: {
                     if !locAuth {
-                        openURL(URL(string: UIApplication.openSettingsURLString)!)
+                        openURL(
+                            URL(string: UIApplication.openSettingsURLString)!
+                        )
                     }
                 }
             )
 
             RoundedButton(
-                label: micAuth ? "" : "Microphone",
+                label: "Microphone",
                 systemImage: micAuth ? "checkmark" : "microphone.fill",
                 color: micAuth ? .green : .orange,
                 onFirstTap: {
@@ -111,44 +134,74 @@ struct OnboardingView: View {
                 },
                 onSubsequentTaps: {
                     if !micAuth {
-                        openURL(URL(string: UIApplication.openSettingsURLString)!)
+                        openURL(
+                            URL(string: UIApplication.openSettingsURLString)!
+                        )
                     }
                 }
             )
-
+            
             RoundedButton(
-                label: musicAuth ? "" : "Song Lookup",
+                label: "Song Lookup",
                 systemImage: musicAuth ? "checkmark" : "music.note",
                 color: musicAuth ? .green : .red,
                 onFirstTap: {
                     Task {
-                        await music.authorize()
+                        await music.requestPermission()
                     }
                 },
                 onSubsequentTaps: {
                     if !musicAuth {
-                        openURL(URL(string: UIApplication.openSettingsURLString)!)
+                        openURL(
+                            URL(string: UIApplication.openSettingsURLString)!
+                        )
                     }
                 }
             )
+
+            if motion.isAvailable {
+                RoundedButton(
+                    label: "Motion & Fitness",
+                    systemImage: motionAuth ? "checkmark" : "figure.run",
+                    color: motionAuth ? .green : .red,
+                    onFirstTap: {
+                        motion.requestPermission()
+                    },
+                    onSubsequentTaps: {
+                        if !motionAuth {
+                            openURL(
+                                URL(
+                                    string: UIApplication.openSettingsURLString
+                                )!
+                            )
+                        }
+                    }
+                )
+            }
         }
     }
 
-    private var control: some View {
+    private var Control: some View {
         VStack(alignment: .leading) {
             Text("To finish setup,")
                 .font(.system(size: 34, weight: .black))
-                .shadow(color: .theme, radius: 12)
             Text("Add Abra’s Control widget for quick access.")
                 .padding(.bottom)
 
-            controlButton
+            ControlButton
 
             RoundedButton(
                 label: "I’m ready",
                 systemImage: "checkmark",
                 color: .primary,
-                action: { withAnimation { UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding") } }
+                action: {
+                    withAnimation {
+                        UserDefaults.standard.set(
+                            true,
+                            forKey: "hasCompletedOnboarding"
+                        )
+                    }
+                }
             )
             .padding(.top)
             .opacity(phase > 32 ? 1 : 0)
@@ -169,14 +222,14 @@ struct OnboardingView: View {
         }
     }
 
-    private var plus: some View {
+    private var Plus: some View {
         ZStack(alignment: idiom == .phone ? .topLeading : .topTrailing) {
             Color.clear
 
             HStack(alignment: .center) {
                 Image(systemName: "plus")
                     .font(.system(size: 20))
-                    .foregroundStyle(3 ... 4 ~= phase ? .primary : .secondary)
+                    .foregroundStyle(3...4 ~= phase ? .primary : .secondary)
 
                 Guide("1")
                     .padding(.leading, 4)
@@ -184,11 +237,11 @@ struct OnboardingView: View {
             }
             .padding(.leading, 36)
             .padding(.top, idiom == .phone ? 12 : 16)
-            .padding(.trailing, idiom == .phone ? 0 : 284) // For iPad positioning
+            .padding(.trailing, idiom == .phone ? 0 : 284)  // For iPad positioning
         }
     }
 
-    var addAControl: some View {
+    var AddAControl: some View {
         ZStack(alignment: idiom == .phone ? .bottom : .trailing) {
             Color.clear
 
@@ -199,7 +252,7 @@ struct OnboardingView: View {
                     Text("Add a Control")
                         .font(.callout.weight(.medium))
                 }
-                .foregroundStyle(5 ... 6 ~= phase ? .primary : .secondary)
+                .foregroundStyle(5...6 ~= phase ? .primary : .secondary)
 
                 Guide("2")
                     .padding(.leading, 4)
@@ -207,12 +260,12 @@ struct OnboardingView: View {
             }
             .padding(.bottom, 36)
             .padding(.leading, 32)
-            .padding(.top, idiom == .phone ? 0 : 156) // For iPad positioning
-            .padding(.trailing, idiom == .phone ? 0 : 104) // For iPad positioning
+            .padding(.top, idiom == .phone ? 0 : 156)  // For iPad positioning
+            .padding(.trailing, idiom == .phone ? 0 : 104)  // For iPad positioning
         }
     }
 
-    private var controlButton: some View {
+    private var ControlButton: some View {
         VStack(alignment: .leading, spacing: 24) {
             Divider()
 
@@ -250,7 +303,7 @@ struct OnboardingView: View {
         }
     }
 
-    private var arrow: some View {
+    private var Arrow: some View {
         ZStack(alignment: .topTrailing) {
             Color.clear
 
@@ -259,9 +312,10 @@ struct OnboardingView: View {
                     .font(.system(size: 28, weight: .bold))
                     .offset(offset)
                     .onAppear {
-                        withAnimation(.easeInOut(duration: 1)
-                            .speed(0.5).repeatCount(7))
-                        {
+                        withAnimation(
+                            .easeInOut(duration: 1)
+                                .speed(0.5).repeatCount(7)
+                        ) {
                             offset = CGSize(width: 0, height: 0)
                         }
                     }
@@ -289,17 +343,18 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    MapView()
-        .edgesIgnoringSafeArea(.all)
-        .environment(SheetProvider())
-        .modelContainer(PreviewSampleData.container)
-        .overlay {
-            VisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
-                .edgesIgnoringSafeArea(.all)
+    ZStack {
+        Map(initialPosition: .userLocation(fallback: .automatic))
 
-            OnboardingView()
-                .environment(ShazamProvider())
-                .environment(LocationProvider())
-                .environment(MusicProvider())
-        }
+        VisualEffectView(
+            effect: UIBlurEffect(style: .systemThinMaterial)
+        )
+        .edgesIgnoringSafeArea(.all)
+
+        OnboardingView()
+            .environment(ShazamProvider())
+            .environment(LocationProvider())
+            .environment(MotionProvider())
+            .environment(MusicProvider())
+    }
 }

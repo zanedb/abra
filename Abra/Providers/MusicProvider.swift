@@ -206,7 +206,7 @@ import StoreKit
 
     // MARK: - Authorization
 
-    func authorize() async {
+    func requestPermission() async {
         let status = await MusicAuthorization.request()
         authorizationStatus = status
         if status != .authorized {
@@ -226,7 +226,7 @@ import StoreKit
         Song
     >.Element? {
         if authorizationStatus == .notDetermined {
-            await authorize()
+            await requestPermission()
         }
         do {
             let request = MusicCatalogResourceRequest<Song>(
