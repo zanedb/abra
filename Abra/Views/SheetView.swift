@@ -17,6 +17,7 @@ struct SheetView: View {
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
     @Environment(LibraryProvider.self) private var library
+    @Environment(MotionProvider.self) private var motion
     @Environment(MusicProvider.self) private var music
 
     @SectionedQuery(
@@ -128,6 +129,8 @@ struct SheetView: View {
             }
             // We‘ll need this soon
             location.requestLocation()
+            // This too?
+            // motion.startActivityUpdates()
         }
         .sensoryFeedback(.success, trigger: hapticTrigger)
     }
