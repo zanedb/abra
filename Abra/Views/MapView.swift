@@ -123,6 +123,27 @@ struct MapView: UIViewControllerRepresentable {
         sheetVC.transitioningDelegate = sheetVC
         context.coordinator.bottomSheetVC = sheetVC
 
+        let coordinator = context.coordinator
+        sheetProvider.collapseBottomSheet = { [weak sheetVC] in
+            guard let sheet = sheetVC?.sheetPresentationController else { return }
+            let currentId = sheet.selectedDetentIdentifier
+            let isAtLarge = currentId == .largeNoScale
+            coordinator.wasAtLargeWhenChildPresented = isAtLarge
+            if isAtLarge {
+                sheet.animateChanges {
+                    sheet.selectedDetentIdentifier = .fraction(0.5)
+                }
+            }
+        }
+        sheetProvider.expandBottomSheet = { [weak sheetVC] in
+            guard coordinator.wasAtLargeWhenChildPresented,
+                  let sheet = sheetVC?.sheetPresentationController else { return }
+            sheet.animateChanges {
+                sheet.selectedDetentIdentifier = .largeNoScale
+            }
+            coordinator.wasAtLargeWhenChildPresented = false
+        }
+
         DispatchQueue.main.async {
             uiVC.present(sheetVC, animated: true)
         }
@@ -139,6 +160,7 @@ struct MapView: UIViewControllerRepresentable {
         var highlighted: ShazamStream?
         private var temporaryAnnotations: Set<ShazamAnnotation> = []
         private var suppressDidDeselect = false
+        var wasAtLargeWhenChildPresented = false
 
         init(_ parent: MapView) {
             self.parent = parent

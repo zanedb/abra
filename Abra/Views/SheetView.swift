@@ -108,6 +108,13 @@ struct SheetView: View {
                 EmptyView()
             }
         }
+        .onChange(of: view.isPresented) { _, isPresented in
+            if isPresented {
+                view.collapseBottomSheet?()
+            } else {
+                view.expandBottomSheet?()
+            }
+        }
         .onChange(of: shazam.status) {
             if case .matched(let song) = shazam.status {
                 createShazamStream(song)
@@ -269,7 +276,6 @@ struct SheetView: View {
 
     private func song(_ stream: ShazamStream) -> some View {
         SongView(stream: stream)
-            .presentationDetents([.fraction(0.50), .large])
             .presentationInspector()
             .edgesIgnoringSafeArea(.bottom)
             .prefersEdgeAttachedInCompactHeight()

@@ -89,4 +89,8 @@ import SwiftUI
         spot = nil
         didChange.send()
     }
+
+    /// Called by MapView to collapse/expand the UIKit bottom sheet when a child sheet is presented.
+    var collapseBottomSheet: (() -> Void)?
+    var expandBottomSheet: (() -> Void)?
 }
