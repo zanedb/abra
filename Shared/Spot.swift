@@ -10,8 +10,11 @@ import SwiftData
 @Model final class Spot {
     var name: String = ""
     var symbol: String = "mappin.and.ellipse"
-    @Attribute(.transformable(by: UIColorValueTransformer.self)) var color:
-        UIColor = UIColor.systemIndigo
+    // CloudKit-compatible color storage
+    var colorRed: Double = 0.345
+    var colorGreen: Double = 0.337
+    var colorBlue: Double = 0.839
+    var colorAlpha: Double = 1.0
 
     var latitude: Double = 37.721941
     var longitude: Double = -122.4739084
@@ -99,6 +102,21 @@ import SwiftData
 }
 
 extension Spot {
+    // CloudKit-compatible UIColor computed property
+    var color: UIColor {
+        get {
+            UIColor(red: colorRed, green: colorGreen, blue: colorBlue, alpha: colorAlpha)
+        }
+        set {
+            var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+            newValue.getRed(&r, green: &g, blue: &b, alpha: &a)
+            colorRed = Double(r)
+            colorGreen = Double(g)
+            colorBlue = Double(b)
+            colorAlpha = Double(a)
+        }
+    }
+
     public var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
@@ -207,38 +225,4 @@ extension Spot {
     }
 }
 
-/// Transformer for UIColor, using NSSecureUnarchiveFromData
-@objc(UIColorValueTransformer)
-final class UIColorValueTransformer: ValueTransformer {
-    override class func transformedValueClass() -> AnyClass {
-        return UIColor.self
-    }
-
-    override func transformedValue(_ value: Any?) -> Any? {
-        guard let color = value as? UIColor else { return nil }
-        do {
-            let data = try NSKeyedArchiver.archivedData(
-                withRootObject: color,
-                requiringSecureCoding: true
-            )
-            return data
-        } catch {
-            return nil
-        }
-    }
-
-    override func reverseTransformedValue(_ value: Any?) -> Any? {
-        guard let data = value as? Data else { return nil }
-
-        do {
-            let color = try NSKeyedUnarchiver.unarchivedObject(
-                ofClass: UIColor.self,
-                from: data
-            )
-            return color
-        } catch {
-            return nil
-        }
-    }
-}
 
