@@ -77,6 +77,3 @@ import SwiftUI
         activityManager.stopActivityUpdates()
     }
 }
-
-    }
-}
