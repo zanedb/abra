@@ -8,10 +8,6 @@ import SwiftData
 import SwiftUI
 import SwiftUIIntrospect
 
-#if DEBUG
-// Import debug components
-#endif
-
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
 
@@ -74,10 +70,6 @@ struct ContentView: View {
                 }
                 .withToastProvider(toast)
                 .withToastOverlay(using: toast)
-                .overlay(alignment: .topLeading) {
-                    DebugControlsOverlay()
-                        .padding()
-                }
         }
     }
 }

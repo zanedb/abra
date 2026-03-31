@@ -39,7 +39,6 @@
 		2F63DEE02E0D2AF800DAA30F /* SheetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F63DEDF2E0D2AF600DAA30F /* SheetProvider.swift */; };
 		2F659BC22A403A0000EA43F9 /* SongView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F659BC12A403A0000EA43F9 /* SongView.swift */; };
 		2F6A2BF42E297DC400032845 /* LocationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6A2BF32E297DC200032845 /* LocationPicker.swift */; };
-		2F711AAD2F7C5C2F00B813EC /* DebugDataSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F711AAC2F7C5C2F00B813EC /* DebugDataSeeder.swift */; };
 		2F722B3D2F077590004243CD /* MKPointOfInterestCategory+symbol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F722B3C2F07758E004243CD /* MKPointOfInterestCategory+symbol.swift */; };
 		2F736BB92DBD8D030078F1BB /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BB82DBD8D020078F1BB /* Toast.swift */; };
 		2F736BBB2DBD9E120078F1BB /* ShazamProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */; };
@@ -151,7 +150,6 @@
 		2F63DEDF2E0D2AF600DAA30F /* SheetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetProvider.swift; sourceTree = "<group>"; };
 		2F659BC12A403A0000EA43F9 /* SongView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongView.swift; sourceTree = "<group>"; };
 		2F6A2BF32E297DC200032845 /* LocationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPicker.swift; sourceTree = "<group>"; };
-		2F711AAC2F7C5C2F00B813EC /* DebugDataSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugDataSeeder.swift; sourceTree = "<group>"; };
 		2F722B3C2F07758E004243CD /* MKPointOfInterestCategory+symbol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MKPointOfInterestCategory+symbol.swift"; sourceTree = "<group>"; };
 		2F736BB82DBD8D020078F1BB /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
 		2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamProvider.swift; sourceTree = "<group>"; };
@@ -368,7 +366,6 @@
 		2FA7D8182AC0E56D0039AD5C /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				2F711AAC2F7C5C2F00B813EC /* DebugDataSeeder.swift */,
 				2FA7D8192AC0E60F0039AD5C /* ShazamStream.swift */,
 				2F1727432C719B2700EEA500 /* Spot.swift */,
 				2F3DAB782DA8C360001004B9 /* Utils.swift */,
@@ -642,7 +639,6 @@
 				2F736BBD2DC04ED20078F1BB /* LocationProvider.swift in Sources */,
 				2FB5FA2F2DB8840100EFD901 /* Annotations.swift in Sources */,
 				2FFE24402E56711F005F4A67 /* MomentView.swift in Sources */,
-				2F711AAD2F7C5C2F00B813EC /* DebugDataSeeder.swift in Sources */,
 				2FFE24422E570786005F4A67 /* PhotoView.swift in Sources */,
 				2FE893752E25D12100244DEF /* SpotIcon.swift in Sources */,
 				2F00B44A2EAD7452004B4EFD /* SongInfo.swift in Sources */,
