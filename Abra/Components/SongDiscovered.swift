@@ -56,7 +56,7 @@ struct SongDiscovered: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Save To Spot")
+            Text("Save to Spot")
                 .font(.headline)
                 .padding(.horizontal)
 
