@@ -3,6 +3,7 @@
 //  Abra
 //
 
+import Contacts
 import MapKit
 import MediaPlayer
 import MusicKit
@@ -132,6 +133,14 @@ struct SpotView: View {
                     action: {
                         showingConfirmation = true
                     }
+                )
+                
+                Divider()
+
+                Button(
+                    "Open in Maps",
+                    systemImage: "map",
+                    action: openInMaps
                 )
 
                 Divider()
@@ -271,6 +280,29 @@ struct SpotView: View {
                         .padding(.leading, 60)
                 }
             }
+        }
+    }
+
+    private func openInMaps() {
+        Task {
+            if let identifierString = spot.mapItemIdentifier,
+                let identifier = MKMapItem.Identifier(rawValue: identifierString)
+            {
+                let request = MKMapItemRequest(mapItemIdentifier: identifier)
+                if let mapItem = try? await request.mapItem {
+                    mapItem.openInMaps()
+                    return
+                }
+            }
+            let address = CNMutablePostalAddress()
+            address.city = spot.city ?? ""
+            address.state = spot.state ?? ""
+            address.country = spot.country ?? ""
+            address.isoCountryCode = spot.countryCode ?? ""
+            let placemark = MKPlacemark(coordinate: spot.coordinate, postalAddress: address)
+            let mapItem = MKMapItem(placemark: placemark)
+            mapItem.name = spot.name
+            mapItem.openInMaps()
         }
     }
 
