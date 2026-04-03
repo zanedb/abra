@@ -22,8 +22,12 @@ struct MapItemCard: View {
                             ?? "city"
                             //mapItem.addressRepresentations?.cityName ?? mapItem.address?.shortAddress?.replacingOccurrences(of: ", ", with: "\n") ?? ""
                     )
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
                 } else {
                     Text(mapItem.name ?? "")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -56,7 +60,7 @@ struct SongDiscovered: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Save to Spot")
+            Text("Add to Spot")
                 .font(.headline)
                 .padding(.horizontal)
 
@@ -77,7 +81,9 @@ struct SongDiscovered: View {
                                 let newSpot = Spot(mapItem: item)
                                 onShowSpot(newSpot)
                                 Task {
-                                    newSpot.appendNearbyShazamStreams(modelContext)
+                                    newSpot.appendNearbyShazamStreams(
+                                        modelContext
+                                    )
                                     await newSpot.affiliateMapItem(from: item)
                                 }
                             }
@@ -139,7 +145,7 @@ struct SongDiscovered: View {
             }
         }
     }
-    
+
     private func SpotItem(_ spot: Spot) -> some View {
         Wrapper {
             VStack(alignment: .leading, spacing: 4) {
@@ -150,6 +156,8 @@ struct SongDiscovered: View {
                         .fontWeight(.medium)
                 }
                 Text(spot.description)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
             }
         }
     }
