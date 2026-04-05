@@ -64,10 +64,13 @@ import GeoToolbox
     var ocean: String?  // If above one
     var timeZoneIdentifier: String?
 
+    // Motion
+    var motionActivity: String?
+
     // Relations
     var spot: Spot?
 
-    init(mediaItem: SHMediaItem, location: CLLocation?, placemark: CLPlacemark?)
+    init(mediaItem: SHMediaItem, location: CLLocation?, placemark: CLPlacemark?, motionActivity: String? = nil)
     {
         self.timestamp = .now
 
@@ -91,6 +94,9 @@ import GeoToolbox
         // Set ranges using computed properties
         self.timeRanges = mediaItem.timeRanges
         self.frequencySkewRanges = mediaItem.frequencySkewRanges
+
+        // Motion
+        self.motionActivity = motionActivity
 
         // CLLocation
         self.latitude = location?.coordinate.latitude ?? 0

@@ -18,6 +18,7 @@ struct SheetView: View {
     @Environment(LocationProvider.self) private var location
     @Environment(LibraryProvider.self) private var library
     @Environment(MusicProvider.self) private var music
+    @Environment(MotionProvider.self) private var motion
 
     @SectionedQuery(
         \.timeGroupedString,
@@ -133,8 +134,12 @@ struct SheetView: View {
             if location.authorizationStatus == .notDetermined {
                 location.requestPermission()
             }
-            // We‘ll need this soon
+            // We’ll need this soon
             location.requestLocation()
+            // Request motion permission if never prompted (e.g. onboarded before this was added)
+            if motion.isAvailable && motion.authorizationStatus == .notDetermined {
+                motion.requestPermission()
+            }
         }
         .sensoryFeedback(.success, trigger: hapticTrigger)
     }
@@ -289,11 +294,22 @@ struct SheetView: View {
     }
 
     private func createShazamStream(_ mediaItem: SHMediaItem) {
+        let activityType: String? = motion.currentActivity.map { activity in
+            if activity.walking { return "walking" }
+            if activity.running { return "running" }
+            if activity.cycling { return "cycling" }
+            if activity.automotive { return "automotive" }
+            if activity.stationary { return "stationary" }
+            return "unknown"
+        }
+        print("Motion activity at Shazam: \(activityType ?? "unavailable")")
+
         // Create and show ShazamStream
         let stream = ShazamStream(
             mediaItem: mediaItem,
             location: location.currentLocation,
-            placemark: location.currentPlacemark
+            placemark: location.currentPlacemark,
+            motionActivity: activityType
         )
         modelContext.insert(stream)
         try? modelContext.save()
