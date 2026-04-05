@@ -51,21 +51,10 @@ struct PhotoView: View {
                 )
                 .font(.callout.weight(.medium))
             }
+            .foregroundStyle(.white)
         }
 
         ToolbarItem(placement: .primaryAction) {
-            Menu {
-                Button("Share", systemImage: "square.and.arrow.up") {}
-            } label: {
-                Image(systemName: "ellipsis")
-            }
-        }
-
-        if #available(iOS 26.0, *) {
-            ToolbarSpacer(placement: .bottomBar)
-        }
-
-        ToolbarItem(placement: .bottomBar) {
             if let imageToShare {
                 ShareLink(
                     item: imageToShare,
