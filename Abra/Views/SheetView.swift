@@ -302,7 +302,6 @@ struct SheetView: View {
             if activity.stationary { return "stationary" }
             return "unknown"
         }
-        print("Motion activity at Shazam: \(activityType ?? "unavailable")")
 
         // Create and show ShazamStream
         let stream = ShazamStream(
