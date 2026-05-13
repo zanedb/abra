@@ -23,8 +23,12 @@ struct MapItemCard: View {
                             ?? "city"
                             //mapItem.addressRepresentations?.cityName ?? mapItem.address?.shortAddress?.replacingOccurrences(of: ", ", with: "\n") ?? ""
                     )
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
                 } else {
                     Text(mapItem.name ?? "")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -36,9 +40,9 @@ struct SongDiscovered: View {
     @Environment(SheetProvider.self) private var view
 
     @Bindable var stream: ShazamStream
+    var onShowSpot: (Spot) -> Void
 
     @State var mapItems: [MKMapItem] = []
-    @State var spot: Spot?
 
     // The idea here is that if it's a relatively nearby area, and maybe the GPS is a little off, or it's wide open space, it'll prompt to add to semi-related spots
     // But.. do we need to make this calculation on every view open?
@@ -57,7 +61,7 @@ struct SongDiscovered: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Save To Spot")
+            Text("Add to Spot")
                 .font(.headline)
                 .padding(.horizontal)
 
@@ -65,7 +69,7 @@ struct SongDiscovered: View {
                 LazyHStack {
                     if let existing = stream.spot {
                         Button {
-                            spot = existing
+                            onShowSpot(existing)
                         } label: {
                             SpotItem(existing)
                         }
@@ -75,12 +79,13 @@ struct SongDiscovered: View {
                     ForEach(mapItems, id: \.identifier) { item in
                         Button {
                             if #available(iOS 26.0, *) {
-                                spot = Spot(mapItem: item)
+                                let newSpot = Spot(mapItem: item)
+                                onShowSpot(newSpot)
                                 Task {
-                                    spot?.appendNearbyShazamStreams(
+                                    newSpot.appendNearbyShazamStreams(
                                         modelContext
                                     )
-                                    await spot?.affiliateMapItem(from: item)
+                                    await newSpot.affiliateMapItem(from: item)
                                 }
                             }
                         } label: {
@@ -91,16 +96,17 @@ struct SongDiscovered: View {
                     ForEach(approximateSpots, id: \.id) { item in
                         Button {
                             stream.spot = item
-                            spot = item
+                            onShowSpot(item)
                         } label: {
                             SpotItem(item)
                         }
                     }
 
                     Button {
-                        spot = Spot(locationFrom: stream)
+                        let newSpot = Spot(locationFrom: stream)
+                        onShowSpot(newSpot)
                         Task {
-                            spot?.appendNearbyShazamStreams(modelContext)
+                            newSpot.appendNearbyShazamStreams(modelContext)
                         }
                     } label: {
                         Wrapper {
@@ -139,14 +145,8 @@ struct SongDiscovered: View {
                 // do i even need to support 18?
             }
         }
-        .sheet(item: $spot) { spot in
-            SpotView(spot: spot)
-                .presentationDetents([.fraction(0.50), .large])
-                .presentationInspector()
-                .prefersEdgeAttachedInCompactHeight()
-        }
     }
-    
+
     private func SpotItem(_ spot: Spot) -> some View {
         Wrapper {
             VStack(alignment: .leading, spacing: 4) {
@@ -157,6 +157,8 @@ struct SongDiscovered: View {
                         .fontWeight(.medium)
                 }
                 Text(spot.description)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -166,7 +168,6 @@ struct SongDiscovered: View {
     VStack {}
         .sheet(isPresented: .constant(true)) {
             SongView(stream: .preview)
-                .presentationDetents([.medium, .large])
                 .environment(SheetProvider())
                 .environment(LibraryProvider())
                 .environment(MusicProvider())

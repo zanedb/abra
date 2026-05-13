@@ -22,6 +22,9 @@ struct SongView: View {
     @State private var showingLocationPicker = false
     @State private var inLibrary: Bool = false
     @State private var expansion: CGFloat = 0
+    @State private var selectedDetent: PresentationDetent = .fraction(0.50)
+    @State private var spotToPresent: Spot? = nil
+    @State private var detentBeforeSpot: PresentationDetent? = nil
 
     var body: some View {
         NavigationStack {
@@ -30,7 +33,7 @@ struct SongView: View {
 
                 Moments(stream: stream)
 
-                SongDiscovered(stream: stream)
+                SongDiscovered(stream: stream, onShowSpot: showSpot)
 
                 SongDetails(stream: stream)
             }
@@ -65,6 +68,27 @@ struct SongView: View {
                     )
             }
         }
+        .presentationDetents([.fraction(0.50), .large], selection: $selectedDetent)
+        .sheet(item: $spotToPresent) { spot in
+            SpotView(spot: spot)
+                .presentationDetents([.fraction(0.50), .large])
+                .presentationInspector()
+                .prefersEdgeAttachedInCompactHeight()
+        }
+        .onChange(of: spotToPresent) { _, newValue in
+            if newValue == nil, let prior = detentBeforeSpot {
+                selectedDetent = prior
+                detentBeforeSpot = nil
+            }
+        }
+    }
+
+    private func showSpot(_ spot: Spot) {
+        if selectedDetent == .large {
+            detentBeforeSpot = .large
+            selectedDetent = .fraction(0.50)
+        }
+        spotToPresent = spot
     }
 
     @ToolbarContentBuilder
@@ -234,7 +258,6 @@ struct SongView: View {
     VStack {}
         .sheet(isPresented: .constant(true)) {
             SongView(stream: .preview)
-                .presentationDetents([.medium, .large])
                 .environment(SheetProvider())
                 .environment(LibraryProvider())
                 .environment(MusicProvider())

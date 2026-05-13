@@ -32,8 +32,9 @@ import GeoToolbox
     var appleMusicID: String?
     var webURL: URL?
     var shazamID: String?
-    var timeRanges: [Range<TimeInterval>] = []
-    var frequencySkewRanges: [Range<Float>] = []
+    // CloudKit-compatible range storage as JSON Data
+    var timeRangesData: Data = Data()
+    var frequencySkewRangesData: Data = Data()
 
     // CLLocation
     var latitude: Double = 0 // join me in null island..
@@ -63,10 +64,13 @@ import GeoToolbox
     var ocean: String?  // If above one
     var timeZoneIdentifier: String?
 
+    // Motion
+    var motionActivity: String?
+
     // Relations
     var spot: Spot?
 
-    init(mediaItem: SHMediaItem, location: CLLocation?, placemark: CLPlacemark?)
+    init(mediaItem: SHMediaItem, location: CLLocation?, placemark: CLPlacemark?, motionActivity: String? = nil)
     {
         self.timestamp = .now
 
@@ -87,8 +91,12 @@ import GeoToolbox
         self.appleMusicID = mediaItem.appleMusicID
         self.webURL = mediaItem.webURL
         self.shazamID = mediaItem.shazamID
+        // Set ranges using computed properties
         self.timeRanges = mediaItem.timeRanges
         self.frequencySkewRanges = mediaItem.frequencySkewRanges
+
+        // Motion
+        self.motionActivity = motionActivity
 
         // CLLocation
         self.latitude = location?.coordinate.latitude ?? 0
@@ -140,6 +148,7 @@ import GeoToolbox
         self.artist = artist
         self.artworkURL = artworkURL
         self.isExplicit = isExplicit
+        // Initialize empty ranges
         self.timeRanges = []
         self.frequencySkewRanges = []
         self.latitude = latitude
@@ -150,6 +159,41 @@ import GeoToolbox
 }
 
 extension ShazamStream {
+    // CloudKit-compatible Range computed properties
+    var timeRanges: [Range<TimeInterval>] {
+        get {
+            guard !timeRangesData.isEmpty,
+                  let ranges = try? JSONDecoder().decode([[Double]].self, from: timeRangesData) else {
+                return []
+            }
+            return ranges.compactMap { array in
+                guard array.count >= 2 else { return nil }
+                return Range(uncheckedBounds: (lower: array[0], upper: array[1]))
+            }
+        }
+        set {
+            let rangeArrays = newValue.map { [$0.lowerBound, $0.upperBound] }
+            timeRangesData = (try? JSONEncoder().encode(rangeArrays)) ?? Data()
+        }
+    }
+
+    var frequencySkewRanges: [Range<Float>] {
+        get {
+            guard !frequencySkewRangesData.isEmpty,
+                  let ranges = try? JSONDecoder().decode([[Float]].self, from: frequencySkewRangesData) else {
+                return []
+            }
+            return ranges.compactMap { array in
+                guard array.count >= 2 else { return nil }
+                return Range(uncheckedBounds: (lower: array[0], upper: array[1]))
+            }
+        }
+        set {
+            let rangeArrays = newValue.map { [$0.lowerBound, $0.upperBound] }
+            frequencySkewRangesData = (try? JSONEncoder().encode(rangeArrays)) ?? Data()
+        }
+    }
+
     public var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }

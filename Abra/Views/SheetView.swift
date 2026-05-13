@@ -17,8 +17,8 @@ struct SheetView: View {
     @Environment(ShazamProvider.self) private var shazam
     @Environment(LocationProvider.self) private var location
     @Environment(LibraryProvider.self) private var library
-    @Environment(MotionProvider.self) private var motion
     @Environment(MusicProvider.self) private var music
+    @Environment(MotionProvider.self) private var motion
 
     @SectionedQuery(
         \.timeGroupedString,
@@ -109,6 +109,13 @@ struct SheetView: View {
                 EmptyView()
             }
         }
+        .onChange(of: view.isPresented) { _, isPresented in
+            if isPresented {
+                view.collapseBottomSheet?()
+            } else {
+                view.expandBottomSheet?()
+            }
+        }
         .onChange(of: shazam.status) {
             if case .matched(let song) = shazam.status {
                 createShazamStream(song)
@@ -127,10 +134,12 @@ struct SheetView: View {
             if location.authorizationStatus == .notDetermined {
                 location.requestPermission()
             }
-            // We‘ll need this soon
+            // We’ll need this soon
             location.requestLocation()
-            // This too?
-            // motion.startActivityUpdates()
+            // Request motion permission if never prompted (e.g. onboarded before this was added)
+            if motion.isAvailable && motion.authorizationStatus == .notDetermined {
+                motion.requestPermission()
+            }
         }
         .sensoryFeedback(.success, trigger: hapticTrigger)
     }
@@ -272,7 +281,6 @@ struct SheetView: View {
 
     private func song(_ stream: ShazamStream) -> some View {
         SongView(stream: stream)
-            .presentationDetents([.fraction(0.50), .large])
             .presentationInspector()
             .edgesIgnoringSafeArea(.bottom)
             .prefersEdgeAttachedInCompactHeight()
@@ -286,11 +294,22 @@ struct SheetView: View {
     }
 
     private func createShazamStream(_ mediaItem: SHMediaItem) {
+        let activityType: String? = motion.currentActivity.map { activity in
+            if activity.walking { return "walking" }
+            if activity.running { return "running" }
+            if activity.cycling { return "cycling" }
+            if activity.automotive { return "automotive" }
+            if activity.stationary { return "stationary" }
+            return "unknown"
+        }
+        print("Motion activity at Shazam: \(activityType ?? "unavailable")")
+
         // Create and show ShazamStream
         let stream = ShazamStream(
             mediaItem: mediaItem,
             location: location.currentLocation,
-            placemark: location.currentPlacemark
+            placemark: location.currentPlacemark,
+            motionActivity: activityType
         )
         modelContext.insert(stream)
         try? modelContext.save()

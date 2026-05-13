@@ -131,16 +131,18 @@ struct SongInfo: View {
             } label: {
                 Text(stream.artist)
                     .lineLimit(1)
-                // If other Shazams by artist exist, indicate via icon
-                if matchedArtistStreams.count > 1 && expansion > 0.5 {
-                    Text("\(matchedArtistStreams.count)")
-                        .font(.footnote)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 1)
-                        .background(.quaternary)
-                        .clipShape(Capsule())
-                        .padding(.leading, -2)
-                }
+                    .overlay(alignment: .trailing) {
+                        // If other Shazams by artist exist, indicate via icon
+                        if matchedArtistStreams.count > 1 && expansion > 0.5 {
+                            Text("\(matchedArtistStreams.count)")
+                                .font(.footnote)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 1)
+                                .background(.quaternary)
+                                .clipShape(Capsule())
+                                .offset(x: 25)
+                        }
+                    }
             }
             .font(
                 .system(

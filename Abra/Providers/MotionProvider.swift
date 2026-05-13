@@ -77,7 +77,6 @@ import SwiftUI
         activityManager.stopActivityUpdates()
     }
 }
-
 // MARK: - Convenience Properties
 
 extension MotionProvider {

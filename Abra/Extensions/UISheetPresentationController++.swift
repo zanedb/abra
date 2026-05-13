@@ -26,7 +26,7 @@ extension UISheetPresentationController.Detent {
         if allowsScaling {
             return .large()
         } else {
-            return .custom { context in
+            return .custom(identifier: .largeNoScale) { context in
                 context.maximumDetentValue * 0.999777
             }
         }
@@ -34,6 +34,8 @@ extension UISheetPresentationController.Detent {
 }
 
 extension UISheetPresentationController.Detent.Identifier {
+    static let largeNoScale = UISheetPresentationController.Detent.Identifier("LargeNoScale")
+
     static func fraction(_ value: CGFloat) -> UISheetPresentationController.Detent.Identifier {
         return .init("Fraction:\(value)")
     }
