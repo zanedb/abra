@@ -48,12 +48,6 @@ struct Searching: View {
                     DismissButton(foreground: .white)
                 }
             }
-//            .onAppear {
-//                
-//                print(motion.currentActivity.debugDescription)
-//                print(motion.currentActivity?.confidence)
-//                
-//            }
         }
         .navigationTransition(.zoom(sourceID: "ShazamButton", in: namespace))
     }
