@@ -224,5 +224,3 @@ extension Spot {
         )
     }
 }
-
-

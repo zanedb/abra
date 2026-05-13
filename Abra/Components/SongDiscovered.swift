@@ -17,6 +17,7 @@ struct MapItemCard: View {
                     .fontWeight(.medium)
 
                 if #available(iOS 26.0, *) {
+                    // TODO: clean this up and figure out why sometimes,.. there's no city!
                     Text(
                         mapItem.addressRepresentations?.cityWithContext
                             ?? "city"

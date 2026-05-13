@@ -51,7 +51,10 @@ struct PhotoView: View {
                 )
                 .font(.callout.weight(.medium))
             }
-            .foregroundStyle(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .foregroundStyle(.primary)
+            .background(.regularMaterial, in: Capsule())
         }
 
         ToolbarItem(placement: .primaryAction) {

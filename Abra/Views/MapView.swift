@@ -661,6 +661,7 @@ struct MapView: UIViewControllerRepresentable {
 
                 Task {
                     spot.appendNearbyShazamStreams(parent.modelContext)
+                    // Now, should we obtain MKMapItem somehow? Prompt with default options?
                 }
             }
         }
