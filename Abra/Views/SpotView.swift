@@ -134,7 +134,7 @@ struct SpotView: View {
                         showingConfirmation = true
                     }
                 )
-
+                
                 Divider()
 
                 Button(

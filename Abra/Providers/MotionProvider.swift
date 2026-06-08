@@ -64,7 +64,7 @@ import SwiftUI
     
     // MARK: - Activity Updates
     
-    func startActivityUpdates() {
+    private func startActivityUpdates() {
         guard CMMotionActivityManager.isActivityAvailable() else { return }
         guard authorizationStatus == .authorized else { return }
         
@@ -75,32 +75,5 @@ import SwiftUI
     
     func stopActivityUpdates() {
         activityManager.stopActivityUpdates()
-    }
-}
-// MARK: - Convenience Properties
-
-extension MotionProvider {
-    var isWalking: Bool {
-        currentActivity?.walking ?? false
-    }
-    
-    var isRunning: Bool {
-        currentActivity?.running ?? false
-    }
-    
-    var isCycling: Bool {
-        currentActivity?.cycling ?? false
-    }
-    
-    var isAutomotive: Bool {
-        currentActivity?.automotive ?? false
-    }
-    
-    var isStationary: Bool {
-        currentActivity?.stationary ?? false
-    }
-    
-    var activityConfidence: CMMotionActivityConfidence {
-        currentActivity?.confidence ?? .low
     }
 }
