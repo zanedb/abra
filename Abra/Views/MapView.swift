@@ -179,9 +179,10 @@ struct MapView: UIViewControllerRepresentable {
         private func handleSheetProviderChange() {
             guard bottomSheetVC != nil else { return }
 
-            // Center the map if a coordinate is available
+            // Center the map if a valid (non-null-island) coordinate is available
             if let mapView = mapView,
-                let coord = parent.sheetProvider.coordinate
+                let coord = parent.sheetProvider.coordinate,
+                coord.latitude != 0 || coord.longitude != 0
             {
                 // Disable user tracking mode when centering on a selected annotation
                 // This prevents the map from snapping back to user location on iOS 26+
