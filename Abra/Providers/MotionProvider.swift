@@ -18,6 +18,7 @@ import SwiftUI
     
     init() {
         updateAuthorizationStatus()
+        startDeviceMotionUpdates()
     }
     
     deinit {
