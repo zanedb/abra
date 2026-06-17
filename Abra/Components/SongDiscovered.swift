@@ -58,6 +58,35 @@ struct SongDiscovered: View {
         .reversed()
     }
 
+    // This way, we can sort the nearby spots & map items by distance from stream for more relevant suggestions
+    private enum SpotOrMapItem: Identifiable {
+        case spot(Spot)
+        case mapItem(MKMapItem)
+
+        var id: String {
+            switch self {
+            case .spot(let s): "spot-\(s.id)"
+            case .mapItem(let m): "mapItem-\(m.identifier?.rawValue ?? m.name ?? m.placemark.title ?? "unknown")"
+            }
+        }
+
+        func distance(from streamLocation: CLLocation) -> CLLocationDistance {
+            switch self {
+            case .spot(let s):
+                return CLLocation(latitude: s.latitude, longitude: s.longitude).distance(from: streamLocation)
+            case .mapItem(let m):
+                let c = m.placemark.coordinate
+                return CLLocation(latitude: c.latitude, longitude: c.longitude).distance(from: streamLocation)
+            }
+        }
+    }
+
+    private var sortedItems: [SpotOrMapItem] {
+        let all: [SpotOrMapItem] =
+            approximateSpots.map { .spot($0) } + mapItems.map { .mapItem($0) }
+        return all.sorted { $0.distance(from: stream.location) < $1.distance(from: stream.location) }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Add to Spot")
@@ -83,30 +112,29 @@ struct SongDiscovered: View {
                             )
                         }
                     }
-
-                    ForEach(mapItems, id: \.identifier) { item in
-                        Button {
-                            if #available(iOS 26.0, *) {
-                                let newSpot = Spot(mapItem: item)
-                                onShowSpot(newSpot)
-                                Task {
-                                    newSpot.appendNearbyShazamStreams(
-                                        modelContext
-                                    )
-                                    await newSpot.affiliateMapItem(from: item)
-                                }
+                    
+                    ForEach(sortedItems) { item in
+                        switch item {
+                        case .spot(let spot):
+                            Button {
+                                stream.spot = spot
+                                onShowSpot(spot)
+                            } label: {
+                                SpotItem(spot)
                             }
-                        } label: {
-                            MapItemCard(mapItem: item)
-                        }
-                    }
-
-                    ForEach(approximateSpots, id: \.id) { item in
-                        Button {
-                            stream.spot = item
-                            onShowSpot(item)
-                        } label: {
-                            SpotItem(item)
+                        case .mapItem(let mapItem):
+                            Button {
+                                if #available(iOS 26.0, *) {
+                                    let newSpot = Spot(mapItem: mapItem)
+                                    onShowSpot(newSpot)
+                                    Task {
+                                        newSpot.appendNearbyShazamStreams(modelContext)
+                                        await newSpot.affiliateMapItem(from: mapItem)
+                                    }
+                                }
+                            } label: {
+                                MapItemCard(mapItem: mapItem)
+                            }
                         }
                     }
 
