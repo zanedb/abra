@@ -73,6 +73,15 @@ struct SongDiscovered: View {
                             SpotItem(existing)
                         }
                         .buttonStyle(.plain)
+                        .contextMenu {
+                            Button(
+                                "Remove from Spot",
+                                systemImage: "mappin.slash",
+                                action: {
+                                    stream.spot = nil
+                                }
+                            )
+                        }
                     }
 
                     ForEach(mapItems, id: \.identifier) { item in
