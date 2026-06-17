@@ -39,8 +39,20 @@ struct Moments: View {
     var spot: Spot?
     var id: PersistentIdentifier
 
+    private enum FullScreenItem: Identifiable {
+        case moment(Moment)
+        case photos([PHAsset])
+
+        var id: String {
+            switch self {
+            case .moment(let m): m.id.uuidString
+            case .photos(let assets): assets.map(\.localIdentifier).joined()
+            }
+        }
+    }
+
     @State private var moments: [Moment] = []
-    @State private var moment: Moment? = nil
+    @State private var fullScreenItem: FullScreenItem? = nil
 
     private func loadPhotos() {
         // Request authorization, on success load photos
@@ -126,8 +138,16 @@ struct Moments: View {
 
             loadPhotos()
         }
-        .fullScreenCover(item: $moment) { moment in
-            MomentView(moment: moment, namespace: transitionNamespace)
+        .fullScreenCover(item: $fullScreenItem) { item in
+            switch item {
+            case .moment(let m):
+                MomentView(moment: m, namespace: transitionNamespace)
+            case .photos(let assets):
+                PhotoView(photos: assets, initialIndex: 0)
+                    .navigationTransition(
+                        .zoom(sourceID: "MomentGallery", in: transitionNamespace)
+                    )
+            }
         }
         .onDisappear {
             // Clear Photos library on disappear
@@ -151,7 +171,7 @@ struct Moments: View {
                             in: transitionNamespace
                         )
                         .onTapGesture {
-                            moment = mo
+                            fullScreenItem = .moment(mo)
                         }
                         .overlay(alignment: .bottomLeading) {
                             HStack(alignment: .bottom) {
@@ -188,8 +208,11 @@ struct Moments: View {
                             )
                         )
                         .onTapGesture {
-                            // TODO: if moment has single photo, open PhotoView instead
-                            moment = thisMoment
+                            if thisMoment.phAssets.count == 1 {
+                                fullScreenItem = .photos(thisMoment.phAssets)
+                            } else {
+                                fullScreenItem = .moment(thisMoment)
+                            }
                         }
                     }
                 }
