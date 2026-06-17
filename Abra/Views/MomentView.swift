@@ -15,6 +15,7 @@ struct MomentView: View {
     @Namespace var details
 
     @State private var selectedPhotoIndex: Int? = nil
+    @State private var currentPhotoIndex: Int = 0
 
     var body: some View {
         NavigationStack {
@@ -34,11 +35,12 @@ struct MomentView: View {
             ) {
                 PhotoView(
                     photos: moment.phAssets,
-                    initialIndex: selectedPhotoIndex!
+                    initialIndex: selectedPhotoIndex!,
+                    onIndexChange: { currentPhotoIndex = $0 }
                 )
                 .navigationTransition(
                     .zoom(
-                        sourceID: moment.phAssets[selectedPhotoIndex!]
+                        sourceID: moment.phAssets[currentPhotoIndex]
                             .localIdentifier,
                         in: details
                     )
@@ -89,6 +91,7 @@ struct MomentView: View {
             // First image: full width, 1:1 aspect
             if let firstAsset = moment.phAssets.first {
                 Button {
+                    currentPhotoIndex = 0
                     selectedPhotoIndex = 0
                 } label: {
                     Thumbnail(
@@ -148,6 +151,7 @@ struct MomentView: View {
                     id: \.element
                 ) { index, asset in
                     Button {
+                        currentPhotoIndex = index + 1
                         selectedPhotoIndex = index + 1
                     } label: {
                         Thumbnail(

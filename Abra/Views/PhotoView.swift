@@ -14,9 +14,16 @@ struct PhotoView: View {
     @State private var currentIndex: Int
     @State private var imageToShare: Image?
 
-    init(photos: [PHAsset], initialIndex: Int) {
+    var onIndexChange: ((Int) -> Void)? = nil
+
+    init(photos: [PHAsset], initialIndex: Int, onIndexChange: ((Int) -> Void)? = nil) {
         self.photos = photos
         self._currentIndex = State(initialValue: initialIndex)
+        self.onIndexChange = onIndexChange
+    }
+
+    private var currentPhoto: PHAsset? {
+        photos.indices.contains(currentIndex) ? photos[currentIndex] : nil
     }
 
     var body: some View {
@@ -40,13 +47,13 @@ struct PhotoView: View {
         ToolbarItem(placement: .principal) {
             VStack {
                 Text(
-                    photos[currentIndex].creationDate ?? .distantPast,
+                    currentPhoto?.creationDate ?? .distantPast,
                     style: .date
                 )
                 .font(.caption)
 
                 Text(
-                    photos[currentIndex].creationDate ?? .distantPast,
+                    currentPhoto?.creationDate ?? .distantPast,
                     style: .time
                 )
                 .font(.callout.weight(.medium))
@@ -90,5 +97,6 @@ struct PhotoView: View {
             }
         }
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+        .onChange(of: currentIndex) { _, new in onIndexChange?(new) }
     }
 }
