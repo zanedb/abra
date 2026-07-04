@@ -49,6 +49,8 @@ enum ShazamStatus: Equatable {
     private var matchingTask: Task<Void, Never>?
     private var timeoutTask: Task<Void, Never>?
     
+    private var sessionIsActive: Bool = false
+
     var isMatching: Bool {
         if case .matching = status {
             return true
@@ -113,12 +115,17 @@ enum ShazamStatus: Equatable {
     /// Starts a Shazam match session
     @MainActor func startMatching() async {
         status = .matching
+        // Ensure session.cancel() is only called once per session by tracking sessionIsActive
+        sessionIsActive = true
         startActivity()
         
         // Set a timeout for taking too long
         let matchStartTime = Date()
-        timeoutTask = Task {
+        // Added [weak self] and guard to prevent use-after-free crashes when cancelling matching
+        timeoutTask = Task { [weak self] in
+            guard let self = self else { return }
             try? await Task.sleep(for: .seconds(8))
+            guard !Task.isCancelled else { return }
             if case .matching = self.status, Date().timeIntervalSince(matchStartTime) >= 8 {
                 await MainActor.run {
                     self.updateActivity(takingTooLong: true)
@@ -126,34 +133,41 @@ enum ShazamStatus: Equatable {
             }
         }
         
-        matchingTask = Task {
-            let result = await session.result()
+        // Added [weak self] and guard to prevent use-after-free crashes when cancelling matching
+        matchingTask = Task { [weak self] in
+            guard let self = self else { return }
+            let result = await self.session.result()
+            guard !Task.isCancelled else { return }
             switch result {
             case .match(let match):
                 if let mediaItem = match.mediaItems.first {
-                    logger.info("Match found: \(mediaItem.title ?? "unknown")")
-                    status = .matched(mediaItem)
+                    self.logger.info("Match found: \(mediaItem.title ?? "unknown")")
+                    self.status = .matched(mediaItem)
                     
-                    Task {
+                    // Added [weak self] and guard to prevent use-after-free crashes when cancelling matching
+                    Task { [weak self] in
+                        guard let self = self else { return }
                         do {
-                            try await addToLibrary(mediaItems: match.mediaItems)
+                            try await self.addToLibrary(mediaItems: match.mediaItems)
                         } catch {
-                            logger.error("Failed to add to library: \(error.localizedDescription)")
+                            self.logger.error("Failed to add to library: \(error.localizedDescription)")
                         }
                     }
                 }
                 
             case .noMatch:
-                logger.info("No match found")
-                status = .error(.noMatch)
+                self.logger.info("No match found")
+                self.status = .error(.noMatch)
                 
             case .error(let error, _):
-                logger.error("Matching error: \(error)")
-                status = .error(.matchFailed(error))
+                self.logger.error("Matching error: \(error)")
+                self.status = .error(.matchFailed(error))
             }
     
-            timeoutTask?.cancel()
-            stopMatching()
+            self.timeoutTask?.cancel()
+            await MainActor.run {
+                self.stopMatching()
+            }
         }
     }
     
@@ -164,7 +178,10 @@ enum ShazamStatus: Equatable {
         timeoutTask?.cancel()
         timeoutTask = nil
         
+        // Ensure session.cancel() is only called once per session by checking sessionIsActive
+        guard sessionIsActive else { return }
         session.cancel()
+        sessionIsActive = false
         
         // Only reset status if currently matching
         if case .matching = status {
@@ -283,3 +300,4 @@ enum ShazamStatus: Equatable {
         }
     }
 }
+
