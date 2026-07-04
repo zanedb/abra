@@ -61,6 +61,7 @@ struct MomentView: View {
             DismissButton(foreground: .white)
         }
 
+        /*
         ToolbarItem(placement: .primaryAction) {
             Menu {
                 Button("Share", systemImage: "square.and.arrow.up") {}
@@ -68,6 +69,7 @@ struct MomentView: View {
                 Image(systemName: "ellipsis")
             }
         }
+         */
 
         /*
         ToolbarItem(placement: .bottomBar) {
