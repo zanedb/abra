@@ -38,6 +38,7 @@ struct SheetView: View {
                 || $0.cityState.localizedCaseInsensitiveContains(
                     view.searchText
                 )
+                || $0.note.localizedCaseInsensitiveContains(view.searchText)
         }
     }
 
