@@ -57,7 +57,7 @@ struct MomentView: View {
 
     @ToolbarContentBuilder
     private var ToolbarItems: some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
+        ToolbarItem(placement: .confirmationAction) {
             DismissButton(foreground: .white)
         }
 

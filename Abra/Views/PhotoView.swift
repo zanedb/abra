@@ -3,20 +3,25 @@
 //  Abra
 //
 
+import LazyPager
 import Photos
 import SwiftUI
 
 struct PhotoView: View {
     @Environment(LibraryProvider.self) private var library
+    @Environment(\.dismiss) private var dismiss
 
     let photos: [PHAsset]
-
     @State private var currentIndex: Int
     @State private var imageToShare: Image?
-
+    @State private var opacity: CGFloat = 1
     var onIndexChange: ((Int) -> Void)? = nil
 
-    init(photos: [PHAsset], initialIndex: Int, onIndexChange: ((Int) -> Void)? = nil) {
+    init(
+        photos: [PHAsset],
+        initialIndex: Int,
+        onIndexChange: ((Int) -> Void)? = nil
+    ) {
         self.photos = photos
         self._currentIndex = State(initialValue: initialIndex)
         self.onIndexChange = onIndexChange
@@ -28,20 +33,57 @@ struct PhotoView: View {
 
     var body: some View {
         NavigationStack {
-            Photo
-                .ignoresSafeArea()
-                .background(.black)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItems
+            ZStack(alignment: .top) {
+                LazyPager(data: photos, page: $currentIndex) { photo in
+                    Thumbnail(
+                        assetLocalId: photo.localIdentifier,
+                        targetSize: CGSize(width: 2048, height: 2048)
+                    )
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
+                .zoomable(min: 1, max: 5)
+                .onDismiss(backgroundOpacity: $opacity) {
+                    dismiss()
+                }
+                .pageSpacing(10)
+                .background(.black.opacity(opacity))
+                .background(ClearFullScreenBackground())
+                .ignoresSafeArea()
+                .onChange(of: currentIndex) { _, new in
+                    onIndexChange?(new)
+                    imageToShare = nil
+                }
+                .task(id: currentIndex) {
+                    imageToShare = nil
+                    guard let photo = currentPhoto,
+                        let uiImage = try? await library.fetchImage(
+                            byLocalIdentifier: photo.localIdentifier,
+                            targetSize: CGSize(width: 2048, height: 2048)
+                        )
+                    else { return }
+                    imageToShare = Image(uiImage: uiImage)
+                }
+            }
+            .toolbar {
+                ToolbarItems
+            }
         }
     }
 
     @ToolbarContentBuilder
     private var ToolbarItems: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
-            DismissButton(foreground: .white)
+            if let imageToShare {
+                ShareLink(
+                    item: imageToShare,
+                    preview: SharePreview("", image: imageToShare),
+                    label: {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                )
+                .backportCircleSymbolVariant(fill: false)
+            }
         }
 
         ToolbarItem(placement: .principal) {
@@ -61,42 +103,8 @@ struct PhotoView: View {
             .foregroundStyle(.white)
         }
 
-        ToolbarItem(placement: .primaryAction) {
-            if let imageToShare {
-                ShareLink(
-                    item: imageToShare,
-                    preview: SharePreview("", image: imageToShare),
-                    label: {
-                        Image(systemName: "square.and.arrow.up")
-                    }
-                )
-                .backportCircleSymbolVariant(fill: false)
-            }
+        ToolbarItem(placement: .confirmationAction) {
+            DismissButton(foreground: .white)
         }
-    }
-
-    private var Photo: some View {
-        TabView(selection: $currentIndex) {
-            ForEach(photos.indices, id: \.self) { index in
-                GeometryReader { geometry in
-                    Thumbnail(
-                        assetLocalId: photos[index].localIdentifier,
-                        targetSize: .init(width: 1024, height: 1024),
-                        callback: { image in
-                            imageToShare = Image(uiImage: image)
-                        }
-                    )
-                    .scaledToFit()
-                    .frame(
-                        width: geometry.size.width,
-                        height: geometry.size.height
-                    )
-                    .clipped()
-                }
-                .tag(index)
-            }
-        }
-        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-        .onChange(of: currentIndex) { _, new in onIndexChange?(new) }
     }
 }

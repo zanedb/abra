@@ -65,6 +65,7 @@
 		2FCB5C402E1E4FDE0053E33D /* SentrySwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2FCB5C3F2E1E4FDE0053E33D /* SentrySwiftUI */; };
 		2FD307AC2E3426C5004ED2AD /* PlaylistPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD307AB2E3426C3004ED2AD /* PlaylistPicker.swift */; };
 		2FD307AE2E344A00004ED2AD /* NewPlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD307AD2E3449FF004ED2AD /* NewPlaylist.swift */; };
+		2FDB6BBC2FFF62690035EEFA /* LazyPager in Frameworks */ = {isa = PBXBuildFile; productRef = 2FDB6BBB2FFF62690035EEFA /* LazyPager */; };
 		2FDBA45C2E0DDFBA00552D44 /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FDBA45B2E0DDFB800552D44 /* ViewModifiers.swift */; };
 		2FE766D22A30515E00952513 /* SongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE766D12A30515E00952513 /* SongRow.swift */; };
 		2FE893732E25BF9200244DEF /* sfsymbols.json in Resources */ = {isa = PBXBuildFile; fileRef = 2FE893722E25BF8F00244DEF /* sfsymbols.json */; };
@@ -217,6 +218,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2FDB6BBC2FFF62690035EEFA /* LazyPager in Frameworks */,
 				2F2D2A412ED79B0100BC2291 /* MusadoraKit in Frameworks */,
 				2F0BF5E22E82113E008582C2 /* Kingfisher in Frameworks */,
 				2F3DAB822DAA0E95001004B9 /* SwiftUIIntrospect in Frameworks */,
@@ -460,6 +462,7 @@
 				2FCB5C3F2E1E4FDE0053E33D /* SentrySwiftUI */,
 				2F0BF5E12E82113E008582C2 /* Kingfisher */,
 				2F2D2A402ED79B0100BC2291 /* MusadoraKit */,
+				2FDB6BBB2FFF62690035EEFA /* LazyPager */,
 			);
 			productName = abra;
 			productReference = 2F60936C2A2EDFB30092A6DD /* Abra.app */;
@@ -542,6 +545,7 @@
 				2FCB5C3A2E1E4FDE0053E33D /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				2F0BF5E02E82113E008582C2 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				2F2D2A3F2ED79B0100BC2291 /* XCRemoteSwiftPackageReference "MusadoraKit" */,
+				2FDB6BBA2FFF62690035EEFA /* XCRemoteSwiftPackageReference "LazyPager" */,
 			);
 			productRefGroup = 2F60936D2A2EDFB30092A6DD /* Products */;
 			projectDirPath = "";
@@ -1119,6 +1123,14 @@
 				minimumVersion = 8.56.0;
 			};
 		};
+		2FDB6BBA2FFF62690035EEFA /* XCRemoteSwiftPackageReference "LazyPager" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gh123man/LazyPager";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1146,6 +1158,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2FCB5C3A2E1E4FDE0053E33D /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
 			productName = SentrySwiftUI;
+		};
+		2FDB6BBB2FFF62690035EEFA /* LazyPager */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2FDB6BBA2FFF62690035EEFA /* XCRemoteSwiftPackageReference "LazyPager" */;
+			productName = LazyPager;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
