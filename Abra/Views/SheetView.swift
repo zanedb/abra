@@ -97,7 +97,7 @@ struct SheetView: View {
                 prompt: "Shazams, Spots, Places, and More"
             )
         }
-        .fullScreenCover(isPresented: shazam.isMatchingBinding) {
+        .fullScreenCover(isPresented: view.isSearchingBinding) {
             Searching(namespace: animation)
         }
         .sheet(isPresented: view.isPresentedBinding) {
@@ -131,6 +131,8 @@ struct SheetView: View {
             updateLocationlessStreams()
         }
         .onAppear {
+            // Wire ShazamProvider → SheetProvider so it can control Searching dismissal
+            shazam.sheetProvider = view
             // If location was "allow once" request again
             if location.authorizationStatus == .notDetermined {
                 location.requestPermission()
@@ -165,18 +167,28 @@ struct SheetView: View {
                 if view.searchText.isEmpty {
                     Button {
                         Task {
-                            await shazam.startMatching()
+                            if shazam.isMatching {
+                                shazam.stopMatching()
+                            } else {
+                                await shazam.startMatching()
+                            }
                         }
                     } label: {
-                        Image(systemName: "shazam.logo")
-                            .font(.headline)
-                            .contentTransition(.symbolEffect(.replace))
-                            .symbolRenderingMode(.multicolor)
-                            .foregroundStyle(.white)
-                            .matchedTransitionSource(
-                                id: "ShazamButton",
-                                in: animation
-                            )
+                        Group {
+                            if shazam.continuous {
+                                Waveform(on: true, size: 2)
+                                    .foregroundStyle(.red)
+                            } else {
+                                Image(systemName: "waveform")
+                                    .font(.headline)
+                                    .symbolRenderingMode(.multicolor)
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                        .matchedTransitionSource(
+                            id: "ShazamButton",
+                            in: animation
+                        )
                     }
                     .buttonStyle(GlassProminentButtonStyle())
                     .accessibilityLabel("Shazam")
@@ -202,7 +214,15 @@ struct SheetView: View {
                     .font(.title2.weight(.medium))
             }
             ToolbarItem(placement: .automatic) {
-                Button(action: { Task { await shazam.startMatching() } }) {
+                Button(action: {
+                    Task {
+                        if shazam.isMatching {
+                            shazam.stopMatching()
+                        } else {
+                            await shazam.startMatching()
+                        }
+                    }
+                }) {
                     Image(systemName: "shazam.logo.fill")
                         .fontWeight(.medium)
                         .symbolRenderingMode(.multicolor)

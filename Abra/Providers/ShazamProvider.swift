@@ -43,26 +43,22 @@ enum ShazamStatus: Equatable {
 /// Shazam API wrapper
 @Observable final class ShazamProvider {
     var status: ShazamStatus = .idle
+    var continuous: Bool = false
 
     private let session = SHManagedSession()
     private let logger = Logger(subsystem: "app.zane.abra", category: "ShazamProvider")
-    private var matchingTask: Task<Void, Never>?
-    private var timeoutTask: Task<Void, Never>?
-    
+    @ObservationIgnored private var matchingTask: Task<Void, Never>?
+    @ObservationIgnored private var timeoutTask: Task<Void, Never>?
+    @ObservationIgnored private var lastMatchedKey: String?
+
     private var sessionIsActive: Bool = false
+    weak var sheetProvider: SheetProvider?
 
     var isMatching: Bool {
         if case .matching = status {
             return true
         }
         return false
-    }
-    
-    var isMatchingBinding: Binding<Bool> {
-        Binding<Bool>(
-            get: { self.isMatching },
-            set: { _ in Task { await self.stopMatching() } }
-        )
     }
     
     init() {
@@ -115,58 +111,89 @@ enum ShazamStatus: Equatable {
     /// Starts a Shazam match session
     @MainActor func startMatching() async {
         status = .matching
-        // Ensure session.cancel() is only called once per session by tracking sessionIsActive
         sessionIsActive = true
+        sheetProvider?.isSearching = true
         startActivity()
-        
-        // Set a timeout for taking too long
+        startTimeoutTask()
+
+        matchingTask = Task { [weak self] in
+            guard let self = self else { return }
+
+            repeat {
+                let result = await self.session.result()
+                guard !Task.isCancelled else { break }
+
+                self.timeoutTask?.cancel()
+
+                switch result {
+                case .match(let match):
+                    if let mediaItem = match.mediaItems.first {
+                        let matchKey = "\(mediaItem.title ?? "")–\(mediaItem.artist ?? "")"
+                        if matchKey != self.lastMatchedKey {
+                            self.lastMatchedKey = matchKey
+                            self.logger.info("Match found: \(mediaItem.title ?? "unknown")")
+                            self.status = .matched(mediaItem)
+                            if !self.continuous {
+                                self.sheetProvider?.dismissSearching()
+                            }
+                            Task { [weak self] in
+                                guard let self = self else { return }
+                                do {
+                                    try await self.addToLibrary(mediaItems: match.mediaItems)
+                                } catch {
+                                    self.logger.error("Failed to add to library: \(error.localizedDescription)")
+                                }
+                            }
+                        } else {
+                            self.logger.info("Duplicate match ignored: \(mediaItem.title ?? "unknown")")
+                        }
+                    }
+
+                case .noMatch:
+                    self.logger.info("No match found")
+                    if !self.continuous {
+                        self.sheetProvider?.dismissSearching()
+                        self.status = .error(.noMatch)
+                    }
+
+                case .error(let error, _):
+                    self.logger.error("Matching error: \(error)")
+                    self.sheetProvider?.dismissSearching()
+                    self.status = .error(.matchFailed(error))
+                    guard !Task.isCancelled else { return }
+                    await MainActor.run { self.stopMatching() }
+                    return
+                }
+
+                if self.continuous && !Task.isCancelled {
+                    // Brief pause between rounds before listening again
+                    try? await Task.sleep(for: .seconds(5))
+                    guard !Task.isCancelled else { break }
+                    await self.session.prepare()
+                    await MainActor.run {
+                        self.status = .matching
+                        self.startTimeoutTask()
+                    }
+                }
+            } while self.continuous && !Task.isCancelled
+
+            self.timeoutTask?.cancel()
+            // If task was cancelled externally, stopMatching() already ran — don't call it
+            // again or it will cancel any newly started matchingTask.
+            guard !Task.isCancelled else { return }
+            await MainActor.run { self.stopMatching() }
+        }
+    }
+
+    @MainActor private func startTimeoutTask() {
+        timeoutTask?.cancel()
         let matchStartTime = Date()
-        // Added [weak self] and guard to prevent use-after-free crashes when cancelling matching
         timeoutTask = Task { [weak self] in
             guard let self = self else { return }
             try? await Task.sleep(for: .seconds(8))
             guard !Task.isCancelled else { return }
             if case .matching = self.status, Date().timeIntervalSince(matchStartTime) >= 8 {
-                await MainActor.run {
-                    self.updateActivity(takingTooLong: true)
-                }
-            }
-        }
-        
-        // Added [weak self] and guard to prevent use-after-free crashes when cancelling matching
-        matchingTask = Task { [weak self] in
-            guard let self = self else { return }
-            let result = await self.session.result()
-            guard !Task.isCancelled else { return }
-            switch result {
-            case .match(let match):
-                if let mediaItem = match.mediaItems.first {
-                    self.logger.info("Match found: \(mediaItem.title ?? "unknown")")
-                    self.status = .matched(mediaItem)
-                    
-                    // Added [weak self] and guard to prevent use-after-free crashes when cancelling matching
-                    Task { [weak self] in
-                        guard let self = self else { return }
-                        do {
-                            try await self.addToLibrary(mediaItems: match.mediaItems)
-                        } catch {
-                            self.logger.error("Failed to add to library: \(error.localizedDescription)")
-                        }
-                    }
-                }
-                
-            case .noMatch:
-                self.logger.info("No match found")
-                self.status = .error(.noMatch)
-                
-            case .error(let error, _):
-                self.logger.error("Matching error: \(error)")
-                self.status = .error(.matchFailed(error))
-            }
-    
-            self.timeoutTask?.cancel()
-            await MainActor.run {
-                self.stopMatching()
+                await MainActor.run { self.updateActivity(takingTooLong: true) }
             }
         }
     }
@@ -177,17 +204,20 @@ enum ShazamStatus: Equatable {
         matchingTask = nil
         timeoutTask?.cancel()
         timeoutTask = nil
-        
+        lastMatchedKey = nil
+        continuous = false
+        sheetProvider?.dismissSearching()
+
         // Ensure session.cancel() is only called once per session by checking sessionIsActive
         guard sessionIsActive else { return }
         session.cancel()
         sessionIsActive = false
-        
+
         // Only reset status if currently matching
         if case .matching = status {
             status = .idle
         }
-        
+
         endActivity()
         logger.info("Shazam matching cancelled")
     }

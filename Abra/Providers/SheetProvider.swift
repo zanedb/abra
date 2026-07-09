@@ -56,6 +56,26 @@ import SwiftUI
         self.now != .none
     }
 
+    // MARK: - Searching sheet
+
+    /// Whether the Searching fullscreen cover is currently presented.
+    /// Set to true when matching starts; only auto-dismissed in non-continuous mode.
+    var isSearching: Bool = false
+
+    var isSearchingBinding: Binding<Bool> {
+        Binding<Bool>(
+            get: { self.isSearching },
+            set: { newValue in
+                // User manually dismissed — just close, don't stop matching
+                if !newValue { self.isSearching = false }
+            }
+        )
+    }
+
+    func dismissSearching() {
+        isSearching = false
+    }
+
     var searchText: String = ""
 
     var searchTextBinding: Binding<String> {
