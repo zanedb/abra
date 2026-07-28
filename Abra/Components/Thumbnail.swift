@@ -12,14 +12,12 @@ struct Thumbnail: View {
 
     var assetLocalId: String?
     var targetSize: CGSize = .init(width: 1024, height: 1024)
+    var contentMode: ContentMode = .fill
     var callback: ((UIImage) -> Void)?
 
-    func loadImageAsset(
-        targetSize: CGSize
-    ) async {
+    func loadImageAsset(targetSize: CGSize) async {
         guard let id = assetLocalId,
-              let uiImage = try? await library
-              .fetchImage(
+              let uiImage = try? await library.fetchImage(
                   byLocalIdentifier: id,
                   targetSize: targetSize
               )
@@ -35,15 +33,16 @@ struct Thumbnail: View {
 
     var body: some View {
         ZStack {
-            if let image = image {
+            if let image {
                 image
                     .resizable()
+                    .aspectRatio(contentMode: contentMode)
             } else {
-                Rectangle()
-                    .fill(.clear)
+                Color.clear
                 ProgressView()
             }
         }
+        .clipped()
         .task(id: assetLocalId) {
             await loadImageAsset(targetSize: targetSize)
         }
