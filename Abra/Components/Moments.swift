@@ -41,12 +41,12 @@ struct Moments: View {
 
     private enum FullScreenItem: Identifiable {
         case moment(Moment)
-        case photos([PHAsset])
+        case photos([PHAsset], [ShazamStream])
 
         var id: String {
             switch self {
             case .moment(let m): m.id.uuidString
-            case .photos(let assets): assets.map(\.localIdentifier).joined()
+            case .photos(let assets, _): assets.map(\.localIdentifier).joined()
             }
         }
     }
@@ -142,8 +142,8 @@ struct Moments: View {
             switch item {
             case .moment(let m):
                 MomentView(moment: m, namespace: transitionNamespace)
-            case .photos(let assets):
-                PhotoView(photos: assets, initialIndex: 0)
+            case .photos(let assets, let streams):
+                PhotoView(photos: assets, initialIndex: 0, streams: streams)
                     .navigationTransition(
                         .zoom(
                             sourceID: "MomentGallery",
@@ -177,7 +177,7 @@ struct Moments: View {
                             namespace: transitionNamespace
                         ) {
                             if thisMoment.phAssets.count == 1 {
-                                fullScreenItem = .photos(thisMoment.phAssets)
+                                fullScreenItem = .photos(thisMoment.phAssets, thisMoment.streams)
                             } else {
                                 fullScreenItem = .moment(thisMoment)
                             }

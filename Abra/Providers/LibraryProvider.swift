@@ -3,6 +3,7 @@
 //  Abra
 //
 
+import AVFoundation
 import Foundation
 import Photos
 import UIKit
@@ -42,21 +43,22 @@ import UIKit
             NSSortDescriptor(key: "creationDate", ascending: false) // Sort descending
         ]
         
-        let allAssets = PHAsset.fetchAssets(with: .image, options: fetchOptions)
+        let imageAssets = PHAsset.fetchAssets(with: .image, options: fetchOptions)
+        let videoAssets = PHAsset.fetchAssets(with: .video, options: fetchOptions)
         var filteredAssets: [PHAsset] = []
-        let searchRadius: CLLocationDistance = 1000 // 1km
-        
-        // Select photos within 0.5km
-        allAssets.enumerateObjects { asset, _, _ in
-            if let assetLocation = asset.location {
-                let distance = assetLocation.distance(from: location)
-                if distance <= searchRadius {
-                    filteredAssets.append(asset)
+        let searchRadius: CLLocationDistance = 1000
+
+        for fetchResult in [imageAssets, videoAssets] {
+            fetchResult.enumerateObjects { asset, _, _ in
+                if let assetLocation = asset.location {
+                    if assetLocation.distance(from: location) <= searchRadius {
+                        filteredAssets.append(asset)
+                    }
                 }
             }
         }
-        
-        return filteredAssets
+
+        return filteredAssets.sorted { ($0.creationDate ?? .distantPast) > ($1.creationDate ?? .distantPast) }
     }
     
     func fetchImage(
@@ -101,11 +103,53 @@ import UIKit
         byLocalIdentifier localId: PHAssetLocalIdentifier
     ) async throws -> PHAsset {
         let results = PHAsset.fetchAssets(withLocalIdentifiers: [localId], options: nil)
-        
+
         guard let asset = results.firstObject else {
             throw QueryError.phAssetNotFound
         }
-        
+
         return asset
+    }
+
+    func fetchPlayerItem(
+        byLocalIdentifier localId: PHAssetLocalIdentifier
+    ) async throws -> AVPlayerItem? {
+        let results = PHAsset.fetchAssets(withLocalIdentifiers: [localId], options: nil)
+        guard let asset = results.firstObject else { throw QueryError.phAssetNotFound }
+
+        let options = PHVideoRequestOptions()
+        options.isNetworkAccessAllowed = true
+        options.deliveryMode = .automatic
+
+        return try await withCheckedThrowingContinuation { continuation in
+            PHImageManager.default().requestPlayerItem(forVideo: asset, options: options) { playerItem, info in
+                if let error = info?[PHImageErrorKey] as? Error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: playerItem)
+            }
+        }
+    }
+
+    func fetchVideoURL(
+        byLocalIdentifier localId: PHAssetLocalIdentifier
+    ) async throws -> URL? {
+        let results = PHAsset.fetchAssets(withLocalIdentifiers: [localId], options: nil)
+        guard let asset = results.firstObject else { throw QueryError.phAssetNotFound }
+
+        let options = PHVideoRequestOptions()
+        options.isNetworkAccessAllowed = true
+        options.deliveryMode = .highQualityFormat
+
+        return try await withCheckedThrowingContinuation { continuation in
+            PHImageManager.default().requestAVAsset(forVideo: asset, options: options) { avAsset, _, info in
+                if let error = info?[PHImageErrorKey] as? Error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: (avAsset as? AVURLAsset)?.url)
+            }
+        }
     }
 }

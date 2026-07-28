@@ -36,6 +36,7 @@ struct MomentView: View {
                 PhotoView(
                     photos: moment.phAssets,
                     initialIndex: selectedPhotoIndex!,
+                    streams: moment.streams,
                     onIndexChange: { currentPhotoIndex = $0 }
                 )
                 .navigationTransition(
