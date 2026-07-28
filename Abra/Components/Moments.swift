@@ -295,13 +295,20 @@ private struct MomentAssetTile: View {
     let onTap: () -> Void
     @State private var size: CGSize = CGSize(width: 128, height: 192)
 
+    private var nativeAspectRatio: CGFloat {
+        let w = CGFloat(asset.pixelWidth)
+        let h = CGFloat(asset.pixelHeight)
+        guard w > 0, h > 0 else { return 2.0 / 3.0 }
+        return w / h
+    }
+
     var body: some View {
         Color.clear
-            .aspectRatio(2 / 3, contentMode: .fit)
+            .aspectRatio(nativeAspectRatio, contentMode: .fit)
             .overlay {
                 Thumbnail(
                     assetLocalId: asset.localIdentifier,
-                    targetSize: CGSize(width: 384, height: 576)
+                    targetSize: CGSize(width: 576, height: 576)
                 )
                 .scaledToFill()
             }
