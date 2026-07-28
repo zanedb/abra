@@ -145,7 +145,10 @@ struct Moments: View {
             case .photos(let assets):
                 PhotoView(photos: assets, initialIndex: 0)
                     .navigationTransition(
-                        .zoom(sourceID: "MomentGallery", in: transitionNamespace)
+                        .zoom(
+                            sourceID: "MomentGallery",
+                            in: transitionNamespace
+                        )
                     )
             }
         }
@@ -160,54 +163,19 @@ struct Moments: View {
             LazyHStack {
                 if moments.count > 1 {
                     ForEach(moments.reversed(), id: \.id) { mo in
-                        Thumbnail(
-                            assetLocalId: mo.phAssets.first!.localIdentifier,
-                            targetSize: .init(width: 384, height: 576)
-                        )
-                        .aspectRatio(contentMode: .fill)
-                        .aspectRatio(2 / 3, contentMode: .fit)
-                        .matchedTransitionSource(
-                            id: mo.id,
-                            in: transitionNamespace
-                        )
-                        .onTapGesture {
+                        MomentGroupTile(
+                            moment: mo,
+                            namespace: transitionNamespace
+                        ) {
                             fullScreenItem = .moment(mo)
                         }
-                        .overlay(alignment: .bottomLeading) {
-                            HStack(alignment: .bottom) {
-                                Text(mo.timestamp.day)
-                                    .font(.headline)
-                                    .foregroundStyle(.white)
-                                    .padding()
-                                Spacer()
-                            }
-                            .frame(maxWidth: .infinity)
-                            .background(.thinMaterial)
-                        }
-                        .clipShape(
-                            RoundedRectangle(
-                                cornerRadius: 18
-                            )
-                        )
                     }
                 } else if let thisMoment = moments.first {
                     ForEach(thisMoment.phAssets, id: \.self) { asset in
-                        Thumbnail(
-                            assetLocalId: asset.localIdentifier,
-                            targetSize: .init(width: 384, height: 576)
-                        )
-                        .aspectRatio(contentMode: .fill)
-                        .aspectRatio(2 / 3, contentMode: .fit)
-                        .matchedTransitionSource(
-                            id: "MomentGallery",
-                            in: transitionNamespace
-                        )
-                        .clipShape(
-                            RoundedRectangle(
-                                cornerRadius: 18
-                            )
-                        )
-                        .onTapGesture {
+                        MomentAssetTile(
+                            asset: asset,
+                            namespace: transitionNamespace
+                        ) {
                             if thisMoment.phAssets.count == 1 {
                                 fullScreenItem = .photos(thisMoment.phAssets)
                             } else {
@@ -279,6 +247,72 @@ struct Moments: View {
         }
         .padding(.horizontal)
         .padding(.bottom, 8)
+    }
+}
+
+private struct MomentGroupTile: View {
+    let moment: Moment
+    let namespace: Namespace.ID
+    let onTap: () -> Void
+    @State private var size: CGSize = CGSize(width: 128, height: 192)
+
+    var body: some View {
+        Color.clear
+            .aspectRatio(3 / 4, contentMode: .fit)
+            .overlay {
+                Thumbnail(
+                    assetLocalId: moment.phAssets.first?.localIdentifier,
+                    targetSize: CGSize(width: 384, height: 576)
+                )
+                .scaledToFill()
+            }
+            .overlay(alignment: .bottomLeading) {
+                HStack(alignment: .bottom) {
+                    Text(moment.timestamp.day)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .padding()
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+                .background(.thinMaterial)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            // .clipShape(.rect(cornerRadius: size.width * 0.14))
+            .matchedTransitionSource(id: moment.id, in: namespace)
+            .onGeometryChange(for: CGSize.self) {
+                $0.size
+            } action: {
+                size = $0
+            }
+            .onTapGesture { onTap() }
+    }
+}
+
+private struct MomentAssetTile: View {
+    let asset: PHAsset
+    let namespace: Namespace.ID
+    let onTap: () -> Void
+    @State private var size: CGSize = CGSize(width: 128, height: 192)
+
+    var body: some View {
+        Color.clear
+            .aspectRatio(2 / 3, contentMode: .fit)
+            .overlay {
+                Thumbnail(
+                    assetLocalId: asset.localIdentifier,
+                    targetSize: CGSize(width: 384, height: 576)
+                )
+                .scaledToFill()
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .matchedTransitionSource(id: "MomentGallery", in: namespace)
+            .onGeometryChange(for: CGSize.self) {
+                $0.size
+            } action: {
+                size = $0
+            }
+            .onTapGesture { onTap() }
     }
 }
 
