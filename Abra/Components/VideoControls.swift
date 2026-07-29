@@ -69,7 +69,6 @@ struct VideoControlBar: View {
     @State private var progress: Double = 0
     @State private var duration: Double = 1
     @State private var isDragging = false
-    @State private var isFinished = false
     @State private var wasPlayingBeforeScrub = false
 
     private let ticker = Timer.publish(every: 0.25, on: .main, in: .common)
@@ -81,7 +80,7 @@ struct VideoControlBar: View {
                 Button {
                     handlePlayPause()
                 } label: {
-                    Image(systemName: playButtonIcon)
+                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                         .font(.body.weight(.semibold))
                         .frame(width: 20)
                 }
@@ -93,7 +92,6 @@ struct VideoControlBar: View {
                         isDragging = true
                     } else {
                         isDragging = false
-                        isFinished = false
                         let time = CMTime(
                             seconds: progress * duration,
                             preferredTimescale: 600
@@ -130,23 +128,8 @@ struct VideoControlBar: View {
                         progress = player.currentTime().seconds / dur
                     }
                 }
-                if !isFinished {
-                    isPlaying = player.rate != 0
-                }
+                isPlaying = player.rate != 0
                 isMuted = player.isMuted
-            }
-            .onReceive(
-                NotificationCenter.default.publisher(
-                    for: AVPlayerItem.didPlayToEndTimeNotification
-                )
-            ) { notification in
-                guard
-                    let item = notification.object as? AVPlayerItem,
-                    item === player.currentItem
-                else { return }
-                isFinished = true
-                isPlaying = false
-                progress = 1.0
             }
             .onAppear {
                 isPlaying = player.rate != 0
@@ -166,21 +149,14 @@ struct VideoControlBar: View {
         }
     }
 
-    private var playButtonIcon: String {
-        if isFinished { return "arrow.counterclockwise" }
-        return isPlaying ? "pause.fill" : "play.fill"
-    }
-
     private func handlePlayPause() {
-        if isFinished {
-            player.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero)
-            player.play()
-            isFinished = false
-            isPlaying = true
-        } else if isPlaying {
+        if isPlaying {
             player.pause()
             isPlaying = false
         } else {
+            if progress >= 1.0 {
+                player.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero)
+            }
             player.play()
             isPlaying = true
         }
