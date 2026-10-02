@@ -363,11 +363,14 @@ struct PhotoView: View {
             Spacer()
         }
 
-        if let stream = currentStream {
+        // MARK: song pill in bottom?
+        /*
+         if let stream = currentStream {
             ToolbarItem(placement: .bottomBar) {
                 songPill(stream: stream)
             }
         }
+         */
 
         ToolbarItem(placement: .bottomBar) {
             Spacer()
@@ -409,3 +412,42 @@ struct PhotoView: View {
     }
 }
 
+// MARK: - Previews
+
+#Preview("Photo View") {
+    PhotoView(photos: [], initialIndex: 0)
+        .environment(LibraryProvider())
+}
+
+#Preview("Video Player") {
+    struct VideoPreview: View {
+        @State private var player: AVPlayer?
+
+        var body: some View {
+            ZStack {
+                Color.black.ignoresSafeArea()
+                if let player {
+                    VideoPage(player: player)
+                        .ignoresSafeArea()
+                } else {
+                    ProgressView().tint(.white)
+                }
+            }
+            .task {
+                // Load first video asset from Photos for a realistic preview
+                let options = PHFetchOptions()
+                options.fetchLimit = 1
+                options.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.video.rawValue)
+                guard let asset = PHAsset.fetchAssets(with: options).firstObject else { return }
+                let library = LibraryProvider()
+                if let item = try? await library.fetchPlayerItem(byLocalIdentifier: asset.localIdentifier) {
+                    let p = AVPlayer(playerItem: item)
+                    p.isMuted = true
+                    player = p
+                    p.play()
+                }
+            }
+        }
+    }
+    return VideoPreview()
+}
