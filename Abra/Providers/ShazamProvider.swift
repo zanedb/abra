@@ -40,6 +40,7 @@ enum ShazamStatus: Equatable {
     }
 }
 
+
 /// Shazam API wrapper
 @Observable final class ShazamProvider {
     var status: ShazamStatus = .idle
@@ -51,29 +52,26 @@ enum ShazamStatus: Equatable {
     @ObservationIgnored private var timeoutTask: Task<Void, Never>?
     @ObservationIgnored private var lastMatchedKey: String?
 
-    private var sessionIsActive: Bool = false
     weak var sheetProvider: SheetProvider?
 
     var isMatching: Bool {
-        if case .matching = status {
-            return true
-        }
+        if case .matching = status { return true }
         return false
     }
-    
+
     init() {
         if UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
-            // If this runs during onboarding, it‘ll ruin the permission request flow
+            // If this runs during onboarding, it’ll ruin the permission request flow
             prepare()
         }
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleStartRecordingIntent),
             name: Notification.Name("StartShazamRecordingIntent"),
             object: nil
         )
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleStopRecordingIntent),
@@ -81,7 +79,7 @@ enum ShazamStatus: Equatable {
             object: nil
         )
     }
-    
+
     /// Opens a mic stream to Shazam if possible; decreases time to match
     func prepare() {
         Task {
@@ -89,38 +87,40 @@ enum ShazamStatus: Equatable {
             logger.info("Shazam session prepared successfully")
         }
     }
-    
+
     /// Checks if microphone access is authorized
     /// - Returns: A boolean indicating if permission was granted
     func checkMicrophoneAuthorization() async -> Bool {
         let status = AVCaptureDevice.authorizationStatus(for: .audio)
-            
-        // Return true if already authorized
-        if status == .authorized {
-            return true
-        }
-            
-        // Request authorization if not determined
+        if status == .authorized { return true }
         if status == .notDetermined {
             return await AVCaptureDevice.requestAccess(for: .audio)
         }
-            
         return false
     }
-    
+
     /// Starts a Shazam match session
     @MainActor func startMatching() async {
         status = .matching
-        sessionIsActive = true
-        sheetProvider?.isSearching = true
+        // Don't open Searching sheet if continuous mode was pre-enabled (e.g. long press)
+        if !continuous {
+            sheetProvider?.isSearching = true
+        }
         startActivity()
-        startTimeoutTask()
+
+        // In continuous mode, configure audio session for background recording
+        if continuous {
+            configureAudioSessionForBackground()
+        } else {
+            // Timeout only makes sense in non-continuous mode
+            startTimeoutTask()
+        }
 
         matchingTask = Task { [weak self] in
             guard let self = self else { return }
 
-            repeat {
-                let result = await self.session.result()
+            // session.results is an AsyncSequence — ShazamKit drives re-listening automatically
+            for await result in self.session.results {
                 guard !Task.isCancelled else { break }
 
                 self.timeoutTask?.cancel()
@@ -165,21 +165,11 @@ enum ShazamStatus: Equatable {
                     return
                 }
 
-                if self.continuous && !Task.isCancelled {
-                    // Brief pause between rounds before listening again
-                    try? await Task.sleep(for: .seconds(5))
-                    guard !Task.isCancelled else { break }
-                    await self.session.prepare()
-                    await MainActor.run {
-                        self.status = .matching
-                        self.startTimeoutTask()
-                    }
-                }
-            } while self.continuous && !Task.isCancelled
+                // In non-continuous mode, stop after the first result
+                if !self.continuous { break }
+            }
 
             self.timeoutTask?.cancel()
-            // If task was cancelled externally, stopMatching() already ran — don't call it
-            // again or it will cancel any newly started matchingTask.
             guard !Task.isCancelled else { return }
             await MainActor.run { self.stopMatching() }
         }
@@ -197,7 +187,27 @@ enum ShazamStatus: Equatable {
             }
         }
     }
-    
+
+    private func configureAudioSessionForBackground() {
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.record, mode: .default, options: [.mixWithOthers])
+            try audioSession.setActive(true)
+            logger.info("Audio session configured for background recording")
+        } catch {
+            logger.error("Failed to configure audio session: \(error.localizedDescription)")
+        }
+    }
+
+    private func restoreAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+            logger.info("Audio session deactivated")
+        } catch {
+            logger.error("Failed to deactivate audio session: \(error.localizedDescription)")
+        }
+    }
+
     /// Stops the current matching session
     @MainActor func stopMatching() {
         matchingTask?.cancel()
@@ -207,19 +217,15 @@ enum ShazamStatus: Equatable {
         lastMatchedKey = nil
         continuous = false
         sheetProvider?.dismissSearching()
-
-        // Ensure session.cancel() is only called once per session by checking sessionIsActive
-        guard sessionIsActive else { return }
         session.cancel()
-        sessionIsActive = false
+        restoreAudioSession()
 
-        // Only reset status if currently matching
         if case .matching = status {
             status = .idle
         }
 
         endActivity()
-        logger.info("Shazam matching cancelled")
+        logger.info("Shazam matching stopped")
     }
     
     /// Adds media items to the Shazam library
@@ -330,4 +336,3 @@ enum ShazamStatus: Equatable {
         }
     }
 }
-
