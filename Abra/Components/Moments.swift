@@ -138,7 +138,7 @@ struct Moments: View {
 
             loadPhotos()
         }
-        .fullScreenCover(item: $fullScreenItem) { item in
+        .fullScreenCover(item: $fullScreenItem, onDismiss: loadPhotos) { item in
             switch item {
             case .moment(let m):
                 MomentView(moment: m, namespace: transitionNamespace)
