@@ -11,8 +11,8 @@ import UIKit
 
 class ShazamAnnotation: NSObject, MKAnnotation {
     let shazamStream: ShazamStream
-    let coordinate: CLLocationCoordinate2D
-    let title: String?
+    @objc dynamic var coordinate: CLLocationCoordinate2D
+    var title: String?
 
     init(shazamStream: ShazamStream) {
         self.shazamStream = shazamStream
@@ -24,8 +24,8 @@ class ShazamAnnotation: NSObject, MKAnnotation {
 
 class SpotAnnotation: NSObject, MKAnnotation {
     let spot: Spot
-    let coordinate: CLLocationCoordinate2D
-    let title: String?
+    @objc dynamic var coordinate: CLLocationCoordinate2D
+    var title: String?
 
     init(spot: Spot) {
         self.spot = spot
@@ -124,7 +124,7 @@ final class ShazamAnnotationView: MKAnnotationView {
         layer.masksToBounds = false
     }
 
-    private func loadImage() {
+    func loadImage() {
         guard let shazamAnnotation = annotation as? ShazamAnnotation else { return }
         
         imageView.kf.setImage(
@@ -167,7 +167,7 @@ final class SpotAnnotationView: MKMarkerAnnotationView {
         }
     }
 
-    private func configure(with spotAnnotation: SpotAnnotation) {
+    func configure(with spotAnnotation: SpotAnnotation) {
         markerTintColor = spotAnnotation.spot.color
         if spotAnnotation.spot.sfSymbol != "" {
             glyphImage = UIImage(systemName: spotAnnotation.spot.sfSymbol)
