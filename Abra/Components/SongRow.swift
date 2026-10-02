@@ -76,35 +76,71 @@ struct SongRow: View {
         .padding(.vertical, 8)
         .contentShape(Rectangle())
         .contextMenu {
-            if let spot = stream.spot {
-                Button(
-                    "Show in Spot",
-                    systemImage: "arrow.up.forward",
-                    action: { view.show(spot) }
-                )
-                Divider()
-            }
-
             if let appleMusicURL = stream.appleMusicURL,
                 let appleMusicID = stream.appleMusicID
             {
-                ShareLink(item: appleMusicURL) {
-                    Label("Share", systemImage: "square.and.arrow.up")
-                }
 
-                Divider()
-
-                Link(destination: appleMusicURL) {
-                    Label(
-                        "Open in Music",
-                        systemImage: "arrow.up.forward"
+                
+                if let spot = stream.spot {
+                    Button(
+                        "Show in Spot",
+                        systemImage: "mappin",
+                        action: { view.show(spot) }
                     )
+                    Divider()
                 }
+                
+                
+                    ControlGroup {
+                        Button(
+                            nowPlaying ? "Pause" : "Play",
+                            systemImage: nowPlaying ? "pause.fill" : "play.fill",
+                            action: { music.playPause(id: appleMusicID) }
+                        )
+                        
+                        Link(destination: appleMusicURL) {
+                            Label(
+                                "Open in Music",
+                                systemImage: "arrow.up.forward"
+                            )
+                        }
+
+                        
+                            ShareLink(item: appleMusicURL) {
+                                Label("Share", systemImage: "square.and.arrow.up")
+                            }
+                    }
+                
+                Divider()
+                
                 Button(
-                    nowPlaying ? "Pause" : "Play",
-                    systemImage: nowPlaying ? "pause.fill" : "play.fill",
-                    action: { music.playPause(id: appleMusicID) }
+                    "Play Next",
+                    systemImage:
+                        "text.line.first.and.arrowtriangle.forward",
+                    action: {
+                        Task {
+                            await music.queue(
+                                ids: [appleMusicID],
+                                position: .afterCurrentEntry
+                            )
+                        }
+                    }
                 )
+                
+                Button(
+                        "Add to Queue",
+                        systemImage:
+                            "text.line.last.and.arrowtriangle.forward",
+                        action: {
+                            Task {
+                                await music.queue(
+                                    ids: [appleMusicID],
+                                    position: .tail
+                                )
+                            }
+                        }
+                    )
+                
                 Divider()
             }
 
