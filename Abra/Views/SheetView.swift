@@ -9,6 +9,8 @@ import ShazamKit
 import SwiftData
 import SwiftUI
 
+import struct SectionedQuery.SectionedResults
+
 struct SheetView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.toastProvider) private var toast
@@ -141,7 +143,9 @@ struct SheetView: View {
             // We’ll need this soon
             location.requestLocation()
             // Request motion permission if never prompted (e.g. onboarded before this was added)
-            if motion.isAvailable && motion.authorizationStatus == .notDetermined {
+            if motion.isAvailable
+                && motion.authorizationStatus == .notDetermined
+            {
                 motion.requestPermission()
             }
         }
@@ -190,17 +194,22 @@ struct SheetView: View {
                                     .foregroundStyle(.white)
                             }
                         }
-                        .matchedTransitionSource(id: "ShazamButton", in: animation)
+                        .matchedTransitionSource(
+                            id: "ShazamButton",
+                            in: animation
+                        )
                     }
-                    .buttonStyle(GlassProminentButtonStyle()) 
+                    .buttonStyle(GlassProminentButtonStyle())
                     .accessibilityLabel("Shazam")
-                    .simultaneousGesture(LongPressGesture(minimumDuration: 0.5).onEnded { _ in
-                        longPressHandled = true
-                        Task {
-                            shazam.continuous = true
-                            await shazam.startMatching()
+                    .simultaneousGesture(
+                        LongPressGesture(minimumDuration: 0.5).onEnded { _ in
+                            longPressHandled = true
+                            Task {
+                                shazam.continuous = true
+                                await shazam.startMatching()
+                            }
                         }
-                    })
+                    )
                 } else {
                     Button {
                         view.searchText = ""
