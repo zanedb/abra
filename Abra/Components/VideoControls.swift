@@ -3,7 +3,7 @@
 //  Abra
 
 import AVFoundation
-import AVKit
+import Combine
 import SwiftUI
 
 // MARK: - VideoPage
@@ -84,7 +84,7 @@ struct VideoControlBar: View {
                         .font(.body.weight(.semibold))
                         .frame(width: 20)
                 }
-                
+
                 Slider(value: $progress, in: 0...1) { editing in
                     if editing {
                         wasPlayingBeforeScrub = isPlaying
@@ -96,7 +96,11 @@ struct VideoControlBar: View {
                             seconds: progress * duration,
                             preferredTimescale: 600
                         )
-                        player.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
+                        player.seek(
+                            to: time,
+                            toleranceBefore: .zero,
+                            toleranceAfter: .zero
+                        )
                         if wasPlayingBeforeScrub {
                             player.play()
                         }
@@ -104,14 +108,17 @@ struct VideoControlBar: View {
                     }
                 }
                 .tint(.white)
-                
+
                 Button {
                     isMuted.toggle()
                     player.isMuted = isMuted
                 } label: {
-                    Image(systemName: isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
-                        .font(.body.weight(.semibold))
-                        .frame(width: 20)
+                    Image(
+                        systemName: isMuted
+                            ? "speaker.slash.fill" : "speaker.wave.2.fill"
+                    )
+                    .font(.body.weight(.semibold))
+                    .frame(width: 20)
                 }
             }
             .foregroundStyle(.white)
@@ -161,5 +168,4 @@ struct VideoControlBar: View {
             isPlaying = true
         }
     }
-
 }
