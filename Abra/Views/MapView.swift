@@ -87,7 +87,7 @@ struct MapView: UIViewControllerRepresentable {
         _ uiViewController: UIViewController,
         context: Context
     ) {
-        context.coordinator.updateAnnotations(shazams: shazams, spots: spots)
+        context.coordinator.syncAnnotations(shazams: shazams, spots: spots)
 
         // Present the bottom sheet, always
         if uiViewController.presentedViewController == nil {
@@ -162,6 +162,12 @@ struct MapView: UIViewControllerRepresentable {
         private var suppressDidDeselect = false
         var wasAtLargeWhenChildPresented = false
 
+        // MARK: - Annotation Tracking
+        private var shazamAnnotations: [PersistentIdentifier: ShazamAnnotation] = [:]
+        private var spotAnnotations: [PersistentIdentifier: SpotAnnotation] = [:]
+        /// Controls observation lifecycle: removing an ID stops the recursive re-registration loop.
+        private var activeObservations: Set<PersistentIdentifier> = []
+
         init(_ parent: MapView) {
             self.parent = parent
         }
@@ -230,113 +236,167 @@ struct MapView: UIViewControllerRepresentable {
 
         // MARK: - Annotation Management
 
-        func updateAnnotations(shazams: [ShazamStream], spots: [Spot]) {
+        func syncAnnotations(shazams: [ShazamStream], spots: [Spot]) {
             guard let mapView = mapView else { return }
 
-            // Get current annotations excluding temporary ones and system annotations
-            let currentAnnotations = mapView.annotations.filter {
-                !($0 is MKUserLocation) && !($0 is MKClusterAnnotation)
-                    && !($0 is MKMapFeatureAnnotation)
-                    && !temporaryAnnotations.contains(
-                        $0 as? ShazamAnnotation
-                            ?? ShazamAnnotation(shazamStream: ShazamStream())
-                    )
-            }
+            // --- ShazamStreams ---
+            let newShazamIDs = Set(shazams.map(\.persistentModelID))
+            let currentShazamIDs = Set(shazamAnnotations.keys)
 
-            let newShazamAnnotations = shazams.map {
-                ShazamAnnotation(shazamStream: $0)
-            }
-            let newSpotAnnotations = spots.map { SpotAnnotation(spot: $0) }
-            let newAnnotations: [MKAnnotation] =
-                newShazamAnnotations + newSpotAnnotations
-
-            let annotationsToRemove = currentAnnotations.filter {
-                currentAnnotation in
-                !newAnnotations.contains { newAnnotation in
-                    annotationsAreEqual(currentAnnotation, newAnnotation)
-                }
-            }
-
-            let annotationsToAdd = newAnnotations.filter { newAnnotation in
-                !currentAnnotations.contains { currentAnnotation in
-                    annotationsAreEqual(currentAnnotation, newAnnotation)
-                }
-            }
-
-            // CRITICAL FIX: Suppress didDeselect when removing annotations
-            // that are currently selected due to state changes
-            var shouldSuppressDeselect = false
+            // Suppress didDeselect if the currently-selected stream is being removed
+            // because it was assigned to a spot (not a true user-driven deselection)
             if let selectedAnnotation = mapView.selectedAnnotations.first,
-                annotationsToRemove.contains(where: {
-                    annotationsAreEqual($0, selectedAnnotation)
-                })
+                let shazamAnnotation = selectedAnnotation as? ShazamAnnotation,
+                let currentlySelected = getCurrentlySelectedItem(),
+                case .stream(let selectedStream) = currentlySelected,
+                shazamAnnotation.shazamStream == selectedStream,
+                selectedStream.spot != nil,
+                !newShazamIDs.contains(selectedStream.persistentModelID)
             {
-                // Check if this removal is due to a ShazamStream being assigned to a spot
-                if let shazamAnnotation = selectedAnnotation
-                    as? ShazamAnnotation,
-                    let currentlySelected = getCurrentlySelectedItem(),
-                    case .stream(let selectedStream) = currentlySelected,
-                    shazamAnnotation.shazamStream == selectedStream,
-                    selectedStream.spot != nil
-                {
-                    shouldSuppressDeselect = true
-                }
-            }
-
-            if shouldSuppressDeselect {
                 suppressDidDeselect = true
-            }
-
-            if !annotationsToRemove.isEmpty {
-                mapView.removeAnnotations(annotationsToRemove)
-            }
-            if !annotationsToAdd.isEmpty {
-                mapView.addAnnotations(annotationsToAdd)
-            }
-
-            // Reset suppress flag after a short delay
-            if shouldSuppressDeselect {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    [weak self] in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
                     self?.suppressDidDeselect = false
                 }
             }
 
-            // Handle pending spot selection
-            if let spot = pendingSpotToSelect {
-                if let spotAnnotation = mapView.annotations.first(where: {
-                    if let spotAnnotation = $0 as? SpotAnnotation {
-                        return spotAnnotation.spot == spot
-                    }
-                    return false
-                }) {
-                    isProgrammaticSelection = true
-                    mapView.selectAnnotation(spotAnnotation, animated: true)
-                    lastSelectedAnnotation = spotAnnotation
-                    isProgrammaticSelection = false
-                    pendingSpotToSelect = nil
-                }
+            for id in currentShazamIDs.subtracting(newShazamIDs) {
+                mapView.removeAnnotation(shazamAnnotations.removeValue(forKey: id)!)
+                activeObservations.remove(id)
+            }
+            for stream in shazams where !currentShazamIDs.contains(stream.persistentModelID) {
+                let annotation = ShazamAnnotation(shazamStream: stream)
+                shazamAnnotations[stream.persistentModelID] = annotation
+                mapView.addAnnotation(annotation)
+                observeStream(stream)
             }
 
-            print(
-                "Removed: \(annotationsToRemove.count), Added: \(annotationsToAdd.count)"
-            )
+            // --- Spots ---
+            let newSpotIDs = Set(spots.map(\.persistentModelID))
+            let currentSpotIDs = Set(spotAnnotations.keys)
+
+            for id in currentSpotIDs.subtracting(newSpotIDs) {
+                mapView.removeAnnotation(spotAnnotations.removeValue(forKey: id)!)
+                activeObservations.remove(id)
+            }
+            for spot in spots where !currentSpotIDs.contains(spot.persistentModelID) {
+                let annotation = SpotAnnotation(spot: spot)
+                spotAnnotations[spot.persistentModelID] = annotation
+                mapView.addAnnotation(annotation)
+                observeSpot(spot)
+            }
+
+            // Handle pending spot selection
+            if let spot = pendingSpotToSelect,
+                let annotation = spotAnnotations[spot.persistentModelID]
+            {
+                isProgrammaticSelection = true
+                mapView.selectAnnotation(annotation, animated: true)
+                lastSelectedAnnotation = annotation
+                isProgrammaticSelection = false
+                pendingSpotToSelect = nil
+            }
         }
 
-        private func annotationsAreEqual(
-            _ lhs: MKAnnotation,
-            _ rhs: MKAnnotation
-        ) -> Bool {
-            switch (lhs, rhs) {
-            case (
-                let shazamL as ShazamAnnotation, let shazamR as ShazamAnnotation
-            ):
-                return shazamL.shazamStream == shazamR.shazamStream
-            case (let spotL as SpotAnnotation, let spotR as SpotAnnotation):
-                return spotL.spot == spotR.spot
-            default:
-                return false
+        // MARK: - Per-Model Observation
+
+        private func observeStream(_ stream: ShazamStream) {
+            let id = stream.persistentModelID
+            activeObservations.insert(id)
+
+            var lastCoordinate = stream.coordinate
+            var lastTitle = stream.title
+            var lastArtworkURL = stream.artworkURL
+
+            func register() {
+                guard activeObservations.contains(id) else { return }
+                withObservationTracking {
+                    _ = stream.coordinate
+                    _ = stream.title
+                    _ = stream.artworkURL
+                } onChange: {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self,
+                              activeObservations.contains(id),
+                              let annotation = shazamAnnotations[id]
+                        else { return }
+
+                        let newCoordinate = stream.coordinate
+                        if newCoordinate.latitude != lastCoordinate.latitude ||
+                            newCoordinate.longitude != lastCoordinate.longitude
+                        {
+                            annotation.coordinate = newCoordinate
+                            lastCoordinate = newCoordinate
+                        }
+
+                        let newTitle = stream.title
+                        if newTitle != lastTitle {
+                            annotation.title = newTitle
+                            lastTitle = newTitle
+                        }
+
+                        let newURL = stream.artworkURL
+                        if newURL != lastArtworkURL {
+                            (mapView?.view(for: annotation) as? ShazamAnnotationView)?.loadImage()
+                            lastArtworkURL = newURL
+                        }
+
+                        register()
+                    }
+                }
             }
+            register()
+        }
+
+        private func observeSpot(_ spot: Spot) {
+            let id = spot.persistentModelID
+            activeObservations.insert(id)
+
+            var lastCoordinate = spot.coordinate
+            var lastName = spot.name
+            var lastColor = spot.color
+            var lastSymbol = spot.sfSymbol
+
+            func register() {
+                guard activeObservations.contains(id) else { return }
+                withObservationTracking {
+                    _ = spot.coordinate
+                    _ = spot.name
+                    _ = spot.color
+                    _ = spot.sfSymbol
+                } onChange: {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self,
+                              activeObservations.contains(id),
+                              let annotation = spotAnnotations[id]
+                        else { return }
+
+                        let newCoordinate = spot.coordinate
+                        if newCoordinate.latitude != lastCoordinate.latitude ||
+                            newCoordinate.longitude != lastCoordinate.longitude
+                        {
+                            annotation.coordinate = newCoordinate
+                            lastCoordinate = newCoordinate
+                        }
+
+                        let newName = spot.name
+                        if newName != lastName {
+                            annotation.title = newName
+                            lastName = newName
+                        }
+
+                        let newColor = spot.color
+                        let newSymbol = spot.sfSymbol
+                        if newColor != lastColor || newSymbol != lastSymbol {
+                            (mapView?.view(for: annotation) as? SpotAnnotationView)?.configure(with: annotation)
+                            lastColor = newColor
+                            lastSymbol = newSymbol
+                        }
+
+                        register()
+                    }
+                }
+            }
+            register()
         }
 
         private func selectAnnotation() {
@@ -352,23 +412,13 @@ struct MapView: UIViewControllerRepresentable {
                 // Clean up any temporary annotations first
                 cleanupTemporaryAnnotations()
 
-                annotationToSelect = mapView.annotations.first(where: {
-                    if let spotAnnotation = $0 as? SpotAnnotation {
-                        return spotAnnotation.spot == spot
-                    }
-                    return false
-                })
+                annotationToSelect = spotAnnotations[spot.persistentModelID]
 
             case .stream(let stream):
                 highlighted = stream
 
-                // First, try to find existing annotation
-                annotationToSelect = mapView.annotations.first(where: {
-                    if let shazamAnnotation = $0 as? ShazamAnnotation {
-                        return shazamAnnotation.shazamStream == stream
-                    }
-                    return false
-                })
+                // Direct O(1) lookup
+                annotationToSelect = shazamAnnotations[stream.persistentModelID]
 
                 // If not found, we need a temporary annotation
                 if annotationToSelect == nil {
