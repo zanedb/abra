@@ -100,7 +100,7 @@ struct SheetView: View {
                 prompt: "Shazams, Spots, Places, and More"
             )
         }
-        .fullScreenCover(isPresented: view.isSearchingBinding) {
+        .fullScreenCover(isPresented: searchingPresentation) {
             Searching(namespace: animation)
         }
         .sheet(isPresented: view.isPresentedBinding) {
@@ -150,6 +150,22 @@ struct SheetView: View {
             }
         }
         .sensoryFeedback(.success, trigger: hapticTrigger)
+    }
+
+    private var searchingPresentation: Binding<Bool> {
+        Binding(
+            get: { view.isSearching },
+            set: { isPresented in
+                let wasPresented = view.isSearching
+                view.isSearching = isPresented
+
+                if wasPresented && !isPresented
+                    && shazam.isMatching && !shazam.continuous
+                {
+                    shazam.stopMatching()
+                }
+            }
+        )
     }
 
     @ToolbarContentBuilder
