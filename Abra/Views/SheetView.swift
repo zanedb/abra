@@ -58,6 +58,7 @@ struct SheetView: View {
     @State private var searchHidden: Bool = false
     @State private var searchFocused: Bool = false
     @State private var hapticTrigger = false
+    @State private var longPressHandled = false
 
     var body: some View {
         NavigationStack {
@@ -166,6 +167,10 @@ struct SheetView: View {
             ToolbarItem(placement: .primaryAction) {
                 if view.searchText.isEmpty {
                     Button {
+                        if longPressHandled {
+                            longPressHandled = false
+                            return
+                        }
                         Task {
                             if shazam.isMatching {
                                 shazam.stopMatching()
@@ -185,13 +190,17 @@ struct SheetView: View {
                                     .foregroundStyle(.white)
                             }
                         }
-                        .matchedTransitionSource(
-                            id: "ShazamButton",
-                            in: animation
-                        )
+                        .matchedTransitionSource(id: "ShazamButton", in: animation)
                     }
-                    .buttonStyle(GlassProminentButtonStyle())
+                    .buttonStyle(GlassProminentButtonStyle()) 
                     .accessibilityLabel("Shazam")
+                    .simultaneousGesture(LongPressGesture(minimumDuration: 0.5).onEnded { _ in
+                        longPressHandled = true
+                        Task {
+                            shazam.continuous = true
+                            await shazam.startMatching()
+                        }
+                    })
                 } else {
                     Button {
                         view.searchText = ""
