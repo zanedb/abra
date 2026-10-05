@@ -5,6 +5,7 @@
 
 import Combine
 import MapKit
+import OSLog
 import SwiftData
 import SwiftUI
 import UIKit
@@ -52,10 +53,14 @@ struct MapView: UIViewControllerRepresentable {
         context.coordinator.mapView = mapView
 
         mapView.delegate = context.coordinator
-        mapView.showsUserLocation = true
-        mapView.showsUserTrackingButton = true
+        mapView.showsUserLocation = !MapBenchmarkConfiguration.isEnabled
+        mapView.showsUserTrackingButton = !MapBenchmarkConfiguration.isEnabled
         mapView.showsCompass = true
-        mapView.setUserTrackingMode(.follow, animated: true)
+        if let benchmarkRegion = MapBenchmarkConfiguration.mapRegion {
+            mapView.setRegion(benchmarkRegion, animated: false)
+        } else {
+            mapView.setUserTrackingMode(.follow, animated: true)
+        }
         mapView.selectableMapFeatures = [.pointsOfInterest]
 
         mapView.register(
@@ -150,6 +155,11 @@ struct MapView: UIViewControllerRepresentable {
     }
 
     class Coordinator: NSObject, MKMapViewDelegate {
+        private static let signposter = OSSignposter(
+            subsystem: "app.zane.abra",
+            category: "MapAnnotations"
+        )
+
         private let parent: MapView
         weak var mapView: MKMapView?
         weak var bottomSheetVC: UIViewController?
@@ -239,6 +249,22 @@ struct MapView: UIViewControllerRepresentable {
         func syncAnnotations(shazams: [ShazamStream], spots: [Spot]) {
             guard let mapView = mapView else { return }
 
+            let signpostID = Self.signposter.makeSignpostID()
+            let signpostState = Self.signposter.beginInterval(
+                "SyncAnnotations",
+                id: signpostID,
+                "shazams: \(shazams.count), spots: \(spots.count)"
+            )
+            var addedCount = 0
+            var removedCount = 0
+            defer {
+                Self.signposter.endInterval(
+                    "SyncAnnotations",
+                    signpostState,
+                    "added: \(addedCount), removed: \(removedCount)"
+                )
+            }
+
             // --- ShazamStreams ---
             let newShazamIDs = Set(shazams.map(\.persistentModelID))
             let currentShazamIDs = Set(shazamAnnotations.keys)
@@ -262,12 +288,14 @@ struct MapView: UIViewControllerRepresentable {
             for id in currentShazamIDs.subtracting(newShazamIDs) {
                 mapView.removeAnnotation(shazamAnnotations.removeValue(forKey: id)!)
                 activeObservations.remove(id)
+                removedCount += 1
             }
             for stream in shazams where !currentShazamIDs.contains(stream.persistentModelID) {
                 let annotation = ShazamAnnotation(shazamStream: stream)
                 shazamAnnotations[stream.persistentModelID] = annotation
                 mapView.addAnnotation(annotation)
                 observeStream(stream)
+                addedCount += 1
             }
 
             // --- Spots ---
@@ -277,12 +305,14 @@ struct MapView: UIViewControllerRepresentable {
             for id in currentSpotIDs.subtracting(newSpotIDs) {
                 mapView.removeAnnotation(spotAnnotations.removeValue(forKey: id)!)
                 activeObservations.remove(id)
+                removedCount += 1
             }
             for spot in spots where !currentSpotIDs.contains(spot.persistentModelID) {
                 let annotation = SpotAnnotation(spot: spot)
                 spotAnnotations[spot.persistentModelID] = annotation
                 mapView.addAnnotation(annotation)
                 observeSpot(spot)
+                addedCount += 1
             }
 
             // Handle pending spot selection
@@ -315,6 +345,18 @@ struct MapView: UIViewControllerRepresentable {
                     _ = stream.artworkURL
                 } onChange: {
                     DispatchQueue.main.async { [weak self] in
+                        let signpostID = Self.signposter.makeSignpostID()
+                        let signpostState = Self.signposter.beginInterval(
+                            "ObserveStreamChange",
+                            id: signpostID
+                        )
+                        defer {
+                            Self.signposter.endInterval(
+                                "ObserveStreamChange",
+                                signpostState
+                            )
+                        }
+
                         guard let self,
                               activeObservations.contains(id),
                               let annotation = shazamAnnotations[id]
@@ -365,6 +407,18 @@ struct MapView: UIViewControllerRepresentable {
                     _ = spot.sfSymbol
                 } onChange: {
                     DispatchQueue.main.async { [weak self] in
+                        let signpostID = Self.signposter.makeSignpostID()
+                        let signpostState = Self.signposter.beginInterval(
+                            "ObserveSpotChange",
+                            id: signpostID
+                        )
+                        defer {
+                            Self.signposter.endInterval(
+                                "ObserveSpotChange",
+                                signpostState
+                            )
+                        }
+
                         guard let self,
                               activeObservations.contains(id),
                               let annotation = spotAnnotations[id]

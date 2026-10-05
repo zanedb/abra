@@ -22,7 +22,7 @@ struct ContentView: View {
     @State private var music = MusicProvider()
 
     var body: some View {
-        if !onboarded && !isPreview {
+        if !onboarded && !isPreview && !MapBenchmarkConfiguration.isEnabled {
             ZStack {
                 Map(initialPosition: .userLocation(fallback: .automatic))
 

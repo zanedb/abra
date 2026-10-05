@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		2F00B44A2EAD7452004B4EFD /* SongInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F00B4492EAD7451004B4EFD /* SongInfo.swift */; };
 		2F0A4CD43019306C00365C51 /* VideoControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0A4CD33019306C00365C51 /* VideoControls.swift */; };
+		2F0C0001303A000000000001 /* MapBenchmarkConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0C0000303A000000000001 /* MapBenchmarkConfiguration.swift */; };
 		2F0BF5E22E82113E008582C2 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F0BF5E12E82113E008582C2 /* Kingfisher */; };
 		2F1727442C719B2700EEA500 /* Spot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1727432C719B2700EEA500 /* Spot.swift */; };
 		2F2D2A3E2ED7818200BC2291 /* View+backportCircleSymbolVariant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */; };
@@ -122,6 +123,7 @@
 /* Begin PBXFileReference section */
 		2F00B4492EAD7451004B4EFD /* SongInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongInfo.swift; sourceTree = "<group>"; };
 		2F0A4CD33019306C00365C51 /* VideoControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoControls.swift; sourceTree = "<group>"; };
+		2F0C0000303A000000000001 /* MapBenchmarkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBenchmarkConfiguration.swift; sourceTree = "<group>"; };
 		2F1727432C719B2700EEA500 /* Spot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spot.swift; sourceTree = "<group>"; };
 		2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+backportCircleSymbolVariant.swift"; sourceTree = "<group>"; };
 		2F2D2A442ED7B7DD00BC2291 /* Button+adaptiveGlass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Button+adaptiveGlass.swift"; sourceTree = "<group>"; };
@@ -383,6 +385,7 @@
 		2FC1E0962A622B9500EF92D4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				2F0C0000303A000000000001 /* MapBenchmarkConfiguration.swift */,
 				2FE893722E25BF8F00244DEF /* sfsymbols.json */,
 				2FDBA45B2E0DDFB800552D44 /* ViewModifiers.swift */,
 			);
@@ -611,6 +614,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2F6093A42A2EEDFE0092A6DD /* MapView.swift in Sources */,
+				2F0C0001303A000000000001 /* MapBenchmarkConfiguration.swift in Sources */,
 				2F9090232E614F8B00828E6D /* View+PrefersEdgeAttachedInCompactHeight.swift in Sources */,
 				2F3DAB7F2DA9CEF1001004B9 /* RoundedButton.swift in Sources */,
 				2F3C12D12E3B31930080C310 /* SpotRow.swift in Sources */,
@@ -1015,7 +1019,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = abra;
+				TEST_TARGET_NAME = Abra;
 			};
 			name = Debug;
 		};
@@ -1032,7 +1036,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = abra;
+				TEST_TARGET_NAME = Abra;
 			};
 			name = Release;
 		};

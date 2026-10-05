@@ -7,6 +7,9 @@ import XCTest
 
 final class AbraUITests: XCTestCase {
 
+    private static let mapAnnotationSubsystem = "app.zane.abra"
+    private static let mapAnnotationCategory = "MapAnnotations"
+
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
 
@@ -35,5 +38,46 @@ final class AbraUITests: XCTestCase {
                 XCUIApplication().launch()
             }
         }
+    }
+
+    @MainActor
+    func testMapAnnotationSync100() throws {
+        measureMapAnnotationSync(annotationCount: 100)
+    }
+
+    @MainActor
+    func testMapAnnotationSync1000() throws {
+        measureMapAnnotationSync(annotationCount: 1_000)
+    }
+
+    @MainActor
+    func testMapAnnotationSync5000() throws {
+        measureMapAnnotationSync(annotationCount: 5_000)
+    }
+
+    @MainActor
+    private func measureMapAnnotationSync(annotationCount: Int) {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-MapBenchmarkCount",
+            String(annotationCount),
+            "-MapBenchmarkDistribution",
+            "dense",
+        ]
+
+        let metric = XCTOSSignpostMetric(
+            subsystem: Self.mapAnnotationSubsystem,
+            category: Self.mapAnnotationCategory,
+            name: "SyncAnnotations"
+        )
+        let options = XCTMeasureOptions()
+        options.iterationCount = 5
+
+        measure(metrics: [metric], options: options) {
+            app.terminate()
+            app.launch()
+        }
+
+        app.terminate()
     }
 }
