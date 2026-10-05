@@ -10,28 +10,95 @@ import UIKit
 // MARK: - Annotation Classes
 
 class ShazamAnnotation: NSObject, MKAnnotation {
-    let shazamStream: ShazamStream
+    private(set) var shazamStream: ShazamStream
     @objc dynamic var coordinate: CLLocationCoordinate2D
     var title: String?
+    private(set) var artworkURL: URL
 
     init(shazamStream: ShazamStream) {
         self.shazamStream = shazamStream
         self.coordinate = shazamStream.coordinate
         self.title = shazamStream.title
+        self.artworkURL = shazamStream.artworkURL
         super.init()
+    }
+
+    @discardableResult
+    func update(from shazamStream: ShazamStream) -> (
+        changed: Bool,
+        artworkChanged: Bool
+    ) {
+        var changed = false
+        let newCoordinate = shazamStream.coordinate
+        if coordinate.latitude != newCoordinate.latitude
+            || coordinate.longitude != newCoordinate.longitude
+        {
+            coordinate = newCoordinate
+            changed = true
+        }
+
+        if title != shazamStream.title {
+            title = shazamStream.title
+            changed = true
+        }
+
+        let artworkChanged = artworkURL != shazamStream.artworkURL
+        if artworkChanged {
+            artworkURL = shazamStream.artworkURL
+            changed = true
+        }
+
+        self.shazamStream = shazamStream
+        return (changed, artworkChanged)
     }
 }
 
 class SpotAnnotation: NSObject, MKAnnotation {
-    let spot: Spot
+    private(set) var spot: Spot
     @objc dynamic var coordinate: CLLocationCoordinate2D
     var title: String?
+    private(set) var color: UIColor
+    private(set) var symbol: String
 
     init(spot: Spot) {
         self.spot = spot
         self.coordinate = spot.coordinate
         self.title = spot.name
+        self.color = spot.color
+        self.symbol = spot.sfSymbol
         super.init()
+    }
+
+    @discardableResult
+    func update(from spot: Spot) -> (
+        changed: Bool,
+        appearanceChanged: Bool
+    ) {
+        var changed = false
+        let newCoordinate = spot.coordinate
+        if coordinate.latitude != newCoordinate.latitude
+            || coordinate.longitude != newCoordinate.longitude
+        {
+            coordinate = newCoordinate
+            changed = true
+        }
+
+        if title != spot.name {
+            title = spot.name
+            changed = true
+        }
+
+        let newColor = spot.color
+        let newSymbol = spot.sfSymbol
+        let appearanceChanged = !color.isEqual(newColor) || symbol != newSymbol
+        if appearanceChanged {
+            color = newColor
+            symbol = newSymbol
+            changed = true
+        }
+
+        self.spot = spot
+        return (changed, appearanceChanged)
     }
 }
 
@@ -126,9 +193,9 @@ final class ShazamAnnotationView: MKAnnotationView {
 
     func loadImage() {
         guard let shazamAnnotation = annotation as? ShazamAnnotation else { return }
-        
+
         imageView.kf.setImage(
-            with: shazamAnnotation.shazamStream.artworkURL,
+            with: shazamAnnotation.artworkURL,
             options: [
                 .transition(.fade(0.2)),
                 .cacheOriginalImage
@@ -168,10 +235,10 @@ final class SpotAnnotationView: MKMarkerAnnotationView {
     }
 
     func configure(with spotAnnotation: SpotAnnotation) {
-        markerTintColor = spotAnnotation.spot.color
-        if spotAnnotation.spot.sfSymbol != "" {
-            glyphImage = UIImage(systemName: spotAnnotation.spot.sfSymbol)
-        }
+        markerTintColor = spotAnnotation.color
+        glyphImage = spotAnnotation.symbol.isEmpty
+            ? nil
+            : UIImage(systemName: spotAnnotation.symbol)
         displayPriority = .required
     }
 }

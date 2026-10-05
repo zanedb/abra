@@ -3,8 +3,9 @@
 //  AbraTests
 //
 
-import XCTest
 @testable import Abra
+import MapKit
+import XCTest
 
 final class AbraTests: XCTestCase {
 
@@ -16,19 +17,93 @@ final class AbraTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    @MainActor
+    func testAnnotationSnapshotsTrackModelChanges() {
+        let oldArtworkURL = URL(string: "https://example.com/old.png")!
+        let newArtworkURL = URL(string: "https://example.com/new.png")!
+        let stream = ShazamStream(
+            title: "Old title",
+            artworkURL: oldArtworkURL,
+            latitude: 1,
+            longitude: 2
+        )
+        let shazamAnnotation = ShazamAnnotation(shazamStream: stream)
+
+        stream.title = "New title"
+        stream.artworkURL = newArtworkURL
+        stream.latitude = 3
+        stream.longitude = 4
+
+        let streamChanges = shazamAnnotation.update(from: stream)
+        XCTAssertTrue(streamChanges.changed)
+        XCTAssertTrue(streamChanges.artworkChanged)
+        XCTAssertEqual(shazamAnnotation.title, "New title")
+        XCTAssertEqual(shazamAnnotation.artworkURL, newArtworkURL)
+        XCTAssertEqual(shazamAnnotation.coordinate.latitude, 3)
+        XCTAssertEqual(shazamAnnotation.coordinate.longitude, 4)
+
+        let spot = Spot(
+            name: "Old spot",
+            symbol: "house",
+            color: .systemBlue,
+            latitude: 5,
+            longitude: 6
+        )
+        let spotAnnotation = SpotAnnotation(spot: spot)
+
+        spot.name = "New spot"
+        spot.symbol = "music.note"
+        spot.color = .systemOrange
+        spot.latitude = 7
+        spot.longitude = 8
+
+        let spotChanges = spotAnnotation.update(from: spot)
+        XCTAssertTrue(spotChanges.changed)
+        XCTAssertTrue(spotChanges.appearanceChanged)
+        XCTAssertEqual(spotAnnotation.title, "New spot")
+        XCTAssertEqual(spotAnnotation.symbol, "music.note")
+        XCTAssertTrue(spotAnnotation.color.isEqual(spot.color))
+        XCTAssertEqual(spotAnnotation.coordinate.latitude, 7)
+        XCTAssertEqual(spotAnnotation.coordinate.longitude, 8)
     }
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
+    @MainActor
+    func testCoordinatorReconcilesAddsUpdatesAndRemovals() throws {
+        let stream = ShazamStream(title: "Stream", latitude: 1, longitude: 2)
+        let spot = Spot(name: "Spot", latitude: 3, longitude: 4)
+        let coordinator = MapView().makeCoordinator()
+        let mapView = MKMapView()
+        coordinator.mapView = mapView
 
+        coordinator.syncAnnotations(shazams: [stream], spots: [spot])
+
+        let shazamAnnotation = try XCTUnwrap(
+            mapView.annotations.compactMap { $0 as? ShazamAnnotation }.first
+        )
+        let spotAnnotation = try XCTUnwrap(
+            mapView.annotations.compactMap { $0 as? SpotAnnotation }.first
+        )
+
+        stream.title = "Updated stream"
+        stream.latitude = 5
+        spot.name = "Updated spot"
+        spot.symbol = "music.note"
+
+        coordinator.syncAnnotations(shazams: [stream], spots: [spot])
+
+        XCTAssertTrue(
+            mapView.annotations.contains { $0 === shazamAnnotation }
+        )
+        XCTAssertTrue(mapView.annotations.contains { $0 === spotAnnotation })
+        XCTAssertEqual(shazamAnnotation.title, "Updated stream")
+        XCTAssertEqual(shazamAnnotation.coordinate.latitude, 5)
+        XCTAssertEqual(spotAnnotation.title, "Updated spot")
+        XCTAssertEqual(spotAnnotation.symbol, "music.note")
+
+        coordinator.syncAnnotations(shazams: [], spots: [])
+        XCTAssertFalse(
+            mapView.annotations.contains { $0 is ShazamAnnotation }
+        )
+        XCTAssertFalse(mapView.annotations.contains { $0 is SpotAnnotation })
+    }
 }
