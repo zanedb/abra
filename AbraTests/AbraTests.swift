@@ -106,4 +106,55 @@ final class AbraTests: XCTestCase {
         )
         XCTAssertFalse(mapView.annotations.contains { $0 is SpotAnnotation })
     }
+
+    func testSpotMomentGroupingUsesDayAndLocation() {
+        let calendar = Calendar(identifier: .gregorian)
+        let day = Date(timeIntervalSince1970: 1_700_000_000)
+        let nextDay = calendar.date(byAdding: .day, value: 1, to: day)!
+        let inputs = [
+            MomentSearchInput(
+                timestamp: day,
+                latitude: 37.7749,
+                longitude: -122.4194
+            ),
+            MomentSearchInput(
+                timestamp: day.addingTimeInterval(60),
+                latitude: 37.7755,
+                longitude: -122.4194
+            ),
+            MomentSearchInput(
+                timestamp: day.addingTimeInterval(120),
+                latitude: 37.7949,
+                longitude: -122.4194
+            ),
+            MomentSearchInput(
+                timestamp: nextDay,
+                latitude: 37.7749,
+                longitude: -122.4194
+            ),
+        ]
+
+        let clusters = SpotMomentGrouper.clusters(
+            for: inputs,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(clusters, [[0, 1], [2], [3]])
+    }
+
+    func testSpotMomentGroupingDeduplicatesAssetsAcrossSongsAndMoments() {
+        let identifiers = SpotMomentGrouper.uniqueAssetIdentifiers(
+            for: [[0, 1], [2]],
+            identifiersByInput: [
+                ["photo-a", "photo-b"],
+                ["photo-b", "photo-c"],
+                ["photo-c", "photo-d"],
+            ]
+        )
+
+        XCTAssertEqual(
+            identifiers,
+            [["photo-a", "photo-b", "photo-c"], ["photo-d"]]
+        )
+    }
 }

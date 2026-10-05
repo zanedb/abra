@@ -15,6 +15,127 @@ struct Moment: Identifiable {
     var streams: [ShazamStream] = []
 }
 
+struct MomentSearchInput: Sendable {
+    let timestamp: Date
+    let latitude: Double
+    let longitude: Double
+
+    var location: CLLocation {
+        CLLocation(latitude: latitude, longitude: longitude)
+    }
+}
+
+enum SpotMomentGrouper {
+    static func clusters(
+        for inputs: [MomentSearchInput],
+        calendar: Calendar = .current,
+        radius: CLLocationDistance = LibraryProvider.momentSearchRadius
+    ) -> [[Int]] {
+        let sortedIndices = inputs.indices.sorted {
+            inputs[$0].timestamp < inputs[$1].timestamp
+        }
+        var clusters: [[Int]] = []
+
+        for inputIndex in sortedIndices {
+            let input = inputs[inputIndex]
+            let day = calendar.startOfDay(for: input.timestamp)
+            let matchingClusterIndex = clusters.firstIndex { cluster in
+                guard let firstIndex = cluster.first else { return false }
+                let firstDay = calendar.startOfDay(
+                    for: inputs[firstIndex].timestamp
+                )
+                guard firstDay == day else { return false }
+
+                // Keeping every pair within the search radius prevents a chain
+                // of nearby songs from merging two genuinely separate places.
+                return cluster.allSatisfy { existingIndex in
+                    inputs[existingIndex].location.distance(
+                        from: input.location
+                    ) <= radius
+                }
+            }
+
+            if let matchingClusterIndex {
+                clusters[matchingClusterIndex].append(inputIndex)
+            } else {
+                clusters.append([inputIndex])
+            }
+        }
+
+        return clusters
+    }
+
+    static func uniqueAssetIdentifiers(
+        for clusters: [[Int]],
+        identifiersByInput: [[String]]
+    ) -> [[String]] {
+        var claimedIdentifiers: Set<String> = []
+
+        return clusters.map { cluster in
+            var clusterIdentifiers: [String] = []
+
+            for inputIndex in cluster {
+                for identifier in identifiersByInput[inputIndex]
+                    where claimedIdentifiers.insert(identifier).inserted
+                {
+                    clusterIdentifiers.append(identifier)
+                }
+            }
+
+            return clusterIdentifiers
+        }
+    }
+}
+
+private struct LoadedMoment: @unchecked Sendable {
+    let inputIndices: [Int]
+    let assets: [PHAsset]
+}
+
+private enum MomentPhotoLoader {
+    static func load(
+        inputs: [MomentSearchInput],
+        groupAcrossInputs: Bool
+    ) -> [LoadedMoment] {
+        var materializedAssets: [[PHAsset]] = []
+        materializedAssets.reserveCapacity(inputs.count)
+
+        for input in inputs {
+            guard !Task.isCancelled else { return [] }
+            let assets = LibraryProvider.fetchSelectedPhotos(
+                    date: input.timestamp,
+                    location: input.location
+                )
+                .reversed()
+            materializedAssets.append(Array(assets))
+        }
+
+        let clusters = groupAcrossInputs
+            ? SpotMomentGrouper.clusters(for: inputs)
+            : inputs.indices.map { [$0] }
+        let identifiersByInput = materializedAssets.map {
+            $0.map(\.localIdentifier)
+        }
+        let identifiersByCluster = SpotMomentGrouper.uniqueAssetIdentifiers(
+            for: clusters,
+            identifiersByInput: identifiersByInput
+        )
+        let assetsByIdentifier = Dictionary(
+            materializedAssets.joined().map {
+                ($0.localIdentifier, $0)
+            },
+            uniquingKeysWith: { first, _ in first }
+        )
+
+        return zip(clusters, identifiersByCluster).compactMap {
+            cluster, identifiers in
+            let assets = identifiers.compactMap { assetsByIdentifier[$0] }
+            guard !assets.isEmpty else { return nil }
+            return LoadedMoment(inputIndices: cluster, assets: assets)
+        }
+    }
+}
+
 struct Moments: View {
     @Environment(LibraryProvider.self) private var library
     @Environment(\.openURL) private var openURL
@@ -54,74 +175,58 @@ struct Moments: View {
     @State private var moments: [Moment] = []
     @State private var fullScreenItem: FullScreenItem? = nil
 
-    private func loadPhotos() {
-        // Request authorization, on success load photos
-        // THIS IS INSANE, RE-DO!
-        library.requestAuthorization {
-            if library.authorized {
-                var streams: [ShazamStream] = []
-                if let stream {
-                    streams.append(stream)
-                } else if let spot {
-                    spot.shazamStreams?.forEach { streams.append($0) }
-                }
+    @MainActor
+    private func loadPhotos() async {
+        await library.requestAuthorization()
+        guard library.authorized else { return }
 
-                // Group streams by date and location to avoid duplicate moments
-                var momentDict: [String: Moment] = [:]
-
-                for stream in streams {
-                    let photos = library.fetchSelectedPhotos(
-                        date: stream.timestamp,
-                        location: stream.location
-                    )
-                    guard !photos.isEmpty else { continue }
-
-                    // Create a key based on date (day) and place to group similar moments
-                    let calendar = Calendar.current
-                    let dayComponent = calendar.startOfDay(
-                        for: stream.timestamp
-                    )
-                    let key =
-                        "\(stream.place)_\(dayComponent.timeIntervalSince1970)"
-
-                    if var existingMoment = momentDict[key] {
-                        // Add this stream to existing moment if photos are the same
-                        let existingPhotoIds = Set(
-                            existingMoment.phAssets.map(\.localIdentifier)
-                        )
-                        let newPhotoIds = Set(photos.map(\.localIdentifier))
-
-                        if existingPhotoIds == newPhotoIds {
-                            // Same photos, just add the stream
-                            existingMoment.streams.append(stream)
-                            momentDict[key] = existingMoment
-                        } else {
-                            // Different photos, create new moment
-                            let newMoment = Moment(
-                                place: stream.place,
-                                timestamp: stream.timestamp,
-                                phAssets: photos.reversed(),
-                                streams: [stream]
-                            )
-                            momentDict["\(key)_\(stream.id)"] = newMoment
-                        }
-                    } else {
-                        // Create new moment
-                        let newMoment = Moment(
-                            place: stream.place,
-                            timestamp: stream.timestamp,
-                            phAssets: photos.reversed(),
-                            streams: [stream]
-                        )
-                        momentDict[key] = newMoment
-                    }
-                }
-
-                moments = Array(momentDict.values).sorted {
-                    $0.timestamp > $1.timestamp
-                }.reversed()
-            }
+        let sourceStreams: [ShazamStream]
+        let groupAcrossInputs: Bool
+        if let stream {
+            sourceStreams = [stream]
+            groupAcrossInputs = false
+        } else if let spot {
+            sourceStreams = spot.streams
+            groupAcrossInputs = true
+        } else {
+            return
         }
+
+        let inputs = sourceStreams.map {
+            MomentSearchInput(
+                timestamp: $0.timestamp,
+                latitude: $0.latitude,
+                longitude: $0.longitude
+            )
+        }
+        // PhotoKit fetches are synchronous, so keep them outside the main actor.
+        let photoLoadTask = Task.detached(priority: .userInitiated) {
+            MomentPhotoLoader.load(
+                inputs: inputs,
+                groupAcrossInputs: groupAcrossInputs
+            )
+        }
+        let loadedMoments = await withTaskCancellationHandler {
+            await photoLoadTask.value
+        } onCancel: {
+            photoLoadTask.cancel()
+        }
+        guard !Task.isCancelled else { return }
+
+        moments = loadedMoments.compactMap { loadedMoment in
+            let momentStreams = loadedMoment.inputIndices.map {
+                sourceStreams[$0]
+            }
+            guard let firstStream = momentStreams.first else { return nil }
+
+            return Moment(
+                place: firstStream.place,
+                timestamp: firstStream.timestamp,
+                phAssets: loadedMoment.assets,
+                streams: momentStreams
+            )
+        }
+        .sorted { $0.timestamp < $1.timestamp }
     }
 
     var body: some View {
@@ -136,9 +241,14 @@ struct Moments: View {
             // Don't prompt if user hasn't interacted yet
             guard requestedAuthorization else { return }
 
-            loadPhotos()
+            await loadPhotos()
         }
-        .fullScreenCover(item: $fullScreenItem, onDismiss: loadPhotos) { item in
+        .fullScreenCover(
+            item: $fullScreenItem,
+            onDismiss: {
+                Task { await loadPhotos() }
+            }
+        ) { item in
             switch item {
             case .moment(let m):
                 MomentView(moment: m, namespace: transitionNamespace)
@@ -212,7 +322,7 @@ struct Moments: View {
                                 )!
                             )
                         } else {
-                            loadPhotos()
+                            Task { await loadPhotos() }
                         }
                     },
                     label: {

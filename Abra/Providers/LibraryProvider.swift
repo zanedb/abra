@@ -10,55 +10,75 @@ import UIKit
 
 @Observable final class LibraryProvider {
     typealias PHAssetLocalIdentifier = String
+
+    static let momentSearchRadius: CLLocationDistance = 1_000
     
     enum QueryError: Error {
         case phAssetNotFound
     }
     
-    var authorizationStatus: PHAuthorizationStatus = .notDetermined
-    var authorized: Bool { authorizationStatus == .authorized || authorizationStatus == .limited }
-    
-    var imageCachingManager = PHCachingImageManager()
-    
-    func requestAuthorization(callback: (() -> Void)? = nil) {
-        UserDefaults.standard.set(true, forKey: "hasRequestedPhotosAuthorization")
-        PHPhotoLibrary.requestAuthorization { [weak self] status in
-            self?.authorizationStatus = status
-            callback?()
-        }
+    var authorizationStatus: PHAuthorizationStatus = PHPhotoLibrary
+        .authorizationStatus(for: .readWrite)
+    var authorized: Bool {
+        authorizationStatus == .authorized
+            || authorizationStatus == .limited
     }
     
-    func fetchSelectedPhotos(date: Date, location: CLLocation) -> [PHAsset] {
+    var imageCachingManager = PHCachingImageManager()
+
+    init() {
         imageCachingManager.allowsCachingHighQualityImages = false
-        
+    }
+    
+    @MainActor
+    func requestAuthorization() async {
+        UserDefaults.standard.set(true, forKey: "hasRequestedPhotosAuthorization")
+        authorizationStatus = await PHPhotoLibrary.requestAuthorization(
+            for: .readWrite
+        )
+    }
+    
+    static func fetchSelectedPhotos(
+        date: Date,
+        location: CLLocation
+    ) -> [PHAsset] {
         let fetchOptions = PHFetchOptions()
         
         // Select photos starting an hour (3600s) before ShazamStream was created
         // and ending an hour (3600s) after
         let startDate = date.addingTimeInterval(-3600)
         let endDate = date.addingTimeInterval(3600)
-        fetchOptions.predicate = NSPredicate(format: "creationDate >= %@ && creationDate <= %@", startDate as CVarArg, endDate as CVarArg)
+        fetchOptions.predicate = NSPredicate(
+            format: "creationDate >= %@ && creationDate <= %@",
+            startDate as CVarArg,
+            endDate as CVarArg
+        )
         
         fetchOptions.sortDescriptors = [
-            NSSortDescriptor(key: "creationDate", ascending: false) // Sort descending
+            // Sort descending
+            NSSortDescriptor(key: "creationDate", ascending: false)
         ]
         
         let imageAssets = PHAsset.fetchAssets(with: .image, options: fetchOptions)
         let videoAssets = PHAsset.fetchAssets(with: .video, options: fetchOptions)
         var filteredAssets: [PHAsset] = []
-        let searchRadius: CLLocationDistance = 1000
 
         for fetchResult in [imageAssets, videoAssets] {
             fetchResult.enumerateObjects { asset, _, _ in
                 if let assetLocation = asset.location {
-                    if assetLocation.distance(from: location) <= searchRadius {
+                    if assetLocation.distance(from: location)
+                        <= momentSearchRadius
+                    {
                         filteredAssets.append(asset)
                     }
                 }
             }
         }
 
-        return filteredAssets.sorted { ($0.creationDate ?? .distantPast) > ($1.creationDate ?? .distantPast) }
+        return filteredAssets.sorted {
+            ($0.creationDate ?? .distantPast)
+                > ($1.creationDate ?? .distantPast)
+        }
     }
     
     func fetchImage(
