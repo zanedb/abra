@@ -260,12 +260,22 @@ extension ShazamStream {
 
     /// Place; i.e. "Mission" or "San Francisco" or "1015"
     public var place: String {
-        spot?.name ?? subLocality ?? city ?? country ?? "Unknown"
+        spotName ?? subLocality ?? city ?? country ?? "Unknown"
+    }
+
+    /// A Spot name suitable for display, excluding empty draft names.
+    public var spotName: String? {
+        guard let name = spot?.name.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        ), !name.isEmpty else {
+            return nil
+        }
+        return name
     }
 
     /// Place; i.e. "in San Francisco," "at 1015"
     public var attributedPlace: String {
-        "\(spot?.name != nil ? "at" : "in") \(spot?.name ?? city ?? "Unknown")"
+        "\(spotName != nil ? "at" : "in") \(spotName ?? city ?? "Unknown")"
     }
 
     /// Description; i.e. "August 11 in San Francisco", "July 4 at 1015"

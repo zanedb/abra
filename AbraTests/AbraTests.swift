@@ -157,4 +157,20 @@ final class AbraTests: XCTestCase {
             [["photo-a", "photo-b", "photo-c"], ["photo-d"]]
         )
     }
+
+    @MainActor
+    func testUnnamedSpotUsesNeighborhoodAsItsPlace() {
+        let stream = ShazamStream(title: "Stream")
+        stream.subLocality = "Mission"
+        stream.city = "San Francisco"
+        let spot = Spot(name: "", shazamStreams: [stream])
+        stream.spot = spot
+
+        XCTAssertNil(stream.spotName)
+        XCTAssertEqual(stream.place, "Mission")
+
+        spot.name = "  1015  "
+        XCTAssertEqual(stream.spotName, "1015")
+        XCTAssertEqual(stream.place, "1015")
+    }
 }

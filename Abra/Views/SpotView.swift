@@ -7,6 +7,7 @@ import Contacts
 import MapKit
 import MediaPlayer
 import MusicKit
+import SwiftData
 import SwiftUI
 
 struct SpotView: View {
@@ -71,8 +72,8 @@ struct SpotView: View {
                 }
             }
             .onDisappear {
-                // Destroy Spot if empty
-                // TODO: fix cases where this isn't triggered
+                // Destroy unnamed Spot created from map cluster
+                // TODO: fix cases where this isn't triggered, like app dismiss before sheet dismiss, or come up with a better solution for the problem of "display" spots without actually saving them
                 if spot.streams.isEmpty || spot.sfSymbol.isEmpty || spot.name.isEmpty {
                     modelContext.delete(spot)
                     try? modelContext.save()

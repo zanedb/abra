@@ -277,7 +277,10 @@ struct PhotoView: View {
             let timeStr = date.formatted(.dateTime.hour().minute())
             let locationLabel: String? = {
                 guard let stream = currentStream else { return nil }
-                if let spot = stream.spot?.name { return spot }
+                if let spotName = stream.spotName { return spotName }
+                if stream.spot != nil {
+                    return stream.subLocality ?? stream.city ?? stream.country
+                }
                 switch (stream.city, stream.subLocality) {
                 case let (city?, neighborhood?): return "\(city) - \(neighborhood)"
                 case let (city?, nil): return city
