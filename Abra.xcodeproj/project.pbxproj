@@ -10,6 +10,7 @@
 		2F00B44A2EAD7452004B4EFD /* SongInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F00B4492EAD7451004B4EFD /* SongInfo.swift */; };
 		2F0A4CD43019306C00365C51 /* VideoControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0A4CD33019306C00365C51 /* VideoControls.swift */; };
 		2F0C0001303A000000000001 /* MapBenchmarkConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0C0000303A000000000001 /* MapBenchmarkConfiguration.swift */; };
+		2F0C0003303A000000000003 /* MapViewControllerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0C0002303A000000000002 /* MapViewControllerRepresentable.swift */; };
 		2F0BF5E22E82113E008582C2 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F0BF5E12E82113E008582C2 /* Kingfisher */; };
 		2F1727442C719B2700EEA500 /* Spot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1727432C719B2700EEA500 /* Spot.swift */; };
 		2F2D2A3E2ED7818200BC2291 /* View+backportCircleSymbolVariant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */; };
@@ -124,6 +125,7 @@
 		2F00B4492EAD7451004B4EFD /* SongInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongInfo.swift; sourceTree = "<group>"; };
 		2F0A4CD33019306C00365C51 /* VideoControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoControls.swift; sourceTree = "<group>"; };
 		2F0C0000303A000000000001 /* MapBenchmarkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBenchmarkConfiguration.swift; sourceTree = "<group>"; };
+		2F0C0002303A000000000002 /* MapViewControllerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewControllerRepresentable.swift; sourceTree = "<group>"; };
 		2F1727432C719B2700EEA500 /* Spot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spot.swift; sourceTree = "<group>"; };
 		2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+backportCircleSymbolVariant.swift"; sourceTree = "<group>"; };
 		2F2D2A442ED7B7DD00BC2291 /* Button+adaptiveGlass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Button+adaptiveGlass.swift"; sourceTree = "<group>"; };
@@ -253,6 +255,7 @@
 			children = (
 				2F6093A12A2EEC960092A6DD /* ContentView.swift */,
 				2F6093A32A2EEDFE0092A6DD /* MapView.swift */,
+				2F0C0002303A000000000002 /* MapViewControllerRepresentable.swift */,
 				2FBD406F2A3ED4E10083C4B6 /* SheetView.swift */,
 				2F659BC12A403A0000EA43F9 /* SongView.swift */,
 				2F9D49522A79CECE002CB9E5 /* SpotView.swift */,
@@ -614,6 +617,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2F6093A42A2EEDFE0092A6DD /* MapView.swift in Sources */,
+				2F0C0003303A000000000003 /* MapViewControllerRepresentable.swift in Sources */,
 				2F0C0001303A000000000001 /* MapBenchmarkConfiguration.swift in Sources */,
 				2F9090232E614F8B00828E6D /* View+PrefersEdgeAttachedInCompactHeight.swift in Sources */,
 				2F3DAB7F2DA9CEF1001004B9 /* RoundedButton.swift in Sources */,

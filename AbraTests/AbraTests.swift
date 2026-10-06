@@ -5,6 +5,7 @@
 
 @testable import Abra
 import MapKit
+import SwiftData
 import XCTest
 
 final class AbraTests: XCTestCase {
@@ -71,7 +72,16 @@ final class AbraTests: XCTestCase {
     func testCoordinatorReconcilesAddsUpdatesAndRemovals() throws {
         let stream = ShazamStream(title: "Stream", latitude: 1, longitude: 2)
         let spot = Spot(name: "Spot", latitude: 3, longitude: 4)
-        let coordinator = MapView().makeCoordinator()
+        let schema = Schema([ShazamStream.self, Spot.self])
+        let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(
+            for: schema,
+            configurations: [configuration]
+        )
+        let coordinator = MapViewControllerRepresentable.Coordinator(
+            modelContext: container.mainContext,
+            sheetProvider: SheetProvider()
+        )
         let mapView = MKMapView()
         coordinator.mapView = mapView
 
@@ -172,5 +182,18 @@ final class AbraTests: XCTestCase {
         spot.name = "  1015  "
         XCTAssertEqual(stream.spotName, "1015")
         XCTAssertEqual(stream.place, "1015")
+    }
+
+    @MainActor
+    func testSheetPresentationBindingOnlyClearsOnDismissal() {
+        let provider = SheetProvider()
+        let spot = Spot(name: "Draft")
+        provider.show(spot)
+
+        provider.isPresentedBinding.wrappedValue = true
+        XCTAssertEqual(provider.now, .spot(spot))
+
+        provider.isPresentedBinding.wrappedValue = false
+        XCTAssertEqual(provider.now, .none)
     }
 }

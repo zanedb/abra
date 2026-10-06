@@ -46,8 +46,10 @@ import SwiftUI
     var isPresentedBinding: Binding<Bool> {
         Binding<Bool>(
             get: { self.now != .none },
-            set: { _ in
-                self.now = .none
+            set: { isPresented in
+                if !isPresented {
+                    self.now = .none
+                }
             }
         )
     }
