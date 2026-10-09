@@ -196,4 +196,16 @@ final class AbraTests: XCTestCase {
         provider.isPresentedBinding.wrappedValue = false
         XCTAssertEqual(provider.now, .none)
     }
+
+    @MainActor
+    func testSearchResultsAreRevealedImmediately() {
+        let provider = SheetProvider()
+        var revealCount = 0
+        provider.revealSearchResults = { revealCount += 1 }
+
+        provider.showSearchResults(for: "bassvictim")
+
+        XCTAssertEqual(provider.searchText, "bassvictim")
+        XCTAssertEqual(revealCount, 1)
+    }
 }

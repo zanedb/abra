@@ -126,7 +126,7 @@ struct SongInfo: View {
                 .lineLimit(1)
                 .frame(maxWidth: maxWidth)
             Button {
-                sheet.searchText = stream.artist
+                sheet.showSearchResults(for: stream.artist)
                 dismiss()
             } label: {
                 Text(stream.artist)

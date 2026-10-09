@@ -145,6 +145,16 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             }
             coordinator.wasAtLargeWhenChildPresented = false
         }
+        sheetProvider.revealSearchResults = { [weak sheetVC] in
+            guard
+                let sheet = sheetVC?.sheetPresentationController,
+                sheet.selectedDetentIdentifier == .fraction(0.1)
+            else { return }
+
+            sheet.animateChanges {
+                sheet.selectedDetentIdentifier = .fraction(0.5)
+            }
+        }
 
         DispatchQueue.main.async {
             uiVC.present(sheetVC, animated: true)

@@ -89,6 +89,11 @@ import SwiftUI
         )
     }
 
+    func showSearchResults(for query: String) {
+        searchText = query
+        revealSearchResults?()
+    }
+
     var coordinate: CLLocationCoordinate2D? {
         switch now {
         case .spot(let spot):
@@ -112,7 +117,8 @@ import SwiftUI
         didChange.send()
     }
 
-    /// Called by MapView to collapse/expand the UIKit bottom sheet when a child sheet is presented.
+    /// Hooks used by MapView to coordinate the UIKit bottom sheet with child presentations.
     var collapseBottomSheet: (() -> Void)?
     var expandBottomSheet: (() -> Void)?
+    var revealSearchResults: (() -> Void)?
 }
