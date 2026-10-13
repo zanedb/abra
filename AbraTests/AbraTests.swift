@@ -69,6 +69,36 @@ final class AbraTests: XCTestCase {
     }
 
     @MainActor
+    func testApproximateSongUsesMapAreaAndUpdatesWhenFixImproves() throws {
+        let stream = ShazamStream(title: "Approximate", latitude: 37.7, longitude: -122.4)
+        stream.horizontalAccuracy = 120
+        stream.locationObservedAt = stream.timestamp
+
+        let container = try ModelContainer(
+            for: Schema([ShazamStream.self, Spot.self]),
+            configurations: [ModelConfiguration(isStoredInMemoryOnly: true)]
+        )
+        let sheet = SheetProvider()
+        sheet.show(stream)
+        let coordinator = MapViewControllerRepresentable.Coordinator(
+            modelContext: container.mainContext,
+            sheetProvider: sheet
+        )
+        let mapView = MKMapView()
+        coordinator.mapView = mapView
+        coordinator.syncAnnotations(shazams: [stream], spots: [])
+
+        let annotation = try XCTUnwrap(mapView.annotations.compactMap { $0 as? ShazamAnnotation }.first)
+        XCTAssertEqual(annotation.approximateRadius, 120)
+        XCTAssertEqual(mapView.overlays.compactMap { $0 as? MKCircle }.first?.radius, 120)
+
+        stream.horizontalAccuracy = 20
+        coordinator.syncAnnotations(shazams: [stream], spots: [])
+        XCTAssertNil(annotation.approximateRadius)
+        XCTAssertTrue(mapView.overlays.isEmpty)
+    }
+
+    @MainActor
     func testCoordinatorReconcilesAddsUpdatesAndRemovals() throws {
         let stream = ShazamStream(title: "Stream", latitude: 1, longitude: 2)
         let spot = Spot(name: "Spot", latitude: 3, longitude: 4)
@@ -195,6 +225,59 @@ final class AbraTests: XCTestCase {
 
         provider.isPresentedBinding.wrappedValue = false
         XCTAssertEqual(provider.now, .none)
+    }
+
+    func testMatchLocationRejectsOldAndInaccurateFixes() {
+        let provider = LocationProvider()
+        let matchTime = Date()
+
+        func fix(age: TimeInterval, accuracy: CLLocationAccuracy) -> CLLocation {
+            CLLocation(
+                coordinate: CLLocationCoordinate2D(latitude: 37.77, longitude: -122.42),
+                altitude: 0,
+                horizontalAccuracy: accuracy,
+                verticalAccuracy: 10,
+                timestamp: matchTime.addingTimeInterval(-age)
+            )
+        }
+
+        provider.currentLocation = fix(age: 30, accuracy: 50)
+        XCTAssertNotNil(provider.locationForMatch(at: matchTime, activity: nil))
+
+        provider.currentLocation = fix(age: 400, accuracy: 50)
+        XCTAssertNil(provider.locationForMatch(at: matchTime, activity: nil))
+
+        provider.currentLocation = fix(age: 30, accuracy: 500)
+        XCTAssertNil(provider.locationForMatch(at: matchTime, activity: nil))
+    }
+
+    @MainActor
+    func testInterveningFalseMatchDoesNotReadmitPlayingSong() {
+        let provider = ShazamProvider()
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+
+        XCTAssertTrue(provider.shouldRecordMatch(title: "Actual song", artist: "Artist", at: start))
+        XCTAssertTrue(provider.shouldRecordMatch(title: "Stray match", artist: "Other", at: start.addingTimeInterval(40)))
+        XCTAssertFalse(provider.shouldRecordMatch(title: "actual song", artist: "Artist", at: start.addingTimeInterval(120)))
+        XCTAssertTrue(provider.shouldRecordMatch(title: "Actual song", artist: "Artist", at: start.addingTimeInterval(361)))
+    }
+
+    @MainActor
+    func testNotificationMatchIDFetchFindsSavedSong() throws {
+        let container = try ModelContainer(
+            for: Schema([ShazamStream.self, Spot.self]),
+            configurations: [ModelConfiguration(isStoredInMemoryOnly: true)]
+        )
+        let song = ShazamStream(title: "Matched song")
+        let id = UUID()
+        song.matchID = id
+        container.mainContext.insert(song)
+        try container.mainContext.save()
+
+        let descriptor = FetchDescriptor<ShazamStream>(
+            predicate: #Predicate { $0.matchID == id }
+        )
+        XCTAssertEqual(try container.mainContext.fetch(descriptor).first?.title, "Matched song")
     }
 
     @MainActor

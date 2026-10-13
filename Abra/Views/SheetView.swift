@@ -12,7 +12,6 @@ import SwiftUI
 import struct SectionedQuery.SectionedResults
 
 struct SheetView: View {
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.toastProvider) private var toast
     @Environment(\.openURL) private var openURL
     @Environment(SheetProvider.self) private var view
@@ -59,7 +58,6 @@ struct SheetView: View {
 
     @State private var searchHidden: Bool = false
     @State private var searchFocused: Bool = false
-    @State private var hapticTrigger = false
     @State private var longPressHandled = false
 
     var body: some View {
@@ -90,6 +88,7 @@ struct SheetView: View {
                     }
                 }
             }
+            .abraSwipeActionsContainer()
             .toolbar {
                 ToolbarItems
             }
@@ -121,21 +120,11 @@ struct SheetView: View {
             }
         }
         .onChange(of: shazam.status) {
-            if case .matched(let song) = shazam.status {
-                createShazamStream(song)
-            }
-
             if case .error(let error) = shazam.status {
                 handleShazamAPIError(error)
             }
         }
-        .onChange(of: location.currentPlacemark) {
-            // Save location if it wasn't initially ready on latest stream
-            updateLocationlessStreams()
-        }
         .onAppear {
-            // Wire ShazamProvider → SheetProvider so it can control Searching dismissal
-            shazam.sheetProvider = view
             // If location was "allow once" request again
             if location.authorizationStatus == .notDetermined {
                 location.requestPermission()
@@ -149,7 +138,6 @@ struct SheetView: View {
                 motion.requestPermission()
             }
         }
-        .sensoryFeedback(.success, trigger: hapticTrigger)
     }
 
     private var searchingPresentation: Binding<Bool> {
@@ -202,7 +190,7 @@ struct SheetView: View {
                         Group {
                             if shazam.continuous {
                                 Waveform(on: true, size: 2)
-                                    .foregroundStyle(.red)
+                                    .foregroundStyle(.white)
                             } else {
                                 Image(systemName: "waveform")
                                     .font(.headline)
@@ -276,10 +264,8 @@ struct SheetView: View {
             ForEach(timeSectionedStreams) { section in
                 Section {
                     ForEach(section) { shazam in
-                        Button(action: { view.show(shazam) }) {
-                            SongRow(stream: shazam)
-                        }
-                        .buttonStyle(.plain)
+                        SongRow(stream: shazam)
+                        .onTapGesture { view.show(shazam) }
                         .padding(.bottom, shazam == section.last ? 12 : 0)
 
                         if shazam != section.last {
@@ -348,35 +334,6 @@ struct SheetView: View {
             .prefersEdgeAttachedInCompactHeight()
     }
 
-    private func createShazamStream(_ mediaItem: SHMediaItem) {
-        let activityType: String? = motion.currentActivity.map { activity in
-            if activity.walking { return "walking" }
-            if activity.running { return "running" }
-            if activity.cycling { return "cycling" }
-            if activity.automotive { return "automotive" }
-            if activity.stationary { return "stationary" }
-            return "unknown"
-        }
-        print("Motion activity at Shazam: \(activityType ?? "unavailable")")
-
-        // Create and show ShazamStream
-        let stream = ShazamStream(
-            mediaItem: mediaItem,
-            location: location.currentLocation,
-            placemark: location.currentPlacemark,
-            motionActivity: activityType
-        )
-        modelContext.insert(stream)
-        try? modelContext.save()
-        view.show(stream)
-        hapticTrigger.toggle()
-
-        // If Spot exists with similar latitude/longitude, set it automatically
-        Task {
-            stream.spotIt(context: modelContext)
-        }
-    }
-
     private func handleShazamAPIError(_ error: ShazamError) {
         switch error {
         case .noMatch:
@@ -395,33 +352,32 @@ struct SheetView: View {
                 type: .error,
                 symbol: "shazam.logo.fill"
             )
+        case .microphonePermissionDenied:
+            toast.show(
+                message: "Allow microphone access to recognize music",
+                type: .error,
+                symbol: "mic.slash"
+            )
+        case .audioSessionFailed:
+            toast.show(
+                message: "Couldn't start listening",
+                type: .error,
+                symbol: "mic.slash"
+            )
         default:
             break
         }
     }
 
-    // Maybe we get a grip on location first, save that, and then make a background task to update Placemarks from location?
-    // Should probably do anyway..
-    private func updateLocationlessStreams() {
-        guard let currentLoc = location.currentLocation else { return }
+}
 
-        // Find locationless streams within the past hour
-        let locationless = allShazams.filter {
-            $0.latitude == 0 && $0.longitude == 0
-                && $0.timestamp > Date().addingTimeInterval(-60 * 60)
-        }
-
-        print("Found \(locationless.count) locationless streams")
-
-        for stream in locationless {
-            stream.updateLocation(
-                currentLoc,
-                placemark: location.currentPlacemark
-            )
-            stream.spotIt(context: modelContext)
-            if view.now == .stream(stream) {
-                view.show(stream)
-            }
+private extension View {
+    @ViewBuilder
+    func abraSwipeActionsContainer() -> some View {
+        if #available(iOS 27, *) {
+            swipeActionsContainer()
+        } else {
+            self
         }
     }
 }

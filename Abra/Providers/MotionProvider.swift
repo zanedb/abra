@@ -18,7 +18,7 @@ import SwiftUI
     
     init() {
         updateAuthorizationStatus()
-        startDeviceMotionUpdates()
+        if authorizationStatus == .authorized { startActivityUpdates() }
     }
     
     deinit {
@@ -54,13 +54,18 @@ import SwiftUI
     
     // MARK: - Device Motion
     
-    private func startDeviceMotionUpdates() {
+    func startDeviceMotionUpdates() {
         guard motionManager.isDeviceMotionAvailable else { return }
+        guard !motionManager.isDeviceMotionActive else { return }
         motionManager.deviceMotionUpdateInterval = 0.2
         motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
             guard let gravity = motion?.gravity else { return }
             self?.isUpsideDown = gravity.y > 0.7
         }
+    }
+
+    func stopDeviceMotionUpdates() {
+        motionManager.stopDeviceMotionUpdates()
     }
     
     // MARK: - Activity Updates

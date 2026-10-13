@@ -177,6 +177,9 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
         var pendingSpotToSelect: Spot?
         var highlighted: ShazamStream?
         private var temporaryAnnotations: Set<ShazamAnnotation> = []
+        private var approximateArea: MKCircle?
+        private var approximateAreaStreamID: PersistentIdentifier?
+        private var approximateAreaRadius: CLLocationDistance?
         private var suppressDidDeselect = false
         private var selectionReconciliationTask: Task<Void, Never>?
         var wasAtLargeWhenChildPresented = false
@@ -261,6 +264,13 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
 
             // Select annotation
             selectAnnotation()
+            if let area = approximateArea {
+                mapView?.setVisibleMapRect(
+                    area.boundingMapRect,
+                    edgePadding: UIEdgeInsets(top: 90, left: 65, bottom: 220, right: 65),
+                    animated: true
+                )
+            }
 
             // In case the keyboard is open (i.e SheetView search), hide it
             UIApplication.shared.sendAction(
@@ -313,6 +323,10 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
                     if changes.artworkChanged {
                         (mapView.view(for: annotation) as? ShazamAnnotationView)?
                             .loadImage()
+                    }
+                    if changes.changed {
+                        (mapView.view(for: annotation) as? ShazamAnnotationView)?
+                            .configureLocationStyle()
                     }
                 } else {
                     let annotation = ShazamAnnotation(shazamStream: stream)
@@ -386,6 +400,9 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             if annotationsChanged {
                 reconcileSelectionAfterAnnotationChanges()
             }
+            if case .stream(let selectedStream) = sheetProvider.now {
+                updateApproximateArea(for: selectedStream, in: mapView)
+            }
         }
 
         private func reconcileSelectionAfterAnnotationChanges() {
@@ -407,6 +424,12 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             guard let mapView = mapView else { return }
             let now = sheetProvider.now
 
+            if case .stream(let stream) = now {
+                updateApproximateArea(for: stream, in: mapView)
+            } else {
+                updateApproximateArea(for: nil, in: mapView)
+            }
+
             var annotationToSelect: MKAnnotation?
             var needsTemporaryAnnotation = false
 
@@ -420,6 +443,12 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
 
             case .stream(let stream):
                 highlighted = stream
+
+                // A match without a trusted location has no map position to select.
+                guard stream.latitude != 0 || stream.longitude != 0 else {
+                    cleanupTemporaryAnnotations()
+                    break
+                }
 
                 // Direct O(1) lookup
                 annotationToSelect = shazamAnnotations[stream.persistentModelID]
@@ -470,6 +499,32 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
                 lastSelectedAnnotation = nil
                 isProgrammaticSelection = false
             }
+        }
+
+        private func updateApproximateArea(for stream: ShazamStream?, in mapView: MKMapView) {
+            let radius = stream?.approximateLocationRadius
+            let id = stream?.persistentModelID
+            if let stream, let radius,
+               approximateAreaStreamID == id,
+               approximateAreaRadius == radius,
+               approximateArea?.coordinate.latitude == stream.latitude,
+               approximateArea?.coordinate.longitude == stream.longitude {
+                return
+            }
+
+            if let approximateArea {
+                mapView.removeOverlay(approximateArea)
+            }
+            approximateArea = nil
+            approximateAreaStreamID = nil
+            approximateAreaRadius = nil
+
+            guard let stream, let radius else { return }
+            let circle = MKCircle(center: stream.coordinate, radius: radius)
+            approximateArea = circle
+            approximateAreaStreamID = id
+            approximateAreaRadius = radius
+            mapView.addOverlay(circle, level: .aboveRoads)
         }
 
         // MARK: - Helper Methods (NEW)
@@ -557,6 +612,17 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
         }
 
         // MARK: - MKMapViewDelegate
+
+        func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+            guard let circle = overlay as? MKCircle else {
+                return MKOverlayRenderer(overlay: overlay)
+            }
+            let renderer = MKCircleRenderer(circle: circle)
+            renderer.fillColor = UIColor.systemBlue.withAlphaComponent(0.15)
+            renderer.strokeColor = UIColor.systemBlue.withAlphaComponent(0.75)
+            renderer.lineWidth = 2
+            return renderer
+        }
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation)
             -> MKAnnotationView?

@@ -11,6 +11,11 @@ import AppIntents
 struct WidgetAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         var takingTooLong: Bool
+        var continuous: Bool = false
+        var matchCount: Int = 0
+        var locationName: String? = nil
+        var matchedTitle: String? = nil
+        var matchedArtist: String? = nil
     }
 }
 
@@ -35,10 +40,9 @@ struct StartShazamSessionIntent: AppIntent {
 }
 
 /// Ends the Shazam recording session and the Live Activity
-struct EndShazamSessionIntent: AppIntent {
+struct EndShazamSessionIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Stop Recognizing Music"
     static let description: IntentDescription = IntentDescription("Stops the current Shazam session")
-    static let openAppWhenRun: Bool = true // Also included alongside @MainActor
     
     @Parameter(title: "Activity ID")
     var activityID: String

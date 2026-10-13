@@ -9,9 +9,9 @@
 /* Begin PBXBuildFile section */
 		2F00B44A2EAD7452004B4EFD /* SongInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F00B4492EAD7451004B4EFD /* SongInfo.swift */; };
 		2F0A4CD43019306C00365C51 /* VideoControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0A4CD33019306C00365C51 /* VideoControls.swift */; };
+		2F0BF5E22E82113E008582C2 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F0BF5E12E82113E008582C2 /* Kingfisher */; };
 		2F0C0001303A000000000001 /* MapBenchmarkConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0C0000303A000000000001 /* MapBenchmarkConfiguration.swift */; };
 		2F0C0003303A000000000003 /* MapViewControllerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0C0002303A000000000002 /* MapViewControllerRepresentable.swift */; };
-		2F0BF5E22E82113E008582C2 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F0BF5E12E82113E008582C2 /* Kingfisher */; };
 		2F1727442C719B2700EEA500 /* Spot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1727432C719B2700EEA500 /* Spot.swift */; };
 		2F2D2A3E2ED7818200BC2291 /* View+backportCircleSymbolVariant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F2D2A3D2ED7817D00BC2291 /* View+backportCircleSymbolVariant.swift */; };
 		2F2D2A412ED79B0100BC2291 /* MusadoraKit in Frameworks */ = {isa = PBXBuildFile; productRef = 2F2D2A402ED79B0100BC2291 /* MusadoraKit */; };
@@ -81,6 +81,8 @@
 		2FFE243C2E56428B005F4A67 /* DismissButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FFE243B2E564288005F4A67 /* DismissButton.swift */; };
 		2FFE24402E56711F005F4A67 /* MomentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FFE243F2E567119005F4A67 /* MomentView.swift */; };
 		2FFE24422E570786005F4A67 /* PhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FFE24412E570780005F4A67 /* PhotoView.swift */; };
+		AB8A10012F00000100000001 /* MatchNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A10002F00000100000001 /* MatchNotificationService.swift */; };
+		AB8A10022F00000100000001 /* Waveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4C61F22E4EC48800B1E0AF /* Waveform.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -194,6 +196,7 @@
 		2FFE243B2E564288005F4A67 /* DismissButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissButton.swift; sourceTree = "<group>"; };
 		2FFE243F2E567119005F4A67 /* MomentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentView.swift; sourceTree = "<group>"; };
 		2FFE24412E570780005F4A67 /* PhotoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoView.swift; sourceTree = "<group>"; };
+		AB8A10002F00000100000001 /* MatchNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchNotificationService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -348,6 +351,7 @@
 				2F4C61F02E4EBBA800B1E0AF /* MotionProvider.swift */,
 				2F63DEDF2E0D2AF600DAA30F /* SheetProvider.swift */,
 				2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */,
+				AB8A10002F00000100000001 /* MatchNotificationService.swift */,
 				2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */,
 				2F736BBE2DC05A6C0078F1BB /* ToastProvider.swift */,
 				2FEACDF62C7317AF00F79E2D /* LibraryProvider.swift */,
@@ -609,6 +613,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2F4BE1FB2D80B707006AFFC2 /* ActivityAttributes.swift in Sources */,
+				AB8A10022F00000100000001 /* Waveform.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -629,6 +634,7 @@
 				2FE893782E25D92100244DEF /* Wrapper.swift in Sources */,
 				2FFE243C2E56428B005F4A67 /* DismissButton.swift in Sources */,
 				2F736BBB2DBD9E120078F1BB /* ShazamProvider.swift in Sources */,
+				AB8A10012F00000100000001 /* MatchNotificationService.swift in Sources */,
 				2FC1E0952A622A7B00EF92D4 /* IconDesigner.swift in Sources */,
 				2F3DAB792DA8C361001004B9 /* Utils.swift in Sources */,
 				2F8908882C73106D0002850C /* Moments.swift in Sources */,
@@ -733,7 +739,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 0.95.0;
+				MARKETING_VERSION = 0.96.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abra.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -763,7 +769,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 0.95.0;
+				MARKETING_VERSION = 0.96.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abra.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

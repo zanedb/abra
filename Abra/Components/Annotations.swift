@@ -14,12 +14,14 @@ class ShazamAnnotation: NSObject, MKAnnotation {
     @objc dynamic var coordinate: CLLocationCoordinate2D
     var title: String?
     private(set) var artworkURL: URL
+    private(set) var approximateRadius: CLLocationDistance?
 
     init(shazamStream: ShazamStream) {
         self.shazamStream = shazamStream
         self.coordinate = shazamStream.coordinate
         self.title = shazamStream.title
         self.artworkURL = shazamStream.artworkURL
+        self.approximateRadius = shazamStream.approximateLocationRadius
         super.init()
     }
 
@@ -48,6 +50,11 @@ class ShazamAnnotation: NSObject, MKAnnotation {
             changed = true
         }
 
+        let newApproximateRadius = shazamStream.approximateLocationRadius
+        if approximateRadius != newApproximateRadius {
+            approximateRadius = newApproximateRadius
+            changed = true
+        }
         self.shazamStream = shazamStream
         return (changed, artworkChanged)
     }
@@ -108,6 +115,7 @@ final class ShazamAnnotationView: MKAnnotationView {
     private let imageView = UIImageView()
     private let glassContainerView = UIView()
     private let glassEffectView = UIVisualEffectView()
+    private let approximateRing = CAShapeLayer()
     private let size: CGFloat = 32
     private let borderWidth: CGFloat = 3
 
@@ -189,6 +197,29 @@ final class ShazamAnnotationView: MKAnnotationView {
         layer.shadowRadius = 6
         layer.shadowOffset = CGSize(width: 0, height: 2)
         layer.masksToBounds = false
+
+        if approximateRing.superlayer == nil {
+            layer.addSublayer(approximateRing)
+        }
+        approximateRing.frame = bounds
+        approximateRing.path = UIBezierPath(ovalIn: bounds.insetBy(dx: 3, dy: 3)).cgPath
+        approximateRing.fillColor = UIColor.systemBlue.withAlphaComponent(0.16).cgColor
+        approximateRing.strokeColor = UIColor.systemBlue.cgColor
+        approximateRing.lineWidth = 2
+        approximateRing.lineDashPattern = [3, 3]
+        configureLocationStyle()
+    }
+
+    func configureLocationStyle() {
+        guard let songAnnotation = annotation as? ShazamAnnotation else { return }
+        let stream = songAnnotation.shazamStream
+        let approximate = songAnnotation.approximateRadius != nil
+        imageView.isHidden = approximate
+        glassContainerView.isHidden = approximate
+        approximateRing.isHidden = !approximate
+        accessibilityLabel = approximate
+            ? "\(stream.title), approximate location"
+            : stream.title
     }
 
     func loadImage() {
@@ -207,7 +238,8 @@ final class ShazamAnnotationView: MKAnnotationView {
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
-        let scale: CGFloat = selected ? 3.0 : 1.0
+        let approximate = (annotation as? ShazamAnnotation)?.approximateRadius != nil
+        let scale: CGFloat = selected ? (approximate ? 1.25 : 3.0) : 1.0
         let duration: TimeInterval = animated ? 0.5 : 0.0
 
         UIView.animate(

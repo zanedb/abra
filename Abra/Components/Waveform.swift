@@ -8,15 +8,22 @@ import SwiftUI
 struct Waveform: View {
     var on: Bool
     var size: CGFloat = 2
+    var animated: Bool = true
     
     var body: some View {
         HStack(spacing: size) {
             ForEach(0 ..< 5) { index in
-                AnimatedBar(
-                    isAnimating: on,
-                    delay: Double(index) * 0.1,
-                    initial: size
-                )
+                if animated {
+                    AnimatedBar(
+                        isAnimating: on,
+                        delay: Double(index) * 0.1,
+                        initial: size
+                    )
+                } else {
+                    Capsule()
+                        .fill(.foreground)
+                        .frame(width: size, height: on ? [8, 14, 18, 12, 7][index] : size)
+                }
             }
         }
     }
@@ -38,7 +45,7 @@ struct AnimatedBar: View {
     
     var body: some View {
         RoundedRectangle(cornerRadius: initial / 2)
-            .fill(.white)
+            .fill(.foreground)
             .frame(width: initial, height: height)
             .animation(
                 isAnimating ?

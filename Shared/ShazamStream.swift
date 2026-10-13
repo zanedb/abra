@@ -12,6 +12,7 @@ import SwiftData
 import GeoToolbox
 
 @Model final class ShazamStream {
+    var matchID: UUID?
     var timestamp: Date = Date.now
     var note: String = ""
 
@@ -43,6 +44,7 @@ import GeoToolbox
     var isProducedByAccessory: Bool?
     var isSimulatedBySoftware: Bool?
     var horizontalAccuracy: CLLocationAccuracy?
+    var locationObservedAt: Date?
     var verticalAccuracy: CLLocationAccuracy?
     var speed: CLLocationSpeed?
     var speedAccuracy: CLLocationSpeedAccuracy?
@@ -72,6 +74,7 @@ import GeoToolbox
 
     init(mediaItem: SHMediaItem, location: CLLocation?, placemark: CLPlacemark?, motionActivity: String? = nil)
     {
+        self.matchID = UUID()
         self.timestamp = .now
 
         // SHMediaItem
@@ -107,6 +110,7 @@ import GeoToolbox
         self.isSimulatedBySoftware =
             location?.sourceInformation?.isSimulatedBySoftware
         self.horizontalAccuracy = location?.horizontalAccuracy
+        self.locationObservedAt = location?.timestamp
         self.verticalAccuracy = location?.verticalAccuracy
         self.speed = location?.speed
         self.speedAccuracy = location?.speedAccuracy
@@ -198,6 +202,27 @@ extension ShazamStream {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
+    /// A conservative display estimate, not a claim that the song was heard
+    /// at the saved coordinate. Older and manually placed locations without a
+    /// measured accuracy continue to use their existing map appearance.
+    public var approximateLocationRadius: CLLocationDistance? {
+        guard latitude != 0 || longitude != 0,
+              let accuracy = horizontalAccuracy,
+              accuracy.isFinite,
+              accuracy > 0 else { return nil }
+
+        let age = max(0, timestamp.timeIntervalSince(locationObservedAt ?? timestamp))
+        let possibleMetersPerSecond: Double
+        switch motionActivity {
+        case "automotive": possibleMetersPerSecond = 20
+        case "cycling": possibleMetersPerSecond = 6
+        case "stationary": possibleMetersPerSecond = 0.5
+        default: possibleMetersPerSecond = 1.5
+        }
+        let radius = accuracy + age * max(possibleMetersPerSecond, speed ?? 0)
+        return radius >= 50 ? radius : nil
+    }
+
     public var location: CLLocation {
         CLLocation(
             coordinate: coordinate,
@@ -229,8 +254,16 @@ extension ShazamStream {
     public var cityState: String {
         if let city = city, let state = state {
             "\(city), \(state)"
+        } else if let city = city {
+            city
+        } else if let neighborhood = subLocality {
+            neighborhood
+        } else if let state = state {
+            state
+        } else if let country = country {
+            country
         } else {
-            "Unknown"
+            "Location unavailable"
         }
     }
 
@@ -315,6 +348,7 @@ extension ShazamStream {
         isSimulatedBySoftware =
             location.sourceInformation?.isSimulatedBySoftware
         horizontalAccuracy = location.horizontalAccuracy
+        locationObservedAt = location.timestamp
         verticalAccuracy = location.verticalAccuracy
         speed = location.speed
         speedAccuracy = location.speedAccuracy
