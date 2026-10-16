@@ -35,6 +35,7 @@ struct SearchResult: Identifiable, Hashable {
     private var placemarkLocation: CLLocation?
     private var lastObservedDisplacement: CLLocationDistance = 0
     private var backgroundTrackingRequested = false
+    private var lastAccuracyAuthorization: CLAccuracyAuthorization
     private let logger = Logger(subsystem: "app.zane.abra", category: "LocationProvider")
     var completions = [SearchCompletions]()
     
@@ -43,6 +44,7 @@ struct SearchResult: Identifiable, Hashable {
     
     override init() {
         locationManager = CLLocationManager()
+        lastAccuracyAuthorization = locationManager.accuracyAuthorization
         completer = MKLocalSearchCompleter()
         super.init()
         
@@ -54,6 +56,10 @@ struct SearchResult: Identifiable, Hashable {
     }
     
     // MARK: - Public Methods
+
+    var hasReducedAccuracy: Bool {
+        locationManager.accuracyAuthorization == .reducedAccuracy
+    }
 
     /// Request location permission
     func requestPermission() {
@@ -71,7 +77,8 @@ struct SearchResult: Identifiable, Hashable {
         backgroundTrackingRequested = true
         guard authorizationStatus == .authorizedWhenInUse
                 || authorizationStatus == .authorizedAlways else { return }
-        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        locationManager.desiredAccuracy = hasReducedAccuracy
+            ? kCLLocationAccuracyReduced : kCLLocationAccuracyHundredMeters
         locationManager.distanceFilter = 150
         locationManager.allowsBackgroundLocationUpdates = true
         // A pause can end a When In Use location session after the phone locks.
@@ -103,11 +110,21 @@ struct SearchResult: Identifiable, Hashable {
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         authorizationStatus = manager.authorizationStatus
+        if manager.accuracyAuthorization != lastAccuracyAuthorization
+            || (manager.authorizationStatus != .authorizedWhenInUse
+                && manager.authorizationStatus != .authorizedAlways) {
+            lastAccuracyAuthorization = manager.accuracyAuthorization
+            currentLocation = nil
+            currentPlacemark = nil
+            placemarkLocation = nil
+        }
         if backgroundTrackingRequested { startBackgroundLocationUpdates() }
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last, location.horizontalAccuracy >= 0 else { return }
+        guard let location = locations.last,
+              location.horizontalAccuracy.isFinite,
+              location.horizontalAccuracy >= 0 else { return }
         if let previous = currentLocation {
             guard location.timestamp >= previous.timestamp else { return }
             lastObservedDisplacement = previous.distance(from: location)
@@ -145,20 +162,34 @@ struct SearchResult: Identifiable, Hashable {
         }
     }
 
-    /// A song receives coordinates only from a recent, reasonably accurate fix.
+    /// Save a recent reduced-accuracy fix as an area, never as a precise point.
     func locationForMatch(at date: Date, activity: CMMotionActivity?) -> CLLocation? {
         guard let currentLocation else {
             logger.warning("Match has no observed location fix")
             return nil
         }
         let age = abs(currentLocation.timestamp.timeIntervalSince(date))
-        guard currentLocation.horizontalAccuracy >= 0,
-              currentLocation.horizontalAccuracy <= 250,
-              age <= locationAgeLimit(activity) else {
-            logger.warning("Match location rejected; age: \(Int(age))s, accuracy: \(Int(currentLocation.horizontalAccuracy))m")
+        guard acceptsMatchLocation(currentLocation, at: date, activity: activity,
+                                   reducedAccuracy: hasReducedAccuracy) else {
+            logger.warning("Match location rejected; age: \(Int(age))s, accuracy: \(currentLocation.horizontalAccuracy)m")
             return nil
         }
         return currentLocation
+    }
+
+    func acceptsMatchLocation(
+        _ location: CLLocation,
+        at date: Date,
+        activity: CMMotionActivity?,
+        reducedAccuracy: Bool
+    ) -> Bool {
+        let maximumAccuracy: CLLocationAccuracy = reducedAccuracy ? 50_000 : 250
+        let maximumAge = reducedAccuracy
+            ? broadLocationAgeLimit(activity) : locationAgeLimit(activity)
+        return location.horizontalAccuracy.isFinite
+            && location.horizontalAccuracy >= 0
+            && location.horizontalAccuracy <= maximumAccuracy
+            && abs(location.timestamp.timeIntervalSince(date)) <= maximumAge
     }
 
     func placemark(for location: CLLocation?) -> CLPlacemark? {
@@ -172,20 +203,25 @@ struct SearchResult: Identifiable, Hashable {
     func activityLocationName(at date: Date, activity: CMMotionActivity?) -> String? {
         guard let currentLocation,
               currentLocation.horizontalAccuracy >= 0,
-              currentLocation.horizontalAccuracy <= 2_000,
+              currentLocation.horizontalAccuracy <= (hasReducedAccuracy ? 50_000 : 2_000),
               abs(currentLocation.timestamp.timeIntervalSince(date)) <= broadLocationAgeLimit(activity),
               let placemark = placemark(for: currentLocation) else { return nil }
 
-        if currentLocation.horizontalAccuracy <= 100,
+        if !hasReducedAccuracy,
+           currentLocation.horizontalAccuracy <= 100,
            abs(currentLocation.timestamp.timeIntervalSince(date)) <= locationAgeLimit(activity),
            let venue = placemark.areasOfInterest?.first, !venue.isEmpty {
             return venue
         }
-        if let neighborhood = placemark.subLocality, !neighborhood.isEmpty {
+        if currentLocation.horizontalAccuracy <= 2_000,
+           let neighborhood = placemark.subLocality, !neighborhood.isEmpty {
             return neighborhood
         }
-        if let city = placemark.locality, !city.isEmpty { return city }
-        return nil
+        if let city = placemark.locality, !city.isEmpty {
+            return currentLocation.horizontalAccuracy > 2_000 ? "Near \(city)" : city
+        }
+        if let state = placemark.administrativeArea, !state.isEmpty { return state }
+        return placemark.country
     }
 
     func refreshInterval(activity: CMMotionActivity?) -> TimeInterval {

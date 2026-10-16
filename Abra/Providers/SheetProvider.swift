@@ -106,12 +106,14 @@ import SwiftUI
     }
 
     func show(_ spot: Spot) {
+        guard now != .spot(spot) else { return }
         self.spot = spot
         stream = nil
         didChange.send()
     }
 
     func show(_ stream: ShazamStream) {
+        guard now != .stream(stream) else { return }
         self.stream = stream
         spot = nil
         didChange.send()

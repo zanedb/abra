@@ -126,7 +126,9 @@ enum ShazamStatus: Equatable {
                 activity: motionProvider?.currentActivity
             ), location.timestamp.timeIntervalSince(entry.matchedAt) <= 10 else { return false }
             entry.stream.updateLocation(location, placemark: locationProvider.placemark(for: location))
-            entry.stream.spotIt(context: modelContext)
+            if !locationProvider.hasReducedAccuracy && location.horizontalAccuracy <= 50 {
+                entry.stream.spotIt(context: modelContext)
+            }
             do { try modelContext.save() }
             catch { logger.error("Could not save delayed match location: \(error.localizedDescription)") }
             return true
@@ -380,7 +382,10 @@ enum ShazamStatus: Equatable {
                 motionActivity: motionName
             )
             modelContext.insert(stream)
-            if location != nil { stream.spotIt(context: modelContext) }
+            if let location, locationProvider?.hasReducedAccuracy == false,
+               location.horizontalAccuracy <= 50 {
+                stream.spotIt(context: modelContext)
+            }
             do {
                 try modelContext.save()
                 if location == nil {

@@ -41,26 +41,16 @@ struct LiveActivity: Widget {
                     }
                 }
             } compactLeading: {
-                if context.state.matchedTitle != nil {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                        .accessibilityLabel("Matched")
-                } else {
-                    Image("abra.logo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 20, height: 20)
-                        .accessibilityLabel("Listening")
-                }
+                Image("abra.logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
+                    .accessibilityLabel("Abra")
             } compactTrailing: {
-                if context.state.continuous && context.state.matchCount > 0 {
-                    Text(context.state.matchCount, format: .number)
-                        .font(.caption.bold())
-                        .accessibilityLabel("\(context.state.matchCount) songs matched")
-                } else {
-                    Image("abra.logo")
-                        .accessibilityHidden(true)
-                }
+                Image(systemName: "waveform")
+                    .font(.caption)
+                    .foregroundStyle(.white)
+                    .accessibilityLabel(context.state.matchedTitle == nil ? "Listening" : "Matched")
             } minimal: {
                 if context.state.matchedTitle != nil {
                     Image(systemName: "checkmark.circle.fill")

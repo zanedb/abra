@@ -115,7 +115,6 @@ final class ShazamAnnotationView: MKAnnotationView {
     private let imageView = UIImageView()
     private let glassContainerView = UIView()
     private let glassEffectView = UIVisualEffectView()
-    private let approximateRing = CAShapeLayer()
     private let size: CGFloat = 32
     private let borderWidth: CGFloat = 3
 
@@ -198,15 +197,6 @@ final class ShazamAnnotationView: MKAnnotationView {
         layer.shadowOffset = CGSize(width: 0, height: 2)
         layer.masksToBounds = false
 
-        if approximateRing.superlayer == nil {
-            layer.addSublayer(approximateRing)
-        }
-        approximateRing.frame = bounds
-        approximateRing.path = UIBezierPath(ovalIn: bounds.insetBy(dx: 3, dy: 3)).cgPath
-        approximateRing.fillColor = UIColor.systemBlue.withAlphaComponent(0.16).cgColor
-        approximateRing.strokeColor = UIColor.systemBlue.cgColor
-        approximateRing.lineWidth = 2
-        approximateRing.lineDashPattern = [3, 3]
         configureLocationStyle()
     }
 
@@ -214,9 +204,6 @@ final class ShazamAnnotationView: MKAnnotationView {
         guard let songAnnotation = annotation as? ShazamAnnotation else { return }
         let stream = songAnnotation.shazamStream
         let approximate = songAnnotation.approximateRadius != nil
-        imageView.isHidden = approximate
-        glassContainerView.isHidden = approximate
-        approximateRing.isHidden = !approximate
         accessibilityLabel = approximate
             ? "\(stream.title), approximate location"
             : stream.title
@@ -238,8 +225,7 @@ final class ShazamAnnotationView: MKAnnotationView {
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
-        let approximate = (annotation as? ShazamAnnotation)?.approximateRadius != nil
-        let scale: CGFloat = selected ? (approximate ? 1.25 : 3.0) : 1.0
+        let scale: CGFloat = selected ? 3.0 : 1.0
         let duration: TimeInterval = animated ? 0.5 : 0.0
 
         UIView.animate(

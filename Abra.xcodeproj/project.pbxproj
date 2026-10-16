@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		84784D102D354FF7A982EADC /* ApproximateAreaRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2ED00515B9462CAB73C7EE /* ApproximateAreaRenderer.swift */; };
 		2F00B44A2EAD7452004B4EFD /* SongInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F00B4492EAD7451004B4EFD /* SongInfo.swift */; };
 		2F0A4CD43019306C00365C51 /* VideoControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0A4CD33019306C00365C51 /* VideoControls.swift */; };
 		2F0BF5E22E82113E008582C2 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F0BF5E12E82113E008582C2 /* Kingfisher */; };
@@ -124,6 +125,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CC2ED00515B9462CAB73C7EE /* ApproximateAreaRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApproximateAreaRenderer.swift; sourceTree = "<group>"; };
 		2F00B4492EAD7451004B4EFD /* SongInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongInfo.swift; sourceTree = "<group>"; };
 		2F0A4CD33019306C00365C51 /* VideoControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoControls.swift; sourceTree = "<group>"; };
 		2F0C0000303A000000000001 /* MapBenchmarkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBenchmarkConfiguration.swift; sourceTree = "<group>"; };
@@ -406,6 +408,7 @@
 				2F736BB82DBD8D020078F1BB /* Toast.swift */,
 				2F4C61F22E4EC48800B1E0AF /* Waveform.swift */,
 				2FB5FA2E2DB883FF00EFD901 /* Annotations.swift */,
+				CC2ED00515B9462CAB73C7EE /* ApproximateAreaRenderer.swift */,
 				2F30A7C62DA77EAD00DFE607 /* VariableBlur.swift */,
 				2F3DAB7E2DA9CEEF001004B9 /* RoundedButton.swift */,
 				2FFE243B2E564288005F4A67 /* DismissButton.swift */,
@@ -660,6 +663,7 @@
 				2FAF74B72E0C55AD003D246C /* SongDiscovered.swift in Sources */,
 				2F736BBD2DC04ED20078F1BB /* LocationProvider.swift in Sources */,
 				2FB5FA2F2DB8840100EFD901 /* Annotations.swift in Sources */,
+				84784D102D354FF7A982EADC /* ApproximateAreaRenderer.swift in Sources */,
 				2FFE24402E56711F005F4A67 /* MomentView.swift in Sources */,
 				2FFE24422E570786005F4A67 /* PhotoView.swift in Sources */,
 				2FE893752E25D12100244DEF /* SpotIcon.swift in Sources */,

@@ -218,8 +218,6 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
         }
 
         private func handleSheetProviderChange() {
-            guard bottomSheetVC != nil else { return }
-
             // Center the map if a valid (non-null-island) coordinate is available
             if let mapView = mapView,
                 let coord = sheetProvider.coordinate,
@@ -265,8 +263,12 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             // Select annotation
             selectAnnotation()
             if let area = approximateArea {
+                // Show the central half of the area so the uncertainty extends
+                // visibly beyond the enlarged album-art annotation.
+                let bounds = area.boundingMapRect
+                let zoomRect = bounds.insetBy(dx: bounds.width * 0.25, dy: bounds.height * 0.25)
                 mapView?.setVisibleMapRect(
-                    area.boundingMapRect,
+                    zoomRect,
                     edgePadding: UIEdgeInsets(top: 90, left: 65, bottom: 220, right: 65),
                     animated: true
                 )
@@ -311,7 +313,7 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             // this update. This avoids building both old-ID and new-ID sets.
             shazamAnnotations.reserveCapacity(shazams.count)
             var staleShazamIDs = Set(shazamAnnotations.keys)
-            for stream in shazams {
+            for stream in shazams where stream.approximateLocationRadius == nil {
                 let id = stream.persistentModelID
                 staleShazamIDs.remove(id)
 
@@ -400,9 +402,7 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             if annotationsChanged {
                 reconcileSelectionAfterAnnotationChanges()
             }
-            if case .stream(let selectedStream) = sheetProvider.now {
-                updateApproximateArea(for: selectedStream, in: mapView)
-            }
+            selectAnnotation()
         }
 
         private func reconcileSelectionAfterAnnotationChanges() {
@@ -422,6 +422,9 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
 
         private func selectAnnotation() {
             guard let mapView = mapView else { return }
+            let wasProgrammaticSelection = isProgrammaticSelection
+            isProgrammaticSelection = true
+            defer { isProgrammaticSelection = wasProgrammaticSelection }
             let now = sheetProvider.now
 
             if case .stream(let stream) = now {
@@ -431,7 +434,6 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             }
 
             var annotationToSelect: MKAnnotation?
-            var needsTemporaryAnnotation = false
 
             switch now {
             case .spot(let spot):
@@ -453,18 +455,11 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
                 // Direct O(1) lookup
                 annotationToSelect = shazamAnnotations[stream.persistentModelID]
 
-                // If not found, we need a temporary annotation
-                if annotationToSelect == nil {
-                    needsTemporaryAnnotation = true
-                } else if findClusterContaining(stream: stream, in: mapView)
-                    != nil
-                {
-                    // Stream exists but is clustered - we need to handle this
-                    annotationToSelect = createTemporaryAnnotationFor(
-                        stream: stream,
-                        in: mapView
-                    )
-                    needsTemporaryAnnotation = true
+                if annotationToSelect == nil
+                    || findClusterContaining(stream: stream, in: mapView) != nil {
+                    annotationToSelect = createTemporaryAnnotationFor(stream: stream, in: mapView)
+                } else {
+                    cleanupTemporaryAnnotations()
                 }
 
             case .none:
@@ -473,36 +468,24 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
                 annotationToSelect = nil
             }
 
-            // Handle temporary annotation creation
-            if needsTemporaryAnnotation,
-                let stream = getCurrentStreamFromSheetProvider()
-            {
-                annotationToSelect = createTemporaryAnnotationFor(
-                    stream: stream,
-                    in: mapView
-                )
-            }
-
             // Select the annotation
             if let annotationToSelect = annotationToSelect,
                 mapView.selectedAnnotations.first !== annotationToSelect
             {
-                isProgrammaticSelection = true
                 mapView.selectAnnotation(annotationToSelect, animated: true)
                 lastSelectedAnnotation = annotationToSelect
-                isProgrammaticSelection = false
             } else if annotationToSelect == nil {
-                isProgrammaticSelection = true
-                mapView.selectedAnnotations.forEach {
-                    mapView.deselectAnnotation($0, animated: true)
+                if let lastSelectedAnnotation,
+                   mapView.selectedAnnotations.contains(where: { $0 === lastSelectedAnnotation }) {
+                    mapView.deselectAnnotation(lastSelectedAnnotation, animated: true)
                 }
                 lastSelectedAnnotation = nil
-                isProgrammaticSelection = false
             }
         }
 
         private func updateApproximateArea(for stream: ShazamStream?, in mapView: MKMapView) {
-            let radius = stream?.approximateLocationRadius
+            // Add a conservative display margin without changing saved accuracy.
+            let radius = stream?.approximateLocationRadius.map { max(150, $0 * 1.25) }
             let id = stream?.persistentModelID
             if let stream, let radius,
                approximateAreaStreamID == id,
@@ -513,7 +496,13 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             }
 
             if let approximateArea {
-                mapView.removeOverlay(approximateArea)
+                if let renderer = mapView.renderer(for: approximateArea) as? ApproximateAreaRenderer {
+                    renderer.animate(to: 0) { [weak mapView] in
+                        mapView?.removeOverlay(approximateArea)
+                    }
+                } else {
+                    mapView.removeOverlay(approximateArea)
+                }
             }
             approximateArea = nil
             approximateAreaStreamID = nil
@@ -528,13 +517,6 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
         }
 
         // MARK: - Helper Methods (NEW)
-
-        private func getCurrentStreamFromSheetProvider() -> ShazamStream? {
-            if case .stream(let stream) = sheetProvider.now {
-                return stream
-            }
-            return nil
-        }
 
         private func findClusterContaining(
             stream: ShazamStream,
@@ -557,6 +539,13 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             stream: ShazamStream,
             in mapView: MKMapView
         ) -> ShazamAnnotation {
+            if let existing = temporaryAnnotations.first(where: {
+                $0.shazamStream.persistentModelID == stream.persistentModelID
+            }) {
+                existing.update(from: stream)
+                (mapView.view(for: existing) as? ShazamAnnotationView)?.configureLocationStyle()
+                return existing
+            }
             cleanupTemporaryAnnotations()
 
             let tempAnnotation = ShazamAnnotation(shazamStream: stream)
@@ -574,15 +563,6 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             let annotationsToRemove = Array(temporaryAnnotations)
             temporaryAnnotations.removeAll()
             mapView.removeAnnotations(annotationsToRemove)
-        }
-
-        private func removeTemporaryAnnotation(_ annotation: ShazamAnnotation) {
-            guard let mapView = mapView,
-                temporaryAnnotations.contains(annotation)
-            else { return }
-
-            temporaryAnnotations.remove(annotation)
-            mapView.removeAnnotation(annotation)
         }
 
         // MARK: - Layout Margins
@@ -617,10 +597,8 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             guard let circle = overlay as? MKCircle else {
                 return MKOverlayRenderer(overlay: overlay)
             }
-            let renderer = MKCircleRenderer(circle: circle)
-            renderer.fillColor = UIColor.systemBlue.withAlphaComponent(0.15)
-            renderer.strokeColor = UIColor.systemBlue.withAlphaComponent(0.75)
-            renderer.lineWidth = 2
+            let renderer = ApproximateAreaRenderer(overlay: circle)
+            renderer.animate(to: 1)
             return renderer
         }
 
@@ -638,8 +616,7 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
                 if shazam.shazamStream == highlighted
                     || temporaryAnnotations.contains(shazam)
                 {
-                    view.clusteringIdentifier =
-                        "UNIQUE_\(shazam.shazamStream.id)"  // unique clustering to prevent clustering
+                    view.clusteringIdentifier = nil
                     view.displayPriority = .required  // always show
                 } else {
                     view.clusteringIdentifier = NSStringFromClass(
@@ -674,9 +651,11 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
 
             switch annotation {
             case let shazamAnnotation as ShazamAnnotation:
+                guard mapView.selectedAnnotations.contains(where: { $0 === annotation }) else { return }
                 sheetProvider.show(shazamAnnotation.shazamStream)
 
             case let spotAnnotation as SpotAnnotation:
+                guard mapView.selectedAnnotations.contains(where: { $0 === annotation }) else { return }
                 sheetProvider.show(spotAnnotation.spot)
 
             case let clusterAnnotation as MKClusterAnnotation:
@@ -698,48 +677,28 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
         ) {
             guard !isProgrammaticSelection else { return }
 
-            // Don't dismiss sheet if we're suppressing deselect
-            // This prevents the sheet from closing when annotations are removed due to state changes
-            guard !suppressDidDeselect else { return }
-
-            // Check if this is a temporary annotation that should be cleaned up after deselection
-            let isTemporaryAnnotation =
-                (annotation as? ShazamAnnotation).map {
-                    temporaryAnnotations.contains($0)
-                } ?? false
-
+            // MapKit can deliver deselection after removing/replacing an annotation.
+            // Only a live annotation for the current sheet may dismiss it.
+            guard mapView.annotations.contains(where: { $0 === annotation }),
+                  !mapView.selectedAnnotations.contains(where: { $0 === annotation }) else { return }
             switch annotation {
-            case is ShazamAnnotation:
-                // Only dismiss if this deselection wasn't caused by the stream being assigned to a spot
-                if let shazamAnnotation = annotation as? ShazamAnnotation,
-                    shazamAnnotation.shazamStream.spot == nil
-                {
-                    sheetProvider.now = .none
-                }
-
-                // Clean up temporary annotation after deselection animation completes
-                if isTemporaryAnnotation {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        [weak self] in
-                        if let shazamAnnotation = annotation
-                            as? ShazamAnnotation
-                        {
-                            self?.removeTemporaryAnnotation(shazamAnnotation)
-                        }
-                    }
-                }
-
-            case is SpotAnnotation:
+            case let song as ShazamAnnotation:
+                let isTemporary = temporaryAnnotations.contains(song)
+                guard !suppressDidDeselect || isTemporary,
+                      sheetProvider.now == .stream(song.shazamStream),
+                      song.shazamStream.spot == nil || isTemporary else { return }
                 sheetProvider.now = .none
-
-            case is MKClusterAnnotation, is MKMapFeatureAnnotation:
-                return
-
+            case let spot as SpotAnnotation:
+                guard !suppressDidDeselect,
+                      sheetProvider.now == .spot(spot.spot) else { return }
+                sheetProvider.now = .none
             default:
                 return
             }
 
-            lastSelectedAnnotation = nil
+            if let lastSelectedAnnotation, lastSelectedAnnotation === annotation {
+                self.lastSelectedAnnotation = nil
+            }
         }
 
         // MARK: - Selection Handlers (NEW)

@@ -69,32 +69,69 @@ final class AbraTests: XCTestCase {
     }
 
     @MainActor
-    func testApproximateSongUsesMapAreaAndUpdatesWhenFixImproves() throws {
+    func testApproximateSongAppearsOnlyWhileOpenWithStableArtworkAnnotation() throws {
         let stream = ShazamStream(title: "Approximate", latitude: 37.7, longitude: -122.4)
         stream.horizontalAccuracy = 120
         stream.locationObservedAt = stream.timestamp
-
+        let other = ShazamStream(title: "Another approximate song", latitude: 37.8, longitude: -122.5)
+        other.horizontalAccuracy = 500
+        other.locationObservedAt = other.timestamp
         let container = try ModelContainer(
             for: Schema([ShazamStream.self, Spot.self]),
             configurations: [ModelConfiguration(isStoredInMemoryOnly: true)]
         )
         let sheet = SheetProvider()
-        sheet.show(stream)
         let coordinator = MapViewControllerRepresentable.Coordinator(
-            modelContext: container.mainContext,
-            sheetProvider: sheet
+            modelContext: container.mainContext, sheetProvider: sheet
         )
         let mapView = MKMapView()
         coordinator.mapView = mapView
-        coordinator.syncAnnotations(shazams: [stream], spots: [])
+        coordinator.setupSheetProviderObservation()
+        coordinator.syncAnnotations(shazams: [stream, other], spots: [])
+        XCTAssertTrue(mapView.annotations.compactMap { $0 as? ShazamAnnotation }.isEmpty)
+        XCTAssertTrue(mapView.overlays.isEmpty)
 
+        sheet.show(stream)
         let annotation = try XCTUnwrap(mapView.annotations.compactMap { $0 as? ShazamAnnotation }.first)
-        XCTAssertEqual(annotation.approximateRadius, 120)
-        XCTAssertEqual(mapView.overlays.compactMap { $0 as? MKCircle }.first?.radius, 120)
+        XCTAssertEqual(annotation.artworkURL, stream.artworkURL)
+        XCTAssertEqual(mapView.overlays.compactMap { $0 as? MKCircle }.first?.radius, 150)
+        coordinator.syncAnnotations(shazams: [stream, other], spots: [])
+        XCTAssertEqual(mapView.annotations.compactMap { $0 as? ShazamAnnotation }.count, 1)
+        XCTAssertTrue(mapView.annotations.contains { $0 === annotation })
+        // A delayed callback for an annotation that is still selected is stale.
+        coordinator.mapView(mapView, didDeselect: annotation)
+        XCTAssertEqual(sheet.now, .stream(stream))
+
+        mapView.deselectAnnotation(annotation, animated: false)
+        coordinator.mapView(mapView, didDeselect: annotation)
+        XCTAssertEqual(sheet.now, .none)
+        XCTAssertTrue(mapView.annotations.compactMap { $0 as? ShazamAnnotation }.isEmpty)
+        XCTAssertTrue(mapView.overlays.isEmpty)
+
+        sheet.show(stream)
+        sheet.show(other)
+        coordinator.mapView(mapView, didDeselect: annotation)
+        XCTAssertEqual(sheet.now, .stream(other))
+        XCTAssertEqual(mapView.annotations.compactMap { $0 as? ShazamAnnotation }.count, 1)
+        XCTAssertEqual(mapView.overlays.compactMap { $0 as? MKCircle }.first?.radius, 625)
+
+        sheet.now = .none
+        XCTAssertTrue(mapView.annotations.compactMap { $0 as? ShazamAnnotation }.isEmpty)
+        XCTAssertTrue(mapView.overlays.isEmpty)
 
         stream.horizontalAccuracy = 20
-        coordinator.syncAnnotations(shazams: [stream], spots: [])
-        XCTAssertNil(annotation.approximateRadius)
+        coordinator.syncAnnotations(shazams: [stream, other], spots: [])
+        XCTAssertEqual(mapView.annotations.compactMap { $0 as? ShazamAnnotation }.count, 1)
+        let preciseAnnotation = try XCTUnwrap(mapView.annotations.compactMap { $0 as? ShazamAnnotation }.first)
+        sheet.show(other)
+        let approximateAnnotation = try XCTUnwrap(mapView.annotations.compactMap { $0 as? ShazamAnnotation }
+            .first { $0.shazamStream == other })
+        mapView.selectAnnotation(preciseAnnotation, animated: false)
+        coordinator.mapView(mapView, didDeselect: approximateAnnotation)
+        XCTAssertTrue(mapView.selectedAnnotations.contains { $0 === preciseAnnotation })
+        coordinator.mapView(mapView, didSelect: preciseAnnotation)
+        XCTAssertEqual(sheet.now, .stream(stream))
+        sheet.show(stream)
         XCTAssertTrue(mapView.overlays.isEmpty)
     }
 
@@ -249,6 +286,15 @@ final class AbraTests: XCTestCase {
 
         provider.currentLocation = fix(age: 30, accuracy: 500)
         XCTAssertNil(provider.locationForMatch(at: matchTime, activity: nil))
+
+        XCTAssertTrue(provider.acceptsMatchLocation(
+            fix(age: 250, accuracy: 12_000), at: matchTime,
+            activity: nil, reducedAccuracy: true
+        ))
+        XCTAssertFalse(provider.acceptsMatchLocation(
+            fix(age: 400, accuracy: 12_000), at: matchTime,
+            activity: nil, reducedAccuracy: true
+        ))
     }
 
     @MainActor

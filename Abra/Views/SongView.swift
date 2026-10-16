@@ -146,10 +146,13 @@ struct SongView: View {
 
                 if (stream.latitude == -1 && stream.longitude == -1)
                     || (stream.latitude == 0 && stream.longitude == 0)
+                    || stream.approximateLocationRadius != nil
                 {
                     Divider()
                     Button(
-                        "Add Location",
+                        (stream.latitude == -1 && stream.longitude == -1)
+                            || (stream.latitude == 0 && stream.longitude == 0)
+                            ? "Add Location" : "Add Precise Location",
                         systemImage:
                             "location.fill.viewfinder",
                         action: {
