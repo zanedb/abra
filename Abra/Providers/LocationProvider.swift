@@ -20,6 +20,7 @@ struct SearchCompletions: Identifiable {
     var authorizationStatus: CLAuthorizationStatus = .notDetermined
     var currentLocation: CLLocation?
     var currentPlacemark: CLPlacemark?
+    @ObservationIgnored var onLocationUpdate: (@MainActor (CLLocation?, CLPlacemark?) -> Void)?
     private var placemarkLocation: CLLocation?
     private var lastObservedDisplacement: CLLocationDistance = 0
     private var backgroundTrackingRequested = false
@@ -28,6 +29,9 @@ struct SearchCompletions: Identifiable {
     var completions = [SearchCompletions]()
     
     private let locationManager: CLLocationManager
+    private let refreshLocationManager: CLLocationManager
+    private var refreshRequestedAt: Date?
+    private var standardUpdatesRunning = false
     private let completer: MKLocalSearchCompleter
     @ObservationIgnored private var pickerRequests: [UUID: CheckedContinuation<CLLocation, Error>] = [:]
     @ObservationIgnored private var pickerTimeouts: [UUID: Task<Void, Never>] = [:]
@@ -43,13 +47,19 @@ struct SearchCompletions: Identifiable {
         }
     }
     
-    override init() {
-        locationManager = CLLocationManager()
+    override convenience init() {
+        self.init(locationManager: CLLocationManager(), refreshLocationManager: CLLocationManager())
+    }
+
+    init(locationManager: CLLocationManager, refreshLocationManager: CLLocationManager) {
+        self.locationManager = locationManager
+        self.refreshLocationManager = refreshLocationManager
         lastAccuracyAuthorization = locationManager.accuracyAuthorization
         completer = MKLocalSearchCompleter()
         super.init()
         
         locationManager.delegate = self
+        refreshLocationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         authorizationStatus = locationManager.authorizationStatus
         
@@ -67,9 +77,22 @@ struct SearchCompletions: Identifiable {
         locationManager.requestWhenInUseAuthorization()
     }
     
-    /// Request a one-time location update
+    /// A one-shot request on an already-running manager is a documented no-op.
+    /// Use a separate manager while the primary keeps the background When In Use
+    /// session alive; never stop/restart that session just to refresh a stale fix.
     func requestLocation() {
-        locationManager.requestLocation()
+        guard authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways else { return }
+        guard standardUpdatesRunning else {
+            locationManager.requestLocation()
+            return
+        }
+        if let refreshRequestedAt, Date().timeIntervalSince(refreshRequestedAt) < 15 { return }
+        if refreshRequestedAt != nil { refreshLocationManager.stopUpdatingLocation() }
+        refreshLocationManager.desiredAccuracy = hasReducedAccuracy ? kCLLocationAccuracyReduced
+            : (backgroundTrackingRequested ? kCLLocationAccuracyHundredMeters : kCLLocationAccuracyBest)
+        refreshRequestedAt = .now
+        refreshLocationManager.requestLocation()
+        logger.info("Requested independent location refresh while continuous updates remain active")
     }
 
     /// A picker tap requests a fix when the cache is missing or stale. Geocoding
@@ -131,14 +154,20 @@ struct SearchCompletions: Identifiable {
             ? kCLLocationAccuracyReduced : kCLLocationAccuracyHundredMeters
         locationManager.distanceFilter = 150
         locationManager.allowsBackgroundLocationUpdates = true
+        refreshLocationManager.allowsBackgroundLocationUpdates = true
         // A pause can end a When In Use location session after the phone locks.
         // Continuous listening needs occasional fresh fixes even when stationary.
         locationManager.pausesLocationUpdatesAutomatically = false
         locationManager.startUpdatingLocation()
+        standardUpdatesRunning = true
     }
 
     func stopBackgroundLocationUpdates() {
         backgroundTrackingRequested = false
+        standardUpdatesRunning = false
+        refreshLocationManager.stopUpdatingLocation()
+        refreshRequestedAt = nil
+        refreshLocationManager.allowsBackgroundLocationUpdates = false
         locationManager.stopUpdatingLocation()
         locationManager.allowsBackgroundLocationUpdates = false
         locationManager.pausesLocationUpdatesAutomatically = true
@@ -148,11 +177,14 @@ struct SearchCompletions: Identifiable {
         
     /// Start continuous location updates
     func startLocationUpdates() {
+        standardUpdatesRunning = true
         locationManager.startUpdatingLocation()
     }
         
     /// Stop continuous location updates
     func stopLocationUpdates() {
+        guard !backgroundTrackingRequested else { return }
+        standardUpdatesRunning = false
         locationManager.stopUpdatingLocation()
     }
     
@@ -180,6 +212,7 @@ struct SearchCompletions: Identifiable {
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if manager === refreshLocationManager { refreshRequestedAt = nil }
         guard let location = locations.last,
               location.horizontalAccuracy.isFinite,
               location.horizontalAccuracy >= 0 else { return }
@@ -191,8 +224,10 @@ struct SearchCompletions: Identifiable {
         Task { @MainActor [weak self] in
             guard let self else { return }
             let maximumAge: TimeInterval = hasReducedAccuracy ? 300 : 60
-            guard abs(location.timestamp.timeIntervalSinceNow) <= maximumAge else { return }
-            finishPickerRequests(result: .success(location))
+            if abs(location.timestamp.timeIntervalSinceNow) <= maximumAge {
+                finishPickerRequests(result: .success(location))
+            }
+            onLocationUpdate?(nil, nil)
         }
         logger.debug("Location fix received; accuracy: \(Int(location.horizontalAccuracy))m")
         if let placemarkLocation, currentPlacemark != nil {
@@ -205,6 +240,7 @@ struct SearchCompletions: Identifiable {
     }
         
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        if manager === refreshLocationManager { refreshRequestedAt = nil }
         logger.error("Location update failed: \(error.localizedDescription)")
         Task { @MainActor [weak self] in
             guard let self else { return }
@@ -225,11 +261,22 @@ struct SearchCompletions: Identifiable {
     private func fetchPlacemark(for location: CLLocation) {
         let geocoder = CLGeocoder()
         geocoder.reverseGeocodeLocation(location) { [weak self] placemarks, error in
-            guard let self, error == nil, let placemark = placemarks?.first else { return }
-            guard self.currentLocation?.distance(from: location) ?? .infinity < 250 else { return }
-            self.currentPlacemark = placemark
-            self.placemarkLocation = location
+            guard error == nil, let placemark = placemarks?.first else { return }
+            Task { @MainActor [weak self] in
+                self?.acceptPlacemark(placemark, for: location)
+            }
         }
+    }
+
+    @MainActor
+    func acceptPlacemark(_ placemark: CLPlacemark, for location: CLLocation) {
+        if currentLocation?.distance(from: location) ?? .infinity < 250 {
+            currentPlacemark = placemark
+            placemarkLocation = location
+        }
+        // The user may have moved while geocoding. Still deliver the original
+        // fix's label to pending songs without relabeling the current position.
+        onLocationUpdate?(location, placemark)
     }
 
     /// Save a recent reduced-accuracy fix as an area, never as a precise point.
@@ -253,7 +300,9 @@ struct SearchCompletions: Identifiable {
         activity: CMMotionActivity?,
         reducedAccuracy: Bool
     ) -> Bool {
-        let maximumAccuracy: CLLocationAccuracy = reducedAccuracy ? 50_000 : 250
+        // A neighborhood-level indoor fix is still useful: the saved accuracy
+        // produces an uncertainty area and prevents automatic Spot assignment.
+        let maximumAccuracy: CLLocationAccuracy = reducedAccuracy ? 50_000 : 2_000
         let maximumAge = reducedAccuracy
             ? broadLocationAgeLimit(activity) : locationAgeLimit(activity)
         return location.horizontalAccuracy.isFinite
@@ -295,12 +344,13 @@ struct SearchCompletions: Identifiable {
     }
 
     func refreshInterval(activity: CMMotionActivity?) -> TimeInterval {
-        if lastObservedDisplacement > 500 { return 60 }
-        if lastObservedDisplacement > 150 { return 90 }
-        guard let activity, activity.confidence != .low else { return 180 }
-        if activity.automotive || activity.cycling { return 90 }
-        if activity.stationary { return 300 }
-        return 180
+        // Refresh before the accepted fix expires, leaving acquisition headroom.
+        if lastObservedDisplacement > 500 { return 45 }
+        if lastObservedDisplacement > 150 { return 60 }
+        guard let activity, activity.confidence != .low else { return 90 }
+        if activity.automotive || activity.cycling { return 60 }
+        if activity.stationary { return 120 }
+        return 90
     }
 
     private func locationAgeLimit(_ activity: CMMotionActivity?) -> TimeInterval {

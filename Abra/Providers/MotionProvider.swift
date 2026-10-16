@@ -52,6 +52,20 @@ import SwiftUI
         }
     }
     
+    /// A stationary sample only rules out travel if the activity spans both
+    /// the location observation and recognition, rather than just their endpoint.
+    func confirmsStationary(from observation: Date, through match: Date) -> Bool {
+        guard let activity = currentActivity else { return false }
+        return Self.stationaryCoversInterval(isStationary: activity.stationary,
+            confidence: activity.confidence, since: activity.startDate,
+            observation: observation, match: match)
+    }
+
+    static func stationaryCoversInterval(isStationary: Bool, confidence: CMMotionActivityConfidence,
+                                        since startedAt: Date, observation: Date, match: Date) -> Bool {
+        isStationary && confidence != .low && startedAt <= min(observation, match)
+    }
+
     // MARK: - Device Motion
     
     func startDeviceMotionUpdates() {

@@ -352,6 +352,12 @@ struct SheetView: View {
                 type: .error,
                 symbol: "shazam.logo.fill"
             )
+        case .persistenceFailed:
+            toast.show(
+                message: "Song recognized, but couldn't save it. Retrying…",
+                type: .error,
+                symbol: "externaldrive.badge.exclamationmark"
+            )
         case .microphonePermissionDenied:
             toast.show(
                 message: "Allow microphone access to recognize music",

@@ -33,7 +33,6 @@ final class MatchNotificationService: NSObject, UNUserNotificationCenterDelegate
     func notify(
         title: String,
         artist: String,
-        confidence: Int?,
         artworkURL: URL?,
         matchID: UUID
     ) async {
@@ -43,7 +42,7 @@ final class MatchNotificationService: NSObject, UNUserNotificationCenterDelegate
             || settings.authorizationStatus == .provisional else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = confidence.map { "\(title) · \($0)%" } ?? title
+        content.title = title
         content.subtitle = artist
         content.sound = .default
         content.userInfo = ["matchID": matchID.uuidString]

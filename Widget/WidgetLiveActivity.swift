@@ -94,14 +94,14 @@ struct LiveActivity: Widget {
 
                 if context.state.continuous {
                     Text(context.state.matchCount == 1
-                         ? "1 song matched"
-                         : "\(context.state.matchCount) songs matched")
+                         ? "1 song found"
+                         : "\(context.state.matchCount) songs found")
                         .font(.headline)
                         .contentTransition(.numericText())
 
                     Label(
                         context.state.locationName ?? "Location unavailable",
-                        systemImage: context.state.locationName == nil ? "location.slash" : "mappin"
+                        systemImage: context.state.locationName == nil ? "location.slash" : "location.fill"
                     )
                     .font(.caption)
                     .foregroundStyle(.white.opacity(0.75))

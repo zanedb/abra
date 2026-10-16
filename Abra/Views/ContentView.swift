@@ -69,15 +69,12 @@ struct ContentView: View {
             shazam.configure(modelContext: modelContext, location: location, motion: motion, sheet: sheet)
             schedulePendingNotificationRoute()
         }
-        .onChange(of: location.currentPlacemark) {
-            shazam.refreshActivityLocation()
-        }
-        .onChange(of: location.currentLocation?.timestamp) {
-            shazam.resolvePendingMatchLocations()
-            shazam.refreshActivityLocation()
-        }
         .onChange(of: scenePhase) {
-            if scenePhase == .active { schedulePendingNotificationRoute() }
+            if scenePhase == .active {
+                shazam.retryPendingMatches()
+                shazam.resolvePendingMatchLocations()
+                schedulePendingNotificationRoute()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: MatchNotificationService.openMatchNotification)) { _ in
             schedulePendingNotificationRoute()

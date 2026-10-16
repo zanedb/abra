@@ -9,7 +9,6 @@ import SwiftUI
 
 struct LocationPicker: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
     @Environment(LocationProvider.self) private var locationProvider
 
     var stream: ShazamStream
@@ -118,7 +117,9 @@ struct LocationPicker: View {
         updateLocation {
             let mapItem = try await locationProvider.search(for: completion)
             try Task.checkCancellation()
-            stream.setLocationFromPicker(mapItem)
+            try stream.saveLocationEdit { song, context in
+                song.setLocationFromPicker(mapItem, context: context)
+            }
         }
     }
 
@@ -131,7 +132,10 @@ struct LocationPicker: View {
                 placemark = try? await CLGeocoder().reverseGeocodeLocation(location).first
             }
             try Task.checkCancellation()
-            stream.setLocationFromPicker(location, placemark: placemark)
+            try stream.saveLocationEdit { song, context in
+                song.setLocationFromPicker(location, placemark: placemark,
+                                           context: context, allowSpot: !locationProvider.hasReducedAccuracy)
+            }
         }
     }
 
@@ -143,7 +147,6 @@ struct LocationPicker: View {
             do {
                 try await operation()
                 try Task.checkCancellation()
-                try modelContext.save()
                 dismiss()
             } catch is CancellationError {
                 return

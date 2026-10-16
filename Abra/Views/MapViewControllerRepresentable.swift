@@ -313,7 +313,7 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             // this update. This avoids building both old-ID and new-ID sets.
             shazamAnnotations.reserveCapacity(shazams.count)
             var staleShazamIDs = Set(shazamAnnotations.keys)
-            for stream in shazams where stream.approximateLocationRadius == nil {
+            for stream in shazams {
                 let id = stream.persistentModelID
                 staleShazamIDs.remove(id)
 
@@ -452,15 +452,10 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
                     break
                 }
 
-                // Direct O(1) lookup
-                annotationToSelect = shazamAnnotations[stream.persistentModelID]
-
-                if annotationToSelect == nil
-                    || findClusterContaining(stream: stream, in: mapView) != nil {
-                    annotationToSelect = createTemporaryAnnotationFor(stream: stream, in: mapView)
-                } else {
-                    cleanupTemporaryAnnotations()
-                }
+                // Spot markers and clusters can collision-hide a normal pin even
+                // when MapKit reports no cluster membership. Give every selected
+                // song one stable, required-priority artwork pin of its own.
+                annotationToSelect = createTemporaryAnnotationFor(stream: stream, in: mapView)
 
             case .none:
                 highlighted = nil
@@ -518,23 +513,6 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
 
         // MARK: - Helper Methods (NEW)
 
-        private func findClusterContaining(
-            stream: ShazamStream,
-            in mapView: MKMapView
-        ) -> MKClusterAnnotation? {
-            return mapView.annotations.compactMap { $0 as? MKClusterAnnotation }
-                .first { cluster in
-                    if let memberAnnotations = cluster.memberAnnotations
-                        as? [ShazamAnnotation]
-                    {
-                        return memberAnnotations.contains {
-                            $0.shazamStream == stream
-                        }
-                    }
-                    return false
-                }
-        }
-
         private func createTemporaryAnnotationFor(
             stream: ShazamStream,
             in mapView: MKMapView
@@ -542,8 +520,10 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             if let existing = temporaryAnnotations.first(where: {
                 $0.shazamStream.persistentModelID == stream.persistentModelID
             }) {
-                existing.update(from: stream)
-                (mapView.view(for: existing) as? ShazamAnnotationView)?.configureLocationStyle()
+                let changes = existing.update(from: stream)
+                let view = mapView.view(for: existing) as? ShazamAnnotationView
+                if changes.artworkChanged { view?.loadImage() }
+                view?.configureLocationStyle()
                 return existing
             }
             cleanupTemporaryAnnotations()
@@ -618,11 +598,15 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
                 {
                     view.clusteringIdentifier = nil
                     view.displayPriority = .required  // always show
+                    view.zPriority = .max
+                    view.selectedZPriority = .max
                 } else {
                     view.clusteringIdentifier = NSStringFromClass(
                         ShazamAnnotation.self
                     )
                     view.displayPriority = .defaultHigh
+                    view.zPriority = .defaultUnselected
+                    view.selectedZPriority = .defaultSelected
                 }
                 return view
 
@@ -683,8 +667,11 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
                   !mapView.selectedAnnotations.contains(where: { $0 === annotation }) else { return }
             switch annotation {
             case let song as ShazamAnnotation:
+                // Ignore a delayed deselection of the normal pin when the same
+                // song is now represented by its dedicated selected artwork pin.
+                guard lastSelectedAnnotation == nil || lastSelectedAnnotation === annotation else { return }
                 let isTemporary = temporaryAnnotations.contains(song)
-                guard !suppressDidDeselect || isTemporary,
+                guard !suppressDidDeselect || isTemporary || song.approximateRadius != nil,
                       sheetProvider.now == .stream(song.shazamStream),
                       song.shazamStream.spot == nil || isTemporary else { return }
                 sheetProvider.now = .none

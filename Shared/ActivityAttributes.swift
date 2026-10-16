@@ -16,6 +16,32 @@ struct WidgetAttributes: ActivityAttributes {
         var locationName: String? = nil
         var matchedTitle: String? = nil
         var matchedArtist: String? = nil
+
+        // Activities can survive an app update with the previous payload shape.
+        // Property defaults alone don't supply missing keys during Codable decoding.
+        private enum CodingKeys: String, CodingKey {
+            case takingTooLong, continuous, matchCount, locationName, matchedTitle, matchedArtist
+        }
+
+        init(takingTooLong: Bool, continuous: Bool = false, matchCount: Int = 0,
+             locationName: String? = nil, matchedTitle: String? = nil, matchedArtist: String? = nil) {
+            self.takingTooLong = takingTooLong
+            self.continuous = continuous
+            self.matchCount = matchCount
+            self.locationName = locationName
+            self.matchedTitle = matchedTitle
+            self.matchedArtist = matchedArtist
+        }
+
+        init(from decoder: Decoder) throws {
+            let values = try decoder.container(keyedBy: CodingKeys.self)
+            takingTooLong = try values.decodeIfPresent(Bool.self, forKey: .takingTooLong) ?? false
+            continuous = try values.decodeIfPresent(Bool.self, forKey: .continuous) ?? false
+            matchCount = try values.decodeIfPresent(Int.self, forKey: .matchCount) ?? 0
+            locationName = try values.decodeIfPresent(String.self, forKey: .locationName)
+            matchedTitle = try values.decodeIfPresent(String.self, forKey: .matchedTitle)
+            matchedArtist = try values.decodeIfPresent(String.self, forKey: .matchedArtist)
+        }
     }
 }
 
