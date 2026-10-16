@@ -371,6 +371,21 @@ extension ShazamStream {
         timeZoneIdentifier = placemark?.timeZone?.identifier
     }
 
+    /// An explicit correction replaces any previously associated venue.
+    public func setLocationFromPicker(_ location: CLLocation, placemark: CLPlacemark? = nil) {
+        spot = nil
+        updateLocation(location, placemark: placemark)
+    }
+
+    public func setLocationFromPicker(_ mapItem: MKMapItem) {
+        let coordinate = mapItem.placemark.coordinate
+        setLocationFromPicker(
+            CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude),
+            placemark: mapItem.placemark
+        )
+        placemarkName = mapItem.name ?? mapItem.placemark.name
+    }
+
     /// Find Spots that are super close by and save to automagically.
     /// Queries for lat/long within three decimal sig figs of precision.
     public func spotIt(context: ModelContext) {

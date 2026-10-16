@@ -298,6 +298,48 @@ final class AbraTests: XCTestCase {
     }
 
     @MainActor
+    func testPickerCurrentLocationDoesNotRequirePlacemark() async throws {
+        let provider = LocationProvider()
+        provider.authorizationStatus = .authorizedWhenInUse
+        let fix = CLLocation(
+            coordinate: .init(latitude: 37.78, longitude: -122.4),
+            altitude: 0, horizontalAccuracy: 8_000,
+            verticalAccuracy: -1, timestamp: .now
+        )
+        provider.currentLocation = fix
+        provider.currentPlacemark = nil
+        let selected = try await provider.locationForPicker()
+        XCTAssertEqual(selected.coordinate.latitude, fix.coordinate.latitude)
+        XCTAssertEqual(selected.horizontalAccuracy, 8_000)
+    }
+
+    @MainActor
+    func testPickerSelectionPreservesChosenVenueAndReplacesOldSpot() {
+        let stream = ShazamStream(title: "Song")
+        stream.spot = Spot(name: "Solamat")
+        let item = MKMapItem(placemark: MKPlacemark(
+            coordinate: .init(latitude: 37.7843, longitude: -122.4039)
+        ))
+        item.name = "AMC Metreon"
+        stream.setLocationFromPicker(item)
+        XCTAssertNil(stream.spot)
+        XCTAssertEqual(stream.placemarkName, "AMC Metreon")
+        XCTAssertEqual(stream.latitude, item.placemark.coordinate.latitude)
+        XCTAssertEqual(stream.longitude, item.placemark.coordinate.longitude)
+        XCTAssertNil(stream.approximateLocationRadius)
+
+        stream.spot = Spot(name: "Previous venue")
+        let approximate = CLLocation(
+            coordinate: .init(latitude: 37.78, longitude: -122.4),
+            altitude: 0, horizontalAccuracy: 8_000,
+            verticalAccuracy: -1, timestamp: .now
+        )
+        stream.setLocationFromPicker(approximate)
+        XCTAssertNil(stream.spot)
+        XCTAssertEqual(stream.approximateLocationRadius, 8_000)
+    }
+
+    @MainActor
     func testInterveningFalseMatchDoesNotReadmitPlayingSong() {
         let provider = ShazamProvider()
         let start = Date(timeIntervalSince1970: 1_700_000_000)

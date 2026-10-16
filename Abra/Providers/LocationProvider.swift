@@ -11,21 +11,9 @@ import os
 
 struct SearchCompletions: Identifiable {
     let id = UUID()
-    let title: String
-    let subTitle: String
-}
-
-struct SearchResult: Identifiable, Hashable {
-    let id = UUID()
-    let location: CLLocationCoordinate2D
-
-    static func == (lhs: SearchResult, rhs: SearchResult) -> Bool {
-        lhs.id == rhs.id
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
+    let completion: MKLocalSearchCompletion
+    var title: String { completion.title }
+    var subTitle: String { completion.subtitle }
 }
 
 @Observable final class LocationProvider: NSObject, CLLocationManagerDelegate, MKLocalSearchCompleterDelegate {
@@ -41,6 +29,19 @@ struct SearchResult: Identifiable, Hashable {
     
     private let locationManager: CLLocationManager
     private let completer: MKLocalSearchCompleter
+    @ObservationIgnored private var pickerRequests: [UUID: CheckedContinuation<CLLocation, Error>] = [:]
+    @ObservationIgnored private var pickerTimeouts: [UUID: Task<Void, Never>] = [:]
+
+    enum PickerError: LocalizedError {
+        case permissionDenied, locationUnavailable, placeUnavailable
+        var errorDescription: String? {
+            switch self {
+            case .permissionDenied: "Allow location access for Abra in Settings, or search for a place instead."
+            case .locationUnavailable: "Your current location is unavailable. Please try again or search for a place."
+            case .placeUnavailable: "That place could not be found. Please select another search result."
+            }
+        }
+    }
     
     override init() {
         locationManager = CLLocationManager()
@@ -69,6 +70,55 @@ struct SearchResult: Identifiable, Hashable {
     /// Request a one-time location update
     func requestLocation() {
         locationManager.requestLocation()
+    }
+
+    /// A picker tap requests a fix when the cache is missing or stale. Geocoding
+    /// is deliberately independent: a valid coordinate doesn't need a placemark.
+    @MainActor
+    func locationForPicker() async throws -> CLLocation {
+        try Task.checkCancellation()
+        guard authorizationStatus != .denied && authorizationStatus != .restricted else {
+            throw PickerError.permissionDenied
+        }
+        let maximumAge: TimeInterval = hasReducedAccuracy ? 300 : 60
+        if let currentLocation,
+           currentLocation.horizontalAccuracy.isFinite,
+           currentLocation.horizontalAccuracy >= 0,
+           abs(currentLocation.timestamp.timeIntervalSinceNow) <= maximumAge {
+            return currentLocation
+        }
+        let id = UUID()
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                guard !Task.isCancelled else {
+                    continuation.resume(throwing: CancellationError())
+                    return
+                }
+                pickerRequests[id] = continuation
+                pickerTimeouts[id] = Task { @MainActor [weak self] in
+                    do { try await Task.sleep(for: .seconds(15)) }
+                    catch { return }
+                    self?.finishPickerRequest(id, result: .failure(PickerError.locationUnavailable))
+                }
+                if authorizationStatus == .notDetermined { requestPermission() }
+                else { requestLocation() }
+            }
+        } onCancel: {
+            Task { @MainActor [weak self] in
+                self?.finishPickerRequest(id, result: .failure(CancellationError()))
+            }
+        }
+    }
+
+    @MainActor
+    private func finishPickerRequest(_ id: UUID, result: Result<CLLocation, Error>) {
+        pickerTimeouts.removeValue(forKey: id)?.cancel()
+        pickerRequests.removeValue(forKey: id)?.resume(with: result)
+    }
+
+    @MainActor
+    private func finishPickerRequests(result: Result<CLLocation, Error>) {
+        for id in Array(pickerRequests.keys) { finishPickerRequest(id, result: result) }
     }
 
     /// Keep a location session started in the foreground while Continuous
@@ -119,6 +169,14 @@ struct SearchResult: Identifiable, Hashable {
             placemarkLocation = nil
         }
         if backgroundTrackingRequested { startBackgroundLocationUpdates() }
+        Task { @MainActor [weak self] in
+            guard let self, !pickerRequests.isEmpty else { return }
+            if authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse {
+                requestLocation()
+            } else if authorizationStatus == .denied || authorizationStatus == .restricted {
+                finishPickerRequests(result: .failure(PickerError.permissionDenied))
+            }
+        }
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -130,6 +188,12 @@ struct SearchResult: Identifiable, Hashable {
             lastObservedDisplacement = previous.distance(from: location)
         }
         currentLocation = location
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let maximumAge: TimeInterval = hasReducedAccuracy ? 300 : 60
+            guard abs(location.timestamp.timeIntervalSinceNow) <= maximumAge else { return }
+            finishPickerRequests(result: .success(location))
+        }
         logger.debug("Location fix received; accuracy: \(Int(location.horizontalAccuracy))m")
         if let placemarkLocation, currentPlacemark != nil {
             if placemarkLocation.distance(from: location) < 100 {
@@ -142,6 +206,12 @@ struct SearchResult: Identifiable, Hashable {
         
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         logger.error("Location update failed: \(error.localizedDescription)")
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let failure: PickerError = authorizationStatus == .denied || authorizationStatus == .restricted
+                ? .permissionDenied : .locationUnavailable
+            finishPickerRequests(result: .failure(failure))
+        }
     }
 
     func locationManagerDidPauseLocationUpdates(_ manager: CLLocationManager) {
@@ -250,30 +320,31 @@ struct SearchResult: Identifiable, Hashable {
     // MARK: - MKLocalSearchCompleterDelegate
 
     func update(queryFragment: String) {
+        completer.cancel()
+        completions = []
+        guard !queryFragment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         completer.resultTypes = .pointOfInterest
+        if let currentLocation {
+            completer.region = MKCoordinateRegion(
+                center: currentLocation.coordinate,
+                latitudinalMeters: 50_000, longitudinalMeters: 50_000
+            )
+        }
         completer.queryFragment = queryFragment
     }
 
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        completions = completer.results.map { .init(title: $0.title, subTitle: $0.subtitle) }
+        completions = completer.results.map { .init(completion: $0) }
     }
-    
-    func search(with query: String, coordinate: CLLocationCoordinate2D? = nil) async throws -> [SearchResult] {
-        let mapKitRequest = MKLocalSearch.Request()
-        mapKitRequest.naturalLanguageQuery = query
-        mapKitRequest.resultTypes = .pointOfInterest
-        if let coordinate {
-            mapKitRequest.region = .init(.init(origin: .init(coordinate), size: .init(width: 1, height: 1)))
-        }
-        let search = MKLocalSearch(request: mapKitRequest)
 
+    func search(for selection: SearchCompletions) async throws -> MKMapItem {
+        let request = MKLocalSearch.Request(completion: selection.completion)
+        let search = MKLocalSearch(request: request)
         let response = try await search.start()
-
-        return response.mapItems.compactMap { mapItem in
-            guard let location = mapItem.placemark.location?.coordinate else { return nil }
-            // mapItem.location.coordinate in os26
-
-            return .init(location: location)
-        }
+        try Task.checkCancellation()
+        guard let item = response.mapItems.first(where: {
+            $0.name?.localizedCaseInsensitiveCompare(selection.title) == .orderedSame
+        }) ?? response.mapItems.first else { throw PickerError.placeUnavailable }
+        return item
     }
 }

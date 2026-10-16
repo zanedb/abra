@@ -43,6 +43,12 @@ struct SongDiscovered: View {
 
     @State var mapItems: [MKMapItem] = []
 
+    private struct LocationQuery: Hashable {
+        let songID: PersistentIdentifier
+        let latitude: Double
+        let longitude: Double
+    }
+
     // The idea here is that if it's a relatively nearby area, and maybe the GPS is a little off, or it's wide open space, it'll prompt to add to semi-related spots
     // But.. do we need to make this calculation on every view open?
     // Is it even helpful?
@@ -159,11 +165,19 @@ struct SongDiscovered: View {
             }
         }
         .padding(.vertical, 12)
-        .task(id: stream.persistentModelID) {
+        .task(id: LocationQuery(
+            songID: stream.persistentModelID,
+            latitude: stream.latitude,
+            longitude: stream.longitude
+        )) {
+            mapItems = []
+            guard (stream.latitude != 0 || stream.longitude != 0),
+                  !(stream.latitude == -1 && stream.longitude == -1) else { return }
             let search = MKLocalSearch(
                 request: .init(center: stream.coordinate, radius: 20)
             )
             let response = try? await search.start()
+            guard !Task.isCancelled else { return }
             mapItems = response?.mapItems ?? []
 
             if #available(iOS 26.0, *) {
@@ -171,6 +185,7 @@ struct SongDiscovered: View {
                     location: stream.location
                 ) {
                     let items = try? await request.mapItems
+                    guard !Task.isCancelled else { return }
                     if let mapitem = items?.first {
                         mapItems.append(mapitem)
                     }
