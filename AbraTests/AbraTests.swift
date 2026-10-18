@@ -4,7 +4,6 @@
 //
 
 @testable import Abra
-import AVFAudio
 import MapKit
 import SwiftData
 import XCTest
@@ -911,190 +910,15 @@ final class AbraTests: XCTestCase {
         XCTAssertEqual(stream.note, "Unrelated unsaved edit")
     }
 
-    @MainActor
-    private func configureInterruptionTest(_ provider: ShazamProvider) throws -> ModelContainer {
-        let container = try ModelContainer(for: ShazamStream.self, Spot.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
-        provider.configure(modelContext: container.mainContext,
-            location: LocationProvider(locationManager: LocationManagerSpy(), refreshLocationManager: LocationManagerSpy()),
-            motion: MotionProvider(), sheet: SheetProvider())
-        return container
-    }
-
-    @MainActor
-    func testContinuousInterruptionResumesWithoutLosingSongHistory() async throws {
-        var activations = 0
-        var consumers = 0
-        let provider = ShazamProvider(audioActivation: { activations += 1; return true },
-            microphoneAuthorization: { true }, matchingTaskFactory: {
-                consumers += 1
-                return Task { try? await Task.sleep(for: .seconds(30)) }
-            })
-        let container = try configureInterruptionTest(provider)
-        defer { provider.stopMatching(); _ = container }
-        provider.continuous = true
-        await provider.beginMatching()
-        let matchedAt = Date()
-        provider.recordSuccessfulMatch(title: "Song", artist: "Artist", at: matchedAt,
-            shazamID: "one", playbackPosition: 30)
-
-        provider.pauseForAudioInterruption(reason: "Timer")
-        provider.pauseForAudioInterruption(reason: "Duplicate timer event")
-        XCTAssertTrue(provider.isListening)
-        XCTAssertTrue(provider.isPausedForInterruption)
-        XCTAssertEqual(provider.status, .paused)
-        XCTAssertTrue(provider.activityState(takingTooLong: false).isPaused)
-        XCTAssertEqual(consumers, 1)
-
-        provider.resumeAfterAudioInterruption(shouldResume: true)
-        provider.resumeAfterAudioInterruption(shouldResume: true)
-        XCTAssertTrue(provider.isListening)
-        XCTAssertTrue(provider.continuous)
-        XCTAssertFalse(provider.isPausedForInterruption)
-        XCTAssertEqual(provider.status, .matching)
-        XCTAssertFalse(provider.activityState(takingTooLong: false).isPaused)
-        XCTAssertEqual(activations, 2)
-        XCTAssertEqual(consumers, 2)
-        XCTAssertFalse(provider.shouldRecordMatch(title: "Song", artist: "Artist",
-            at: matchedAt.addingTimeInterval(10), shazamID: "one", playbackPosition: 40))
-    }
-
-    @MainActor
-    func testInterruptedSessionWaitsForPermissionAndSuccessfulAudioActivation() async throws {
-        var canActivate = true
-        var activations = 0
-        var consumers = 0
-        let provider = ShazamProvider(audioActivation: { activations += 1; return canActivate },
-            microphoneAuthorization: { true }, matchingTaskFactory: {
-                consumers += 1
-                return Task { try? await Task.sleep(for: .seconds(30)) }
-            })
-        let container = try configureInterruptionTest(provider)
-        defer { provider.stopMatching(); _ = container }
-        provider.continuous = true
-        await provider.beginMatching()
-        provider.pauseForAudioInterruption(reason: "Timer")
-        provider.resumeAfterAudioInterruption(shouldResume: false)
-        XCTAssertTrue(provider.isPausedForInterruption)
-        XCTAssertEqual(activations, 1)
-        canActivate = false
-        provider.resumeAfterAudioInterruption(shouldResume: true)
-        XCTAssertTrue(provider.isPausedForInterruption)
-        XCTAssertEqual(consumers, 1)
-        canActivate = true
-        provider.resumeAfterAudioInterruption(shouldResume: true)
-        XCTAssertFalse(provider.isPausedForInterruption)
-        XCTAssertEqual(consumers, 2)
-    }
-
-    @MainActor
-    func testStopOrDisablingContinuousWhilePausedPreventsLateResumption() async throws {
-        var activations = 0
-        let provider = ShazamProvider(audioActivation: { activations += 1; return true },
-            microphoneAuthorization: { true }, matchingTaskFactory: { Task {} })
-        let container = try configureInterruptionTest(provider)
-        defer { provider.stopMatching(); _ = container }
-        for disableContinuous in [false, true] {
-            provider.continuous = true
-            await provider.beginMatching()
-            provider.pauseForAudioInterruption(reason: "Timer")
-            if disableContinuous { provider.continuous = false }
-            else { provider.stopMatching() }
-            let activationCount = activations
-            provider.resumeAfterAudioInterruption(shouldResume: true)
-            provider.recoverInterruptedListeningOnForeground()
-            XCTAssertFalse(provider.isListening)
-            XCTAssertFalse(provider.continuous)
-            XCTAssertFalse(provider.isPausedForInterruption)
-            XCTAssertEqual(provider.status, .idle)
-            XCTAssertEqual(activations, activationCount)
-        }
-    }
-
-    @MainActor
-    func testForegroundRecoversMissingResumptionEventButHonoursSystemDenial() async throws {
-        var canActivate = true
-        var activations = 0
-        let provider = ShazamProvider(audioActivation: { activations += 1; return canActivate },
-            microphoneAuthorization: { true }, matchingTaskFactory: { Task {} })
-        let container = try configureInterruptionTest(provider)
-        defer { provider.stopMatching(); _ = container }
-        provider.continuous = true
-        await provider.beginMatching()
-        provider.pauseForAudioInterruption(reason: "Timer without an end event")
-        canActivate = false
-        provider.recoverInterruptedListeningOnForeground()
-        XCTAssertTrue(provider.isPausedForInterruption)
-        canActivate = true
-        NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
-        // The notification bridge deliberately hops to the main actor.
-        for _ in 0..<50 {
-            if !provider.isPausedForInterruption { break }
-            try await Task.sleep(for: .milliseconds(10))
-        }
-        XCTAssertEqual(provider.status, .matching)
-        XCTAssertFalse(provider.isPausedForInterruption)
-        XCTAssertEqual(activations, 3)
-
-        provider.pauseForAudioInterruption(reason: "New interruption")
-        provider.resumeAfterAudioInterruption(shouldResume: false)
-        provider.recoverInterruptedListeningOnForeground()
-        XCTAssertTrue(provider.isPausedForInterruption)
-        XCTAssertEqual(activations, 3, "Foreground must not override an explicit system denial")
-        provider.resumeAfterAudioInterruption(shouldResume: true)
-        XCTAssertFalse(provider.isPausedForInterruption)
-    }
-
-    @MainActor
-    func testSingleMatchInterruptionStillStops() async throws {
-        var activations = 0
-        let provider = ShazamProvider(audioActivation: { activations += 1; return true },
-            microphoneAuthorization: { true }, matchingTaskFactory: { Task {} })
-        let container = try configureInterruptionTest(provider)
-        defer { provider.stopMatching(); _ = container }
-        await provider.beginMatching()
-        provider.pauseForAudioInterruption(reason: "Timer")
-        provider.resumeAfterAudioInterruption(shouldResume: true)
-        XCTAssertFalse(provider.isListening)
-        XCTAssertFalse(provider.isPausedForInterruption)
-        XCTAssertEqual(provider.status, .error(.audioSessionFailed))
-        XCTAssertEqual(activations, 1)
-    }
-
-    @MainActor
-    func testLegacyInterruptionEndResumesWhenNewRecommendationIsMissing() async throws {
-        var activations = 0
-        let provider = ShazamProvider(audioActivation: { activations += 1; return true },
-            microphoneAuthorization: { true }, matchingTaskFactory: { Task {} })
-        let container = try configureInterruptionTest(provider)
-        defer { provider.stopMatching(); _ = container }
-        provider.continuous = true
-        await provider.beginMatching()
-        provider.pauseForAudioInterruption(reason: "Timer")
-        NotificationCenter.default.post(name: AVAudioSession.interruptionNotification,
-            object: AVAudioSession.sharedInstance(), userInfo: [
-                AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.ended.rawValue,
-                AVAudioSessionInterruptionOptionKey: AVAudioSession.InterruptionOptions.shouldResume.rawValue
-            ])
-        for _ in 0..<50 {
-            if !provider.isPausedForInterruption { break }
-            try await Task.sleep(for: .milliseconds(10))
-        }
-        XCTAssertTrue(provider.isListening)
-        XCTAssertFalse(provider.isPausedForInterruption)
-        XCTAssertEqual(activations, 2)
-    }
-
     func testOldLiveActivityPayloadDecodesWithDefaults() throws {
         let data = Data(#"{"takingTooLong":true}"#.utf8)
         let state = try JSONDecoder().decode(WidgetAttributes.ContentState.self, from: data)
         XCTAssertTrue(state.takingTooLong)
         XCTAssertFalse(state.continuous)
-        XCTAssertFalse(state.isPaused)
         XCTAssertEqual(state.matchCount, 0)
         XCTAssertNil(state.locationName)
         let current = WidgetAttributes.ContentState(takingTooLong: false, continuous: true,
-            matchCount: 7, isPaused: true, locationName: "Mission", matchedTitle: "Song", matchedArtist: "Artist")
+            matchCount: 7, locationName: "Mission", matchedTitle: "Song", matchedArtist: "Artist")
         XCTAssertEqual(try JSONDecoder().decode(WidgetAttributes.ContentState.self,
             from: JSONEncoder().encode(current)), current)
     }

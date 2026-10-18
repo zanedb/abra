@@ -22,7 +22,6 @@ enum ShazamError: Error {
 enum ShazamStatus: Equatable {
     case idle
     case matching
-    case paused
     case matched(SHMatchedMediaItem)
     case error(ShazamError)
     
@@ -30,7 +29,7 @@ enum ShazamStatus: Equatable {
         switch (lhs, rhs) {
         case (.idle, .idle):
             return true
-        case (.matching, .matching), (.paused, .paused):
+        case (.matching, .matching):
             return true
         case (.matched(let lhsItem), .matched(let rhsItem)):
             // Since SHMatchedMediaItem doesn't conform to Equatable,
@@ -52,10 +51,6 @@ enum ShazamStatus: Equatable {
     var continuous: Bool = false {
         didSet {
             guard isListening, continuous != oldValue else { return }
-            if isPausedForInterruption && !continuous {
-                stopMatching(reason: "Continuous mode disabled while paused")
-                return
-            }
             if continuous { startLocationSampling() }
             else {
                 locationTask?.cancel()
@@ -65,11 +60,7 @@ enum ShazamStatus: Equatable {
             updateActivity(takingTooLong: false)
         }
     }
-    // isListening tracks the user's active session; a paused session still has
-    // a Stop control and a Live Activity, but never claims microphone activity.
     private(set) var isListening = false
-    private(set) var isPausedForInterruption = false
-    @ObservationIgnored private var systemResumptionRecommendation: Bool?
     private(set) var matchCount = 0
     var appIsForeground: Bool { UIApplication.shared.applicationState == .active }
 
@@ -121,9 +112,6 @@ enum ShazamStatus: Equatable {
     @ObservationIgnored private var saveRetryTask: Task<Void, Never>?
     @ObservationIgnored private var sessionID = UUID()
     private let saveMatchContext: (ModelContext) throws -> Void
-    private let audioActivationOverride: (() -> Bool)?
-    private let microphoneAuthorizationOverride: (() async -> Bool)?
-    private let matchingTaskFactory: (() -> Task<Void, Never>)?
 
     var pendingMatchSaveCount: Int { pendingMatchWrites.count }
     @ObservationIgnored private var modelContext: ModelContext?
@@ -329,16 +317,8 @@ enum ShazamStatus: Equatable {
         }
     }
 
-    // Inject audio/recognition boundaries so interruption sequences can be tested
-    // without claiming the microphone or sending real Shazam queries.
-    init(saveMatchContext: @escaping (ModelContext) throws -> Void = { try $0.save() },
-         audioActivation: (() -> Bool)? = nil,
-         microphoneAuthorization: (() async -> Bool)? = nil,
-         matchingTaskFactory: (() -> Task<Void, Never>)? = nil) {
+    init(saveMatchContext: @escaping (ModelContext) throws -> Void = { try $0.save() }) {
         self.saveMatchContext = saveMatchContext
-        self.audioActivationOverride = audioActivation
-        self.microphoneAuthorizationOverride = microphoneAuthorization
-        self.matchingTaskFactory = matchingTaskFactory
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleStartRecordingIntent),
@@ -353,18 +333,12 @@ enum ShazamStatus: Equatable {
             object: nil
         )
 
-        if #available(iOS 27.0, *) {
-            NotificationCenter.default.addObserver(self, selector: #selector(handleAudioDeactivation),
-                name: AVAudioSession.didBecomeInactiveNotification, object: AVAudioSession.sharedInstance())
-            NotificationCenter.default.addObserver(self, selector: #selector(handleAudioResumption),
-                name: AVAudioSession.resumptionRecommendationNotification, object: AVAudioSession.sharedInstance())
-        }
-        // Keep the legacy end event as a fallback: the tested iOS 27 timer did
-        // not deliver a resumption recommendation. Both paths honour Stop.
-        NotificationCenter.default.addObserver(self, selector: #selector(handleAudioInterruption),
-            name: AVAudioSession.interruptionNotification, object: AVAudioSession.sharedInstance())
-        NotificationCenter.default.addObserver(self, selector: #selector(handleAppBecameActive),
-            name: UIApplication.didBecomeActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioInterruption),
+            name: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance()
+        )
         recordLifecycleDiagnostic("provider initialized")
     }
 
@@ -372,7 +346,6 @@ enum ShazamStatus: Equatable {
     func prepare() {
         guard !hasPrepared else { return }
         hasPrepared = true
-        guard matchingTaskFactory == nil else { return }
         Task {
             await session.prepare()
             logger.info("Shazam session prepared successfully")
@@ -382,7 +355,6 @@ enum ShazamStatus: Equatable {
     /// Checks if microphone access is authorized
     /// - Returns: A boolean indicating if permission was granted
     func checkMicrophoneAuthorization() async -> Bool {
-        if let microphoneAuthorizationOverride { return await microphoneAuthorizationOverride() }
         let status = AVCaptureDevice.authorizationStatus(for: .audio)
         if status == .authorized { return true }
         if status == .notDetermined {
@@ -400,7 +372,7 @@ enum ShazamStatus: Equatable {
         await beginMatching()
     }
 
-    func beginMatching() async {
+    private func beginMatching() async {
         guard !isListening else { return }
         guard modelContext != nil else {
             pendingStart = true
@@ -417,7 +389,6 @@ enum ShazamStatus: Equatable {
 
         sessionID = UUID()
         isListening = true
-        isPausedForInterruption = false
         matchCount = 0
         recentlyMatchedSongs.removeAll()
         possibleReplays.removeAll()
@@ -439,16 +410,6 @@ enum ShazamStatus: Equatable {
             startTimeoutTask()
         }
 
-        startResultListening()
-    }
-
-    private func startResultListening() {
-        guard isListening, !isPausedForInterruption else { return }
-        matchingTask?.cancel()
-        if let matchingTaskFactory {
-            matchingTask = matchingTaskFactory()
-            return
-        }
         matchingTask = Task { [weak self] in
             guard let self = self else { return }
             var consecutiveInvalidSignatures = 0
@@ -456,9 +417,6 @@ enum ShazamStatus: Equatable {
             // session.results is an AsyncSequence — ShazamKit drives re-listening automatically
             for await result in self.session.results {
                 guard !Task.isCancelled else { break }
-                // The system has suspended microphone I/O. Keep the SDK session
-                // intact until recovery, but discard any in-flight query result.
-                guard !self.isPausedForInterruption else { continue }
 
                 self.timeoutTask?.cancel()
 
@@ -506,13 +464,9 @@ enum ShazamStatus: Equatable {
                             continue
                         }
                     }
-                    // Audio deactivation and Shazam failure callbacks can race.
-                    // Give the system notification a turn before treating an
-                    // interrupted query as a fatal recognition failure.
-                    if self.continuous { try? await Task.sleep(for: .milliseconds(150)) }
-                    guard !Task.isCancelled, !self.isPausedForInterruption else { return }
                     self.sheetProvider?.dismissSearching()
                     self.status = .error(.matchFailed(error))
+                    guard !Task.isCancelled else { return }
                     await MainActor.run {
                         self.stopMatching(reason: "Shazam error \(nsError.domain) code \(nsError.code)")
                     }
@@ -524,8 +478,7 @@ enum ShazamStatus: Equatable {
             }
 
             self.timeoutTask?.cancel()
-            if self.continuous { try? await Task.sleep(for: .milliseconds(150)) }
-            guard !Task.isCancelled, !self.isPausedForInterruption else { return }
+            guard !Task.isCancelled else { return }
             await MainActor.run {
                 self.stopMatching(reason: self.continuous ? "Continuous Shazam result stream ended" : "Single match completed")
             }
@@ -644,7 +597,6 @@ enum ShazamStatus: Equatable {
     }
 
     private func configureAudioSessionForBackground() -> Bool {
-        if let audioActivationOverride { return audioActivationOverride() }
         do {
             let audioSession = AVAudioSession.sharedInstance()
             // playAndRecord disables A2DP/AirPlay output unless opted in. Mixing
@@ -665,8 +617,6 @@ enum ShazamStatus: Equatable {
     }
 
     private func restoreAudioSession() {
-        // Injected sessions never activated the device's audio session.
-        guard audioActivationOverride == nil else { return }
         do {
             try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
             logger.info("Audio session deactivated")
@@ -680,7 +630,6 @@ enum ShazamStatus: Equatable {
         guard isListening else { return }
         recordLifecycleDiagnostic("listening stopped", details: reason)
         isListening = false
-        isPausedForInterruption = false
         matchingTask?.cancel()
         matchingTask = nil
         timeoutTask?.cancel()
@@ -695,7 +644,7 @@ enum ShazamStatus: Equatable {
         session.cancel()
         restoreAudioSession()
 
-        if status == .matching || status == .paused {
+        if case .matching = status {
             status = .idle
         }
 
@@ -769,7 +718,7 @@ enum ShazamStatus: Equatable {
                 catch { self.logger.error("Failed to add to library: \(error.localizedDescription)") }
             }
             if !wasContinuous && isCurrentSession { status = .matched(mediaItem) }
-            else if isListening && isCurrentSession && !isPausedForInterruption { status = .matching }
+            else if isListening && isCurrentSession { status = .matching }
         }
     }
 
@@ -853,101 +802,17 @@ enum ShazamStatus: Equatable {
         }
     }
 
-    @available(iOS 27.0, *)
-    @objc nonisolated private func handleAudioDeactivation(_ notification: Notification) {
-        guard let context = notification.userInfo?[AVAudioSession.deactivationContextKey]
-                as? AVAudioSession.DeactivationContext, context.source == .system else { return }
-        let reason = context.interruptionContext.map { String($0.reason.rawValue) } ?? "system deactivation"
-        Task { @MainActor [weak self] in self?.pauseForAudioInterruption(reason: reason) }
-    }
-
-    @available(iOS 27.0, *)
-    @objc nonisolated private func handleAudioResumption(_ notification: Notification) {
-        guard let context = notification.userInfo?[AVAudioSession.resumptionContextKey]
-                as? AVAudioSession.ResumptionContext else { return }
-        let allowed = context.recommendation == .shouldResume
-        Task { @MainActor [weak self] in
-            self?.resumeAfterAudioInterruption(shouldResume: allowed, source: "resumption recommendation")
-        }
-    }
-
     @objc nonisolated private func handleAudioInterruption(_ notification: Notification) {
         guard let rawType = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
-              let type = AVAudioSession.InterruptionType(rawValue: rawType) else { return }
+              AVAudioSession.InterruptionType(rawValue: rawType) == .began else { return }
         let reason = (notification.userInfo?[AVAudioSessionInterruptionReasonKey] as? NSNumber)?.intValue
-        let options = (notification.userInfo?[AVAudioSessionInterruptionOptionKey] as? NSNumber)?.uintValue ?? 0
-        let allowed = AVAudioSession.InterruptionOptions(rawValue: options).contains(.shouldResume)
         Task { @MainActor [weak self] in
-            if type == .began {
-                self?.pauseForAudioInterruption(reason: reason.map(String.init) ?? "unknown")
-            } else if type == .ended {
-                guard self?.systemResumptionRecommendation != false else { return }
-                self?.resumeAfterAudioInterruption(shouldResume: allowed, source: "legacy interruption ended")
-            }
+            guard let self, self.isListening else { return }
+            self.stopMatching(reason: "Audio interruption: reason=\(reason.map(String.init) ?? "unknown")")
+            self.status = .error(.audioSessionFailed)
         }
     }
-
-    @objc nonisolated private func handleAppBecameActive(_ notification: Notification) {
-        Task { @MainActor [weak self] in self?.recoverInterruptedListeningOnForeground() }
-    }
-
-    func recoverInterruptedListeningOnForeground() {
-        guard isListening, continuous, isPausedForInterruption,
-              systemResumptionRecommendation != false else { return }
-        // Interruption-end delivery is not guaranteed. Returning to the app is
-        // an opportunity to retry the user's still-active Continuous session;
-        // activation can fail if another session still owns the microphone.
-        resumeAfterAudioInterruption(shouldResume: true, source: "foreground recovery")
-    }
-
-    func pauseForAudioInterruption(reason: String) {
-        guard isListening else { return }
-        guard continuous else {
-            stopMatching(reason: "Audio interruption: \(reason)")
-            status = .error(.audioSessionFailed)
-            return
-        }
-        guard !isPausedForInterruption else { return }
-        isPausedForInterruption = true
-        systemResumptionRecommendation = nil
-        recordLifecycleDiagnostic("listening paused", details: reason)
-        status = .paused
-        // Do not call SHManagedSession.cancel here. The system has already
-        // suspended I/O; cancelling is an app-requested teardown that may affect
-        // resumption delivery. Retire the old query only when restarting or Stop.
-        timeoutTask?.cancel()
-        timeoutTask = nil
-        updateActivity(takingTooLong: false)
-    }
-
-    func resumeAfterAudioInterruption(shouldResume: Bool, source: String = "system") {
-        // User Stop clears the session and pause flag, so a delayed or duplicate
-        // system recommendation cannot resurrect it. Preserve session ID, count,
-        // location tracking, and deduplication history across a genuine resumption.
-        guard isListening, continuous, isPausedForInterruption else { return }
-        recordLifecycleDiagnostic("resumption requested", details: "\(source); allowed=\(shouldResume)")
-        systemResumptionRecommendation = shouldResume
-        guard shouldResume else {
-            recordLifecycleDiagnostic("resumption withheld", details: "System did not recommend resumption")
-            return
-        }
-        // Retire the interrupted consumer before resetting the SDK. Its delayed
-        // end/error must not be allowed to stop the replacement consumer.
-        matchingTask?.cancel()
-        matchingTask = nil
-        session.cancel()
-        guard configureAudioSessionForBackground() else {
-            recordLifecycleDiagnostic("resumption activation failed")
-            return
-        }
-        isPausedForInterruption = false
-        status = .matching
-        recordLifecycleDiagnostic("listening resumed")
-        startResultListening()
-        locationProvider?.requestLocation()
-        updateActivity(takingTooLong: false)
-    }
-
+    
     private func recordLifecycleDiagnostic(_ event: String, details: String = "") {
         // Keep a small local history across launches, including replacement builds.
         // If iOS terminates the process there will be a new initialization without
@@ -957,7 +822,7 @@ enum ShazamStatus: Equatable {
         entries.append([
             "time": Date().ISO8601Format(), "event": event, "details": details,
             "sessionID": sessionID.uuidString, "listening": String(isListening),
-            "continuous": String(continuous), "paused": String(isPausedForInterruption), "matches": String(matchCount),
+            "continuous": String(continuous), "matches": String(matchCount),
             "appState": String(UIApplication.shared.applicationState.rawValue)
         ])
         UserDefaults.standard.set(Array(entries.suffix(32)), forKey: key)
@@ -1037,12 +902,11 @@ enum ShazamStatus: Equatable {
         }
     }
 
-    func activityState(takingTooLong: Bool) -> WidgetAttributes.ContentState {
+    private func activityState(takingTooLong: Bool) -> WidgetAttributes.ContentState {
         WidgetAttributes.ContentState(
             takingTooLong: takingTooLong,
             continuous: continuous,
             matchCount: matchCount,
-            isPaused: isPausedForInterruption,
             locationName: continuous
                 ? locationProvider?.activityLocationName(
                     at: .now,

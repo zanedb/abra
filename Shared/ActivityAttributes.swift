@@ -13,7 +13,6 @@ struct WidgetAttributes: ActivityAttributes {
         var takingTooLong: Bool
         var continuous: Bool = false
         var matchCount: Int = 0
-        var isPaused: Bool = false
         var locationName: String? = nil
         var matchedTitle: String? = nil
         var matchedArtist: String? = nil
@@ -21,15 +20,14 @@ struct WidgetAttributes: ActivityAttributes {
         // Activities can survive an app update with the previous payload shape.
         // Property defaults alone don't supply missing keys during Codable decoding.
         private enum CodingKeys: String, CodingKey {
-            case takingTooLong, continuous, matchCount, isPaused, locationName, matchedTitle, matchedArtist
+            case takingTooLong, continuous, matchCount, locationName, matchedTitle, matchedArtist
         }
 
-        init(takingTooLong: Bool, continuous: Bool = false, matchCount: Int = 0, isPaused: Bool = false,
+        init(takingTooLong: Bool, continuous: Bool = false, matchCount: Int = 0,
              locationName: String? = nil, matchedTitle: String? = nil, matchedArtist: String? = nil) {
             self.takingTooLong = takingTooLong
             self.continuous = continuous
             self.matchCount = matchCount
-            self.isPaused = isPaused
             self.locationName = locationName
             self.matchedTitle = matchedTitle
             self.matchedArtist = matchedArtist
@@ -40,7 +38,6 @@ struct WidgetAttributes: ActivityAttributes {
             takingTooLong = try values.decodeIfPresent(Bool.self, forKey: .takingTooLong) ?? false
             continuous = try values.decodeIfPresent(Bool.self, forKey: .continuous) ?? false
             matchCount = try values.decodeIfPresent(Int.self, forKey: .matchCount) ?? 0
-            isPaused = try values.decodeIfPresent(Bool.self, forKey: .isPaused) ?? false
             locationName = try values.decodeIfPresent(String.self, forKey: .locationName)
             matchedTitle = try values.decodeIfPresent(String.self, forKey: .matchedTitle)
             matchedArtist = try values.decodeIfPresent(String.self, forKey: .matchedArtist)
