@@ -50,15 +50,25 @@ struct StartShazamSessionIntent: AppIntent {
     static let title: LocalizedStringResource = "Recognize Music"
     static let description: IntentDescription = IntentDescription("Starts recognizing the current song using Shazam")
     static let openAppWhenRun: Bool = true // Also included alongside @MainActor
+
+    @Parameter(title: "Continuous", default: false)
+    var continuous: Bool
     
-    init() {}
+    init() {
+        continuous = false
+    }
+
+    init(continuous: Bool) {
+        self.continuous = continuous
+    }
     
     @MainActor
     func perform() async throws -> some IntentResult {
         // Tell ShazamProvider to start the recording session
         NotificationCenter.default.post(
             name: Notification.Name("StartShazamRecordingIntent"),
-            object: nil
+            object: nil,
+            userInfo: ["continuous": continuous]
         )
         
         return .result()

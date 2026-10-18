@@ -779,6 +779,11 @@ enum ShazamStatus: Equatable {
     // MARK: - NotificationCenter Listeners
     
     @objc private func handleStartRecordingIntent(_ notification: Notification) {
+        // Set the mode before starting so cold launches and the first Activity
+        // use Continuous behavior; an already-running session can opt in too.
+        if notification.userInfo?["continuous"] as? Bool == true {
+            continuous = true
+        }
         Task {
             await startMatching()
         }
