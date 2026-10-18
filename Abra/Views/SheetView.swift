@@ -189,7 +189,7 @@ struct SheetView: View {
                     } label: {
                         Group {
                             if shazam.continuous {
-                                Waveform(on: true, size: 2)
+                                Waveform(on: !shazam.isPausedForInterruption, size: 2)
                                     .foregroundStyle(.white)
                             } else {
                                 Image(systemName: "waveform")

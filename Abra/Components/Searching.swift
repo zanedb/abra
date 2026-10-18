@@ -23,14 +23,16 @@ struct Searching: View {
                 logoAnimation
                     .padding(.bottom)
 
-                Waveform(on: true, size: 4)
+                Waveform(on: !shazam.isPausedForInterruption, size: 4)
                     .foregroundStyle(.white)
                     .padding(.vertical)
 
-                Text("Listening for music")
+                Text(shazam.isPausedForInterruption ? "Listening paused" : "Listening for music")
                     .font(.title2.bold())
                     .foregroundStyle(.white)
-                Text("Make sure your device can hear the song clearly")
+                Text(shazam.isPausedForInterruption
+                     ? "Waiting for audio to become available"
+                     : "Make sure your device can hear the song clearly")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.white.opacity(0.75))
                     .multilineTextAlignment(.center)

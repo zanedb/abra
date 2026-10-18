@@ -47,10 +47,10 @@ struct LiveActivity: Widget {
                     .frame(width: 20, height: 20)
                     .accessibilityLabel("Abra")
             } compactTrailing: {
-                Image(systemName: "waveform")
+                Image(systemName: context.state.isPaused ? "pause.fill" : "waveform")
                     .font(.caption)
                     .foregroundStyle(.white)
-                    .accessibilityLabel(context.state.matchedTitle == nil ? "Listening" : "Matched")
+                    .accessibilityLabel(context.state.isPaused ? "Paused" : (context.state.matchedTitle == nil ? "Listening" : "Matched"))
             } minimal: {
                 if context.state.matchedTitle != nil {
                     Image(systemName: "checkmark.circle.fill")
@@ -61,7 +61,7 @@ struct LiveActivity: Widget {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 20, height: 20)
-                        .accessibilityLabel("Listening")
+                        .accessibilityLabel(context.state.isPaused ? "Paused" : "Listening")
                 }
             }
         }
@@ -84,11 +84,12 @@ struct LiveActivity: Widget {
                 }
             } else {
                 HStack(spacing: 7) {
-                    Waveform(on: true, size: 2, animated: false)
+                    Waveform(on: !context.state.isPaused, size: 2, animated: false)
                         .foregroundStyle(.white)
                         .accessibilityHidden(true)
-                    Text(context.state.takingTooLong && !context.state.continuous
-                         ? "Still listening…" : "Listening")
+                    Text(context.state.isPaused ? "Paused" :
+                         (context.state.takingTooLong && !context.state.continuous
+                          ? "Still listening…" : "Listening"))
                         .font(.subheadline.bold())
                 }
 
