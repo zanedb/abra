@@ -123,7 +123,7 @@ struct SongView: View {
             DismissButton()
         }
 
-        if let url = stream.appleMusicURL {
+        if !music.isSongUnavailable(stream.appleMusicID), let url = stream.appleMusicURL {
             ToolbarItem(placement: .topBarLeading) {
                 ShareLink(item: url) {
                     Image(systemName: "square.and.arrow.up")
@@ -133,7 +133,7 @@ struct SongView: View {
             }
         }
 
-        if let appleMusicID = stream.appleMusicID {
+        if !music.isSongUnavailable(stream.appleMusicID), let appleMusicID = stream.appleMusicID {
             ToolbarItem(placement: .bottomBar) {
                 Button {
                     addToMusicLibrary(appleMusicID)
@@ -189,8 +189,9 @@ struct SongView: View {
 
                 Divider()
 
-                if /*music.subscribed, */
-                let appleMusicID = stream.appleMusicID {
+                if !music.isSongUnavailable(stream.appleMusicID),
+                    let appleMusicID = stream.appleMusicID
+                {
                     Button(
                         "Add to Queue",
                         systemImage:
@@ -223,7 +224,7 @@ struct SongView: View {
                     )
                 }
 
-                if let appleMusicID = stream.appleMusicID {
+                if !music.isSongUnavailable(stream.appleMusicID), let appleMusicID = stream.appleMusicID {
                     ControlGroup {
                         Button(
                             inLibrary ? "Added" : "Add",

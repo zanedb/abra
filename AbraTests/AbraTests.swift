@@ -7,10 +7,102 @@
 import CoreMotion
 import Kingfisher
 import MapKit
+import MusicKit
 import SwiftData
 import XCTest
 
 final class AbraTests: XCTestCase {
+
+    @MainActor
+    func testUnavailableSongMetadataIsSilentButUserActionsReportErrors() async throws {
+        var lookupCount = 0
+        var playbackCount = 0
+        var errors: [String] = []
+        let music = MusicProvider(catalogLookup: { _ in
+            lookupCount += 1
+            throw MusicProvider.MusicError.songUnavailable
+        }, startQueuedPlayback: {
+            playbackCount += 1
+        })
+        music.authorizationStatus = .authorized
+        music.onPlaybackError = { errors.append($0) }
+
+        let song = try await music.fetchTrackInfo("missing-song")
+        XCTAssertNil(song)
+        XCTAssertTrue(music.isSongUnavailable("missing-song"))
+        XCTAssertTrue(errors.isEmpty, "Opening an unavailable song should be quiet")
+
+        let nextQueued = await music.queue(ids: ["missing-song"], position: .afterCurrentEntry)
+        let laterQueued = await music.queue(ids: ["missing-song"], position: .tail)
+        await music.play(id: "missing-song")
+
+        XCTAssertFalse(nextQueued)
+        XCTAssertFalse(laterQueued)
+        XCTAssertEqual(errors, Array(repeating: "Song unavailable", count: 3))
+        XCTAssertEqual(lookupCount, 1)
+        XCTAssertEqual(playbackCount, 0)
+    }
+
+    @MainActor
+    func testEmptyCatalogResponseCannotAdvanceExistingQueue() async {
+        var playbackCount = 0
+        var errors: [String] = []
+        let music = MusicProvider(catalogLookup: { _ in [] }, startQueuedPlayback: {
+            playbackCount += 1
+        })
+        music.onPlaybackError = { errors.append($0) }
+
+        await music.play(id: "missing-song")
+
+        XCTAssertEqual(playbackCount, 0, "A failed insertion must not skip to an unrelated queued song")
+        XCTAssertEqual(errors, ["Song unavailable"])
+        XCTAssertTrue(music.isSongUnavailable("missing-song"))
+    }
+
+    @MainActor
+    func testNetworkFailureDoesNotMarkSongUnavailableOrAdvanceQueue() async throws {
+        var playbackCount = 0
+        var errors: [String] = []
+        let music = MusicProvider(catalogLookup: { _ in
+            throw URLError(.notConnectedToInternet)
+        }, startQueuedPlayback: {
+            playbackCount += 1
+        })
+        music.authorizationStatus = .authorized
+        music.onPlaybackError = { errors.append($0) }
+
+        do {
+            _ = try await music.fetchTrackInfo("available-song")
+            XCTFail("Network failures must remain distinguishable from unavailable songs")
+        } catch {
+            XCTAssertEqual((error as? URLError)?.code, .notConnectedToInternet)
+        }
+        await music.play(id: "available-song")
+
+        XCTAssertFalse(music.isSongUnavailable("available-song"))
+        XCTAssertTrue(errors.isEmpty)
+        XCTAssertEqual(playbackCount, 0)
+    }
+
+    @MainActor
+    func testCancelledLookupDoesNotMarkSongUnavailable() async {
+        var errors: [String] = []
+        let music = MusicProvider(catalogLookup: { _ in throw CancellationError() })
+        music.authorizationStatus = .authorized
+        music.onPlaybackError = { errors.append($0) }
+
+        do {
+            _ = try await music.fetchTrackInfo("available-song")
+            XCTFail("Cancellation should propagate to the metadata task")
+        } catch {
+            XCTAssertTrue(error is CancellationError)
+        }
+        let queued = await music.queue(ids: ["available-song"])
+
+        XCTAssertFalse(queued)
+        XCTAssertFalse(music.isSongUnavailable("available-song"))
+        XCTAssertTrue(errors.isEmpty)
+    }
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

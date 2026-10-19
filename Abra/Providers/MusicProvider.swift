@@ -8,7 +8,7 @@ import MediaPlayer
 import MusicKit
 import StoreKit
 
-@Observable class MusicProvider {
+@MainActor @Observable class MusicProvider {
     let musicPlayer = MPMusicPlayerController.systemMusicPlayer
     let musicKitPlayer = SystemMusicPlayer.shared
 
@@ -19,8 +19,20 @@ import StoreKit
     private(set) var lastPlayed: String?
     private(set) var errorMessage: String?
     private var previewPlayer: AVPlayer?
+    private(set) var unavailableSongIDs: Set<String> = []
+    @ObservationIgnored var onPlaybackError: (@MainActor (String) -> Void)?
+    @ObservationIgnored private let catalogLookup: ([String]) async throws -> MusicItemCollection<Song>
+    @ObservationIgnored private let startQueuedPlayback: () async throws -> Void
 
-    init() {
+    init(
+        catalogLookup: @escaping ([String]) async throws -> MusicItemCollection<Song> = MusicProvider.lookupCatalogSongs,
+        startQueuedPlayback: @escaping () async throws -> Void = {
+            try await SystemMusicPlayer.shared.skipToNextEntry()
+            MPMusicPlayerController.systemMusicPlayer.play()
+        }
+    ) {
+        self.catalogLookup = catalogLookup
+        self.startQueuedPlayback = startQueuedPlayback
         setupNotifications()
 
         Task {
@@ -69,6 +81,10 @@ import StoreKit
     /// Play/pause according to whether IDs are currently being played
     func playPause(ids: [String]) {
         Task {
+            if ids.count == 1, isSongUnavailable(ids.first) {
+                reportSongUnavailable()
+                return
+            }
             if !subscribed {
                 await handlePreviewPlayback(ids: ids)
                 return
@@ -108,6 +124,11 @@ import StoreKit
     }
 
     func play(ids: [String]) async {
+        guard !ids.isEmpty else { return }
+        if ids.count == 1, isSongUnavailable(ids.first) {
+            reportSongUnavailable()
+            return
+        }
         if lastPlayed == ids.first {
             // Resume if currently playing song is requested
             musicPlayer.play()
@@ -116,11 +137,8 @@ import StoreKit
 
         do {
             // Play next, skip one
-            await queue(ids: ids, position: .afterCurrentEntry)
-            try await musicKitPlayer.skipToNextEntry()
-
-            // Play using MPMusicPlayerController so it reports the event properly
-            musicPlayer.play()
+            guard await queue(ids: ids, position: .afterCurrentEntry) else { return }
+            try await startQueuedPlayback()
         } catch {
             print("Error playing: \(error)")
         }
@@ -138,21 +156,31 @@ import StoreKit
         position: MusicKit.MusicPlayer.Queue.EntryInsertionPosition = .tail
     ) async -> Bool {
         guard !ids.isEmpty else { return false }
-        let musicItemIDs = ids.map { MusicItemID($0) }
+        let requestedIDs = ids.filter { !isSongUnavailable($0) }
+        guard !requestedIDs.isEmpty else {
+            reportSongUnavailable()
+            return false
+        }
 
         do {
-            let request = MusicCatalogResourceRequest<Song>(
-                matching: \.id,
-                memberOf: musicItemIDs
-            )
-            let response = try await request.response()
-            guard !response.items.isEmpty else { return false }
-            try await musicKitPlayer.queue.insert(
-                response.items,
-                position: position
-            )
+            let songs = try await catalogLookup(requestedIDs)
+            try Task.checkCancellation()
+            let returnedIDs = Set(songs.map { $0.id.rawValue })
+            unavailableSongIDs.formUnion(Set(requestedIDs).subtracting(returnedIDs))
+            unavailableSongIDs.subtract(returnedIDs)
+            guard !songs.isEmpty else {
+                reportSongUnavailable()
+                return false
+            }
+            try await musicKitPlayer.queue.insert(songs, position: position)
             return true
         } catch {
+            if !Task.isCancelled, case MusicError.songUnavailable = error {
+                if requestedIDs.count == 1 {
+                    unavailableSongIDs.formUnion(requestedIDs)
+                }
+                reportSongUnavailable()
+            }
             print("Error inserting songs into queue: \(error)")
             return false
         }
@@ -163,14 +191,11 @@ import StoreKit
     /// Use AVPlayer to play the preview for non-subscribers
     func playPreview(for trackId: String) async {
         do {
-            let request = MusicCatalogResourceRequest<Song>(
-                matching: \.id,
-                equalTo: MusicItemID(rawValue: trackId)
-            )
-            let response = try await request.response()
-            guard let song = response.items.first,
-                let previewURL = song.previewAssets?.first?.url
-            else {
+            guard let song = try await fetchTrackInfo(trackId) else {
+                reportSongUnavailable()
+                return
+            }
+            guard let previewURL = song.previewAssets?.first?.url else {
                 print("No preview available for track ID: \(trackId)")
                 return
             }
@@ -230,25 +255,55 @@ import StoreKit
     func fetchTrackInfo(_ trackId: String) async throws -> MusicItemCollection<
         Song
     >.Element? {
+        guard !isSongUnavailable(trackId) else { return nil }
         if authorizationStatus == .notDetermined {
             await requestPermission()
         }
         do {
-            let request = MusicCatalogResourceRequest<Song>(
-                matching: \.id,
-                equalTo: MusicItemID(rawValue: trackId)
-            )
-            let response = try await request.response()
-            return response.items.first
+            let songs = try await catalogLookup([trackId])
+            try Task.checkCancellation()
+            guard let song = songs.first else {
+                unavailableSongIDs.insert(trackId)
+                return nil
+            }
+            unavailableSongIDs.remove(trackId)
+            return song
         } catch {
-            print("Error fetching track info: \(error)")
+            if !Task.isCancelled, case MusicError.songUnavailable = error {
+                unavailableSongIDs.insert(trackId)
+                return nil
+            }
             throw error
+        }
+    }
+
+    func isSongUnavailable(_ id: String?) -> Bool {
+        guard let id else { return false }
+        return unavailableSongIDs.contains(id)
+    }
+
+    private func reportSongUnavailable() {
+        onPlaybackError?("Song unavailable")
+    }
+
+    private static func lookupCatalogSongs(_ ids: [String]) async throws -> MusicItemCollection<Song> {
+        let request: MusicCatalogResourceRequest<Song>
+        if ids.count == 1, let id = ids.first {
+            request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: MusicItemID(id))
+        } else {
+            request = MusicCatalogResourceRequest<Song>(matching: \.id, memberOf: ids.map { MusicItemID($0) })
+        }
+        do {
+            return try await request.response().items
+        } catch let error as MusicDataRequest.Error where error.status == 404 {
+            throw MusicError.songUnavailable
         }
     }
 
     // MARK: - Error Types
 
     enum MusicError: Error {
+        case songUnavailable
         case notAuthorized
         case noTracksAvailable
         case playlistCreationFailed(Error)

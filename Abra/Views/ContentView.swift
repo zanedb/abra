@@ -65,6 +65,9 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            music.onPlaybackError = { message in
+                toast.show(message: message, type: .error)
+            }
             shazam.configure(modelContext: modelContext, location: location, motion: motion, sheet: sheet)
             schedulePendingNotificationRoute()
         }
