@@ -230,11 +230,24 @@ extension ShazamStream {
         // Ignore noisy GPS speed while Core Motion confirms no movement.
         let movementSpeed = motionActivity == "stationary" ? 0 : max(possibleMetersPerSecond, speed ?? 0)
         let radius = accuracy + age * movementSpeed
-        // A fix acquired after recognition didn't observe where the phone was at
-        // the match instant. Keep it visibly approximate, with a movement margin,
-        // and prevent automatic venue assignment even when GPS accuracy is good.
-        if observedAfterMatch && motionActivity != "stationary" { return max(50, radius) }
+        // Later observations normally need a movement margin. A short cold-start
+        // grace below allows a precise fix without evidence of travel to attach.
+        if observedAfterMatch && motionActivity != "stationary" {
+            // Cold GPS acquisition often finishes just after a match. Accept a
+            // short, precise observation as the capture's position unless motion
+            // or measured speed indicates travel. Preserve its real timestamp.
+            if Self.acceptsEarlyPreciseFix(accuracy: accuracy, speed: speed,
+                motionActivity: motionActivity, delay: age) { return nil }
+            return max(50, radius)
+        }
         return radius >= 50 ? radius : nil
+    }
+
+    static func acceptsEarlyPreciseFix(accuracy: Double, speed: Double?,
+                                      motionActivity: String?, delay: TimeInterval) -> Bool {
+        let moving = ["automotive", "cycling", "running", "walking"].contains(motionActivity ?? "")
+        return (0...15).contains(delay) && accuracy >= 0 && accuracy < 50
+            && !moving && (speed ?? -1) <= 1.5
     }
 
     public var location: CLLocation {

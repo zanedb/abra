@@ -189,6 +189,14 @@ struct SearchCompletions: Identifiable {
     }
     
     // MARK: - CLLocationManagerDelegate
+
+    /// MapKit may acquire a precise fix after our one-shot request delivered a
+    /// coarse one. Feed that same permitted observation through normal recovery
+    /// and geocoding instead of leaving a recent song at the earlier estimate.
+    func acceptMapLocation(_ location: CLLocation) {
+        guard authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways else { return }
+        locationManager(locationManager, didUpdateLocations: [location])
+    }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         authorizationStatus = manager.authorizationStatus
@@ -217,7 +225,14 @@ struct SearchCompletions: Identifiable {
               location.horizontalAccuracy.isFinite,
               location.horizontalAccuracy >= 0 else { return }
         if let previous = currentLocation {
-            guard location.timestamp >= previous.timestamp else { return }
+            // Independent CLLocationManager and MapKit callbacks can arrive out
+            // of order. A recent, materially better map fix should still replace
+            // a slightly newer coarse observation, without accepting stale GPS.
+            let timelyRefinement = previous.timestamp.timeIntervalSince(location.timestamp) <= 5
+                && abs(location.timestamp.timeIntervalSinceNow) <= 15
+                && location.horizontalAccuracy < previous.horizontalAccuracy
+                && location.distance(from: previous) <= previous.horizontalAccuracy + 50
+            guard location.timestamp >= previous.timestamp || timelyRefinement else { return }
             lastObservedDisplacement = previous.distance(from: location)
         }
         currentLocation = location

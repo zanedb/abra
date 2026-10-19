@@ -112,6 +112,7 @@ enum ShazamStatus: Equatable {
     @ObservationIgnored private var saveRetryTask: Task<Void, Never>?
     @ObservationIgnored private var sessionID = UUID()
     private let saveMatchContext: (ModelContext) throws -> Void
+    private let matchFeedback: @MainActor () -> Void
 
     var pendingMatchSaveCount: Int { pendingMatchWrites.count }
     @ObservationIgnored private var modelContext: ModelContext?
@@ -163,7 +164,8 @@ enum ShazamStatus: Equatable {
 
     func trackLocationRecovery(for stream: ShazamStream, matchedAt: Date) {
         let hasCoordinates = stream.latitude != 0 || stream.longitude != 0
-        guard !hasCoordinates || (stream.placemarkName == nil && stream.city == nil && stream.country == nil) else { return }
+        guard !hasCoordinates || stream.approximateLocationRadius != nil
+            || (stream.placemarkName == nil && stream.city == nil && stream.country == nil) else { return }
         pendingLocations[stream.persistentModelID] = PendingLocation(
             matchedAt: matchedAt, expectedFix: hasCoordinates ? LocationFix(stream) : nil
         )
@@ -216,9 +218,31 @@ enum ShazamStatus: Equatable {
                         pendingLocations.removeValue(forKey: id)
                         continue
                     }
+                    // Keep early coarse fixes eligible for a precise acquisition,
+                    // even when their city label was already available. Identity
+                    // checks above still protect manual edits and deleted rows.
+                    if now.timeIntervalSince(entry.matchedAt) < 30,
+                       stream.approximateLocationRadius != nil,
+                       stream.spot == nil,
+                       !locationProvider.hasReducedAccuracy,
+                       let fix = locationProvider.locationForMatch(at: entry.matchedAt, activity: motionProvider?.currentActivity),
+                       fix.timestamp > (stream.locationObservedAt ?? entry.matchedAt),
+                       fix.distance(from: stream.location) <= max(50, stream.approximateLocationRadius ?? 0) + 50,
+                       ShazamStream.acceptsEarlyPreciseFix(accuracy: fix.horizontalAccuracy, speed: fix.speed,
+                           motionActivity: recoveredMotionActivity(for: stream, location: fix, matchedAt: entry.matchedAt),
+                           delay: fix.timestamp.timeIntervalSince(entry.matchedAt)) {
+                        try stream.saveLocationEdit { song, context in
+                            updateRecoveredLocation(of: song, to: fix, placemark: placemark(for: fix), matchedAt: entry.matchedAt)
+                            song.spotIt(context: context)
+                        }
+                        entry.expectedFix = LocationFix(stream)
+                        pendingLocations[id] = entry
+                    }
                     if let placemark = placemark(for: stream.location) {
                         try stream.saveLocationEdit { song, _ in song.updatePlacemark(placemark) }
-                        pendingLocations.removeValue(forKey: id)
+                        if stream.approximateLocationRadius == nil || now.timeIntervalSince(entry.matchedAt) >= 30 {
+                            pendingLocations.removeValue(forKey: id)
+                        }
                     }
                 } else {
                     guard now.timeIntervalSince(entry.matchedAt) < 30,
@@ -237,7 +261,7 @@ enum ShazamStatus: Equatable {
                             song.spotIt(context: context)
                         }
                     }
-                    if placemark != nil { pendingLocations.removeValue(forKey: id) }
+                    if placemark != nil && stream.approximateLocationRadius == nil { pendingLocations.removeValue(forKey: id) }
                     else {
                         // A usable fix can precede reverse geocoding. Keep a separate
                         // enrichment stage and only label this exact saved fix.
@@ -253,13 +277,27 @@ enum ShazamStatus: Equatable {
 
     private func updateRecoveredLocation(of stream: ShazamStream, to location: CLLocation,
                                          placemark: CLPlacemark?, matchedAt: Date) {
+        stream.motionActivity = recoveredMotionActivity(for: stream, location: location, matchedAt: matchedAt)
+        stream.updateLocation(location, placemark: placemark)
+    }
+
+    private func recoveredMotionActivity(for stream: ShazamStream, location: CLLocation, matchedAt: Date) -> String? {
+        if let activity = motionProvider?.currentActivity, activity.confidence != .low {
+            if activity.automotive { return "automotive" }
+            if activity.cycling { return "cycling" }
+            if activity.running { return "running" }
+            if activity.walking { return "walking" }
+        }
+        if motionProvider?.confirmsStationary(from: location.timestamp, through: matchedAt) == true {
+            return "stationary"
+        }
         // A stationary state at recognition alone cannot vouch for a later fix
         // after the user starts moving. Recheck the full interval before using it.
         if stream.motionActivity == "stationary",
            motionProvider?.confirmsStationary(from: location.timestamp, through: matchedAt) != true {
-            stream.motionActivity = "unknown"
+            return "unknown"
         }
-        stream.updateLocation(location, placemark: placemark)
+        return stream.motionActivity
     }
 
     /// A failed write retains its staged row, outside the UI context, for retry.
@@ -285,6 +323,7 @@ enum ShazamStatus: Equatable {
                 let descriptor = FetchDescriptor<ShazamStream>(predicate: #Predicate { $0.persistentModelID == rowID })
                 let liveStream = try modelContext?.fetch(descriptor).first ?? entry.stream
                 pendingMatchWrites.removeValue(forKey: id)
+                if appIsForeground { matchFeedback() }
                 // A delayed save from an ended session must not suppress a fresh
                 // play in a newly started session.
                 if entry.sessionID == sessionID {
@@ -317,8 +356,12 @@ enum ShazamStatus: Equatable {
         }
     }
 
-    init(saveMatchContext: @escaping (ModelContext) throws -> Void = { try $0.save() }) {
+    init(saveMatchContext: @escaping (ModelContext) throws -> Void = { try $0.save() },
+         matchFeedback: @escaping @MainActor () -> Void = {
+             UINotificationFeedbackGenerator().notificationOccurred(.success)
+         }) {
         self.saveMatchContext = saveMatchContext
+        self.matchFeedback = matchFeedback
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleStartRecordingIntent),
@@ -345,6 +388,7 @@ enum ShazamStatus: Equatable {
     /// Opens a mic stream to Shazam if possible; decreases time to match
     func prepare() {
         guard !hasPrepared else { return }
+        guard configureAudioSessionForBackground() else { return }
         hasPrepared = true
         Task {
             await session.prepare()
@@ -534,9 +578,12 @@ enum ShazamStatus: Equatable {
             return false
         }
 
-        // A forward jump, or a stalled offset, is not evidence of restarting a
-        // recording. Do not move the saved timeline onto an isolated outlier.
-        guard position < oldPosition - 8 else {
+        // Compare with where the old play would be NOW, rather than requiring a
+        // position behind its last observation. A brief capture near zero could
+        // otherwise never be replayed after switching away for several minutes.
+        // Forward outliers remain suppressed; a reset still needs two advancing
+        // observations below the predicted timeline, not a fixed cooldown.
+        guard position < expected - tolerance else {
             possibleReplays.removeValue(forKey: key)
             logPlaybackDecision(key: key, position: position, expected: expected, reason: "unconfirmed offset jump")
             return false
@@ -603,12 +650,21 @@ enum ShazamStatus: Equatable {
             // alone keeps music playing but can silently remove its Bluetooth route.
             // Keep stereo output available without opting into the HFP call profile;
             // use the speaker, rather than the receiver, when no accessory is attached.
-            try audioSession.setCategory(
-                .playAndRecord, mode: .default,
-                options: [.mixWithOthers, .allowBluetoothA2DP, .allowAirPlay, .defaultToSpeaker]
-            )
-            try audioSession.setActive(true)
-            logger.info("Audio session configured for background recording")
+            let options: AVAudioSession.CategoryOptions = [
+                .mixWithOthers, .allowBluetoothA2DP, .allowAirPlay, .defaultToSpeaker
+            ]
+            if audioSession.category != .playAndRecord || audioSession.mode != .default
+                || audioSession.categoryOptions != options {
+                try audioSession.setCategory(.playAndRecord, mode: .default, options: options)
+            }
+            // Configure before SDK preparation, and let SHManagedSession own
+            // activation when it starts microphone I/O. Activating separately and
+            // reapplying the category can cause extra route/format transitions.
+            // Recording normally suppresses haptics, including success feedback.
+            if !audioSession.allowHapticsAndSystemSoundsDuringRecording {
+                try audioSession.setAllowHapticsAndSystemSoundsDuringRecording(true)
+            }
+            logger.info("Mixing audio session configured; ShazamKit owns activation")
             return true
         } catch {
             logger.error("Failed to configure audio session: \(error.localizedDescription)")

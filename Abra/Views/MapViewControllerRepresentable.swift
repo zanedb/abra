@@ -26,7 +26,8 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
     func makeCoordinator() -> Coordinator {
         Coordinator(
             modelContext: modelContext,
-            sheetProvider: sheetProvider
+            sheetProvider: sheetProvider,
+            locationProvider: location
         )
     }
 
@@ -87,7 +88,8 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
     ) {
         context.coordinator.updateDependencies(
             modelContext: modelContext,
-            sheetProvider: sheetProvider
+            sheetProvider: sheetProvider,
+            locationProvider: location
         )
         context.coordinator.syncAnnotations(shazams: shazams, spots: spots)
 
@@ -169,6 +171,7 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
 
         private var modelContext: ModelContext
         private var sheetProvider: SheetProvider
+        private weak var locationProvider: LocationProvider?
         weak var mapView: MKMapView?
         weak var bottomSheetVC: UIViewController?
         var sheetProviderCancellable: AnyCancellable?
@@ -190,17 +193,21 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
 
         init(
             modelContext: ModelContext,
-            sheetProvider: SheetProvider
+            sheetProvider: SheetProvider,
+            locationProvider: LocationProvider? = nil
         ) {
             self.modelContext = modelContext
             self.sheetProvider = sheetProvider
+            self.locationProvider = locationProvider
         }
 
         func updateDependencies(
             modelContext: ModelContext,
-            sheetProvider: SheetProvider
+            sheetProvider: SheetProvider,
+            locationProvider: LocationProvider? = nil
         ) {
             self.modelContext = modelContext
+            self.locationProvider = locationProvider
 
             guard self.sheetProvider !== sheetProvider else { return }
             self.sheetProvider = sheetProvider
@@ -465,13 +472,13 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
 
             // Select the annotation
             if let annotationToSelect = annotationToSelect,
-                mapView.selectedAnnotations.first !== annotationToSelect
+                !isAppAnnotationSelected(annotationToSelect, in: mapView)
             {
                 mapView.selectAnnotation(annotationToSelect, animated: true)
                 lastSelectedAnnotation = annotationToSelect
             } else if annotationToSelect == nil {
                 if let lastSelectedAnnotation,
-                   mapView.selectedAnnotations.contains(where: { $0 === lastSelectedAnnotation }) {
+                   isAppAnnotationSelected(lastSelectedAnnotation, in: mapView) {
                     mapView.deselectAnnotation(lastSelectedAnnotation, animated: true)
                 }
                 lastSelectedAnnotation = nil
@@ -573,6 +580,23 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
 
         // MARK: - MKMapViewDelegate
 
+        private func isAppAnnotationSelected(_ annotation: any MKAnnotation, in mapView: MKMapView) -> Bool {
+            // Compare concrete app-owned classes, not opaque MapKit feature
+            // existentials. System-place callbacks can occur mid-transition.
+            switch annotation {
+            case let song as ShazamAnnotation:
+                return mapView.selectedAnnotations.contains { ($0 as? ShazamAnnotation) === song }
+            case let spot as SpotAnnotation:
+                return mapView.selectedAnnotations.contains { ($0 as? SpotAnnotation) === spot }
+            default:
+                return false
+            }
+        }
+
+        func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+            if let fix = userLocation.location { locationProvider?.acceptMapLocation(fix) }
+        }
+
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
             guard let circle = overlay as? MKCircle else {
                 return MKOverlayRenderer(overlay: overlay)
@@ -593,13 +617,14 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
                 )
 
                 // Handle highlighted streams and temporary annotations
-                if shazam.shazamStream == highlighted
-                    || temporaryAnnotations.contains(shazam)
-                {
+                if temporaryAnnotations.contains(shazam) {
                     view.clusteringIdentifier = nil
                     view.displayPriority = .required  // always show
                     view.zPriority = .max
                     view.selectedZPriority = .max
+                    // Required-priority Spot pins can still collision-hide a
+                    // required-priority song. Selection must always show artwork.
+                    view.collisionMode = .none
                 } else {
                     view.clusteringIdentifier = NSStringFromClass(
                         ShazamAnnotation.self
@@ -607,6 +632,7 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
                     view.displayPriority = .defaultHigh
                     view.zPriority = .defaultUnselected
                     view.selectedZPriority = .defaultSelected
+                    view.collisionMode = .circle
                 }
                 return view
 
@@ -635,24 +661,34 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
 
             switch annotation {
             case let shazamAnnotation as ShazamAnnotation:
-                guard mapView.selectedAnnotations.contains(where: { $0 === annotation }) else { return }
+                guard isAppAnnotationSelected(shazamAnnotation, in: mapView) else { return }
+                // show() may synchronously select a replacement artwork pin.
+                // Record the tap first so that replacement remains authoritative.
+                lastSelectedAnnotation = annotation
                 sheetProvider.show(shazamAnnotation.shazamStream)
+                return
 
             case let spotAnnotation as SpotAnnotation:
-                guard mapView.selectedAnnotations.contains(where: { $0 === annotation }) else { return }
+                guard isAppAnnotationSelected(spotAnnotation, in: mapView) else { return }
+                lastSelectedAnnotation = spotAnnotation
                 sheetProvider.show(spotAnnotation.spot)
 
             case let clusterAnnotation as MKClusterAnnotation:
+                isProgrammaticSelection = true
+                defer { isProgrammaticSelection = false }
                 handleClusterSelection(clusterAnnotation, in: mapView)
 
             case let featureAnnotation as MKMapFeatureAnnotation:
+                isProgrammaticSelection = true
+                defer { isProgrammaticSelection = false }
                 handleFeatureSelection(featureAnnotation, in: mapView)
 
             default:
                 return
             }
 
-            lastSelectedAnnotation = annotation
+            // System features/clusters are transient and are never retained as
+            // the app's selected annotation. Their handlers may select a Spot.
         }
 
         func mapView(
@@ -661,31 +697,31 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
         ) {
             guard !isProgrammaticSelection else { return }
 
-            // MapKit can deliver deselection after removing/replacing an annotation.
-            // Only a live annotation for the current sheet may dismiss it.
-            guard mapView.annotations.contains(where: { $0 === annotation }),
-                  !mapView.selectedAnnotations.contains(where: { $0 === annotation }) else { return }
+            // Reject foreign annotations before examining MapKit collections.
+            // A system place is explicitly deselected inside its selection
+            // callback; scanning annotations there crashed in swift_getObjectType.
             switch annotation {
             case let song as ShazamAnnotation:
+                let isTemporary = temporaryAnnotations.contains(song)
+                guard isTemporary || shazamAnnotations[song.shazamStream.persistentModelID] === song,
+                      !isAppAnnotationSelected(song, in: mapView) else { return }
                 // Ignore a delayed deselection of the normal pin when the same
                 // song is now represented by its dedicated selected artwork pin.
-                guard lastSelectedAnnotation == nil || lastSelectedAnnotation === annotation else { return }
-                let isTemporary = temporaryAnnotations.contains(song)
+                guard lastSelectedAnnotation == nil || (lastSelectedAnnotation as? ShazamAnnotation) === song else { return }
                 guard !suppressDidDeselect || isTemporary || song.approximateRadius != nil,
                       sheetProvider.now == .stream(song.shazamStream),
                       song.shazamStream.spot == nil || isTemporary else { return }
-                sheetProvider.now = .none
             case let spot as SpotAnnotation:
-                guard !suppressDidDeselect,
+                guard spotAnnotations[spot.spot.persistentModelID] === spot,
+                      !isAppAnnotationSelected(spot, in: mapView),
+                      !suppressDidDeselect,
                       sheetProvider.now == .spot(spot.spot) else { return }
-                sheetProvider.now = .none
             default:
                 return
             }
 
-            if let lastSelectedAnnotation, lastSelectedAnnotation === annotation {
-                self.lastSelectedAnnotation = nil
-            }
+            lastSelectedAnnotation = nil
+            sheetProvider.now = .none
         }
 
         // MARK: - Selection Handlers (NEW)

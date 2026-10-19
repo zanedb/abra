@@ -1,4 +1,5 @@
 import Foundation
+import Kingfisher
 import os
 import UIKit
 import UserNotifications
@@ -11,6 +12,15 @@ final class MatchNotificationService: NSObject, UNUserNotificationCenterDelegate
 
     private let center = UNUserNotificationCenter.current()
     private let logger = Logger(subsystem: "app.zane.abra", category: "MatchNotifications")
+    private let artworkSession: URLSession = {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 1.2
+        // A request timeout only limits idle time. Bound the whole download so
+        // a trickling response cannot hold up the match notification indefinitely.
+        configuration.timeoutIntervalForResource = 1.2
+        configuration.requestCachePolicy = .returnCacheDataElseLoad
+        return URLSession(configuration: configuration)
+    }()
     @MainActor private(set) var pendingMatchID: UUID?
 
     private override init() {
@@ -71,12 +81,18 @@ final class MatchNotificationService: NSObject, UNUserNotificationCenterDelegate
         }
     }
 
-    private func artworkAttachment(from url: URL) async -> (UNNotificationAttachment, URL)? {
+    func artworkAttachment(from url: URL) async -> (UNNotificationAttachment, URL)? {
         guard url.scheme == "https" else { return nil }
         do {
+            // Share the same URL cache key as map pins, song rows, and SongView.
+            // This reads both memory and disk without initiating another download.
+            if let cached = try? await ImageCache.default.retrieveImage(forKey: url.cacheKey),
+               let data = cached.image?.jpegData(compressionQuality: 0.9) {
+                return try makeArtworkAttachment(data: data, fileExtension: "jpg")
+            }
             var request = URLRequest(url: url)
             request.timeoutInterval = 1.2
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await artworkSession.data(for: request)
             guard let response = response as? HTTPURLResponse,
                   (200...299).contains(response.statusCode),
                   data.count < 10_000_000 else { return nil }
@@ -101,15 +117,25 @@ final class MatchNotificationService: NSObject, UNUserNotificationCenterDelegate
                 fileExtension = "jpg"
                 attachmentData = jpeg
             }
-            let fileURL = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension(fileExtension)
-            try attachmentData.write(to: fileURL, options: .atomic)
-            let attachment = try UNNotificationAttachment(identifier: "artwork", url: fileURL)
-            return (attachment, fileURL)
+            if let image = UIImage(data: attachmentData) {
+                ImageCache.default.store(image, original: attachmentData, forKey: url.cacheKey, completionHandler: nil)
+            }
+            return try makeArtworkAttachment(data: attachmentData, fileExtension: fileExtension)
         } catch {
             logger.debug("Artwork unavailable for notification: \(error.localizedDescription)")
             return nil
+        }
+    }
+
+    private func makeArtworkAttachment(data: Data, fileExtension: String) throws -> (UNNotificationAttachment, URL) {
+        let fileURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString).appendingPathExtension(fileExtension)
+        do {
+            try data.write(to: fileURL, options: .atomic)
+            return (try UNNotificationAttachment(identifier: "artwork", url: fileURL), fileURL)
+        } catch {
+            try? FileManager.default.removeItem(at: fileURL)
+            throw error
         }
     }
 

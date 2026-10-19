@@ -4,6 +4,7 @@
 //
 
 @testable import Abra
+import Kingfisher
 import MapKit
 import SwiftData
 import XCTest
@@ -166,6 +167,7 @@ final class AbraTests: XCTestCase {
         let view = try XCTUnwrap(coordinator.mapView(map, viewFor: selected))
         XCTAssertEqual(view.displayPriority, .required)
         XCTAssertEqual(view.selectedZPriority, .max)
+        XCTAssertEqual(view.collisionMode, .none)
         XCTAssertNil(view.clusteringIdentifier)
         XCTAssertTrue(map.overlays.isEmpty)
         coordinator.syncAnnotations(shazams: [song], spots: [spot])
@@ -174,6 +176,17 @@ final class AbraTests: XCTestCase {
         XCTAssertEqual(sheet.now, .stream(song))
         sheet.now = .none
         XCTAssertEqual(map.annotations.compactMap { $0 as? ShazamAnnotation }.count, 1)
+        // Once assigned to a Spot, the song is absent from the normal map query.
+        // Selecting it must still provide collision-free artwork above that Spot.
+        song.spot = spot
+        coordinator.syncAnnotations(shazams: [], spots: [spot])
+        sheet.show(spot)
+        sheet.show(song)
+        let attachedSelection = try XCTUnwrap(coordinator.lastSelectedAnnotation as? ShazamAnnotation)
+        let attachedView = try XCTUnwrap(coordinator.mapView(map, viewFor: attachedSelection))
+        XCTAssertEqual(attachedView.collisionMode, .none)
+        XCTAssertEqual(attachedView.selectedZPriority, .max)
+        XCTAssertTrue(map.selectedAnnotations.contains { $0 === attachedSelection })
     }
 
     @MainActor
@@ -814,10 +827,11 @@ final class AbraTests: XCTestCase {
     func testFailedRecognitionSaveRetainsRowAndRetriesExactlyOnce() throws {
         enum SaveFailure: Error { case simulated }
         var shouldFail = true
+        var feedbackCount = 0
         let provider = ShazamProvider(saveMatchContext: { context in
             if shouldFail { throw SaveFailure.simulated }
             try context.save()
-        })
+        }, matchFeedback: { feedbackCount += 1 })
         let container = try ModelContainer(for: ShazamStream.self, Spot.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         let location = LocationProvider()
@@ -835,6 +849,7 @@ final class AbraTests: XCTestCase {
         }
         XCTAssertEqual(provider.pendingMatchSaveCount, 1)
         XCTAssertEqual(savedCount, 0)
+        XCTAssertEqual(feedbackCount, 0, "Failed writes must not signal a successful capture")
         XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<ShazamStream>()), 0)
         let fix = CLLocation(coordinate: .init(latitude: 37.78, longitude: -122.4),
                              altitude: 0, horizontalAccuracy: 120, verticalAccuracy: -1, timestamp: .now)
@@ -846,12 +861,15 @@ final class AbraTests: XCTestCase {
         provider.retryPendingMatches()
         XCTAssertEqual(provider.pendingMatchSaveCount, 0)
         XCTAssertEqual(savedCount, 1)
+        let expectedFeedbackCount = provider.appIsForeground ? 1 : 0
+        XCTAssertEqual(feedbackCount, expectedFeedbackCount)
         XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<ShazamStream>()), 1)
         let saved = try XCTUnwrap(container.mainContext.fetch(FetchDescriptor<ShazamStream>()).first)
         XCTAssertEqual(saved.latitude, fix.coordinate.latitude)
         XCTAssertEqual(saved.city, "San Francisco")
         provider.retryPendingMatches()
         XCTAssertEqual(savedCount, 1)
+        XCTAssertEqual(feedbackCount, expectedFeedbackCount, "Retrying a saved capture must not repeat its haptic")
         XCTAssertFalse(provider.shouldRecordMatch(title: song.title, artist: song.artist, at: .now,
                                                    shazamID: "retry-song", playbackPosition: 43))
     }
@@ -908,6 +926,174 @@ final class AbraTests: XCTestCase {
         XCTAssertEqual(saved.locationObservedAt, stream.locationObservedAt)
         XCTAssertEqual(saved.note, "Saved note")
         XCTAssertEqual(stream.note, "Unrelated unsaved edit")
+    }
+
+    @MainActor
+    func testReplayAfterBriefCaptureNearStartIsRecognized() {
+        let provider = ShazamProvider()
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        provider.recordSuccessfulMatch(title: "Song", artist: "Artist", at: start,
+                                      shazamID: "a", playbackPosition: 3)
+        XCTAssertFalse(provider.shouldRecordMatch(title: "Song", artist: "Artist",
+            at: start.addingTimeInterval(600), shazamID: "a", playbackPosition: 1))
+        XCTAssertTrue(provider.shouldRecordMatch(title: "Song", artist: "Artist",
+            at: start.addingTimeInterval(603), shazamID: "a", playbackPosition: 4))
+    }
+
+    @MainActor
+    func testMapPinTapThenDeselectClosesSongView() throws {
+        let container = try ModelContainer(for: ShazamStream.self, Spot.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let stream = ShazamStream(title: "Song", latitude: 37.7, longitude: -122.4)
+        let sheet = SheetProvider()
+        let coordinator = MapViewControllerRepresentable.Coordinator(
+            modelContext: container.mainContext, sheetProvider: sheet)
+        let map = MKMapView()
+        coordinator.mapView = map
+        coordinator.setupSheetProviderObservation()
+        coordinator.syncAnnotations(shazams: [stream], spots: [])
+        let normal = try XCTUnwrap(map.annotations.compactMap { $0 as? ShazamAnnotation }.first)
+        map.selectAnnotation(normal, animated: false)
+        coordinator.mapView(map, didSelect: normal)
+        let selected = try XCTUnwrap(map.selectedAnnotations.first)
+        XCTAssertFalse(selected === normal)
+        XCTAssertTrue(coordinator.lastSelectedAnnotation === selected)
+        map.deselectAnnotation(selected, animated: false)
+        coordinator.mapView(map, didDeselect: selected)
+        XCTAssertEqual(sheet.now, .none)
+    }
+
+    private final class AnnotationReadSpyMapView: MKMapView {
+        var annotationReads = 0
+        var onDeselect: (() -> Void)?
+        override var annotations: [any MKAnnotation] {
+            annotationReads += 1
+            return super.annotations
+        }
+        override func deselectAnnotation(_ annotation: (any MKAnnotation)?, animated: Bool) {
+            onDeselect?()
+            super.deselectAnnotation(annotation, animated: animated)
+        }
+    }
+
+    @MainActor
+    func testForeignDeselectionDoesNotInspectMapKitAnnotationStorage() throws {
+        let container = try ModelContainer(for: ShazamStream.self, Spot.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let sheet = SheetProvider()
+        let coordinator = MapViewControllerRepresentable.Coordinator(
+            modelContext: container.mainContext, sheetProvider: sheet)
+        let map = AnnotationReadSpyMapView()
+        coordinator.mapView = map
+        let song = ShazamStream(title: "Still selected", latitude: 37.78, longitude: -122.4)
+        sheet.show(song)
+        let readsBeforeCallback = map.annotationReads
+        coordinator.mapView(map, didDeselect: MKPointAnnotation())
+        XCTAssertEqual(map.annotationReads, readsBeforeCallback)
+        XCTAssertEqual(sheet.now, .stream(song))
+    }
+
+    @MainActor
+    func testClusterProgrammaticDeselectionIsSuppressedAndNotRetained() throws {
+        let container = try ModelContainer(for: ShazamStream.self, Spot.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let sheet = SheetProvider()
+        let coordinator = MapViewControllerRepresentable.Coordinator(
+            modelContext: container.mainContext, sheetProvider: sheet)
+        let map = AnnotationReadSpyMapView()
+        coordinator.mapView = map
+        var deselectCount = 0
+        map.onDeselect = {
+            deselectCount += 1
+            XCTAssertTrue(coordinator.isProgrammaticSelection)
+            coordinator.mapView(map, didDeselect: MKPointAnnotation())
+        }
+        defer { map.onDeselect = nil }
+        let song = ShazamStream(title: "Cluster member", latitude: 37.78, longitude: -122.4)
+        let cluster = MKClusterAnnotation(memberAnnotations: [ShazamAnnotation(shazamStream: song)])
+        coordinator.mapView(map, didSelect: cluster)
+        XCTAssertEqual(deselectCount, 1)
+        XCTAssertFalse(coordinator.isProgrammaticSelection)
+        XCTAssertFalse(coordinator.lastSelectedAnnotation === cluster)
+    }
+
+    @MainActor
+    func testEarlyPreciseFixAttachesSpotAndUpgradesCoarseColdStart() async throws {
+        let container = try ModelContainer(for: ShazamStream.self, Spot.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = container.mainContext
+        let location = LocationProvider(locationManager: LocationManagerSpy(), refreshLocationManager: LocationManagerSpy())
+        let motion = MotionProvider()
+        let provider = ShazamProvider()
+        provider.configure(modelContext: context, location: location, motion: motion, sheet: SheetProvider())
+        let spot = Spot(name: "Venue", latitude: 37.78, longitude: -122.4)
+        context.insert(spot)
+        let matchedAt = Date()
+        let missing = ShazamStream(title: "Cold GPS", latitude: 0, longitude: 0)
+        missing.timestamp = matchedAt
+        let coarse = ShazamStream(title: "Coarse first fix", latitude: 37.781, longitude: -122.4)
+        coarse.timestamp = matchedAt
+        coarse.horizontalAccuracy = 500
+        coarse.locationObservedAt = matchedAt.addingTimeInterval(-1)
+        coarse.city = "San Francisco"
+        context.insert(missing)
+        context.insert(coarse)
+        try context.save()
+        provider.trackLocationRecovery(for: missing, matchedAt: matchedAt)
+        provider.trackLocationRecovery(for: coarse, matchedAt: matchedAt)
+        let fix = CLLocation(coordinate: spot.coordinate, altitude: 0, horizontalAccuracy: 8,
+                             verticalAccuracy: -1, timestamp: matchedAt.addingTimeInterval(5))
+        // Exercise MapKit's fix feed, not just assigning the provider's cache.
+        location.acceptMapLocation(fix)
+        await Task.yield()
+        provider.resolvePendingMatchLocations(at: matchedAt.addingTimeInterval(6))
+        for song in [missing, coarse] {
+            XCTAssertNil(song.approximateLocationRadius)
+            XCTAssertEqual(song.horizontalAccuracy, 8)
+            XCTAssertEqual(song.locationObservedAt, fix.timestamp)
+            XCTAssertEqual(song.spot?.persistentModelID, spot.persistentModelID)
+        }
+    }
+
+    func testEarlyPreciseFixGraceDoesNotUpgradeMovingOrCoarseLocations() {
+        for motion in ["automotive", "cycling", "running", "walking"] {
+            XCTAssertFalse(ShazamStream.acceptsEarlyPreciseFix(accuracy: 5, speed: -1,
+                motionActivity: motion, delay: 2))
+        }
+        XCTAssertFalse(ShazamStream.acceptsEarlyPreciseFix(accuracy: 500, speed: 0, motionActivity: nil, delay: 2))
+        XCTAssertFalse(ShazamStream.acceptsEarlyPreciseFix(accuracy: 5, speed: 10, motionActivity: nil, delay: 2))
+        XCTAssertFalse(ShazamStream.acceptsEarlyPreciseFix(accuracy: 5, speed: 0, motionActivity: nil, delay: 20))
+    }
+
+    @MainActor
+    func testRecentPreciseMapFixCanRefineSlightlyNewerCoarseFix() {
+        let location = LocationProvider(locationManager: LocationManagerSpy(), refreshLocationManager: LocationManagerSpy())
+        let now = Date()
+        location.currentLocation = CLLocation(coordinate: .init(latitude: 37.78, longitude: -122.4),
+            altitude: 0, horizontalAccuracy: 500, verticalAccuracy: -1, timestamp: now)
+        let precise = CLLocation(coordinate: .init(latitude: 37.78, longitude: -122.4),
+            altitude: 0, horizontalAccuracy: 6, verticalAccuracy: -1, timestamp: now.addingTimeInterval(-2))
+        location.acceptMapLocation(precise)
+        XCTAssertEqual(location.currentLocation?.timestamp, precise.timestamp)
+        XCTAssertEqual(location.currentLocation?.horizontalAccuracy, 6)
+        location.acceptMapLocation(CLLocation(coordinate: precise.coordinate, altitude: 0,
+            horizontalAccuracy: 1, verticalAccuracy: -1, timestamp: now.addingTimeInterval(-60)))
+        XCTAssertEqual(location.currentLocation?.timestamp, precise.timestamp)
+    }
+
+    @MainActor
+    func testNotificationArtworkUsesExistingImageCacheWithoutNetwork() async throws {
+        let url = URL(string: "https://cache-test.invalid/\(UUID().uuidString).png")!
+        let image = UIGraphicsImageRenderer(size: .init(width: 8, height: 8)).image { context in
+            UIColor.blue.setFill()
+            context.fill(.init(x: 0, y: 0, width: 8, height: 8))
+        }
+        ImageCache.default.store(image, forKey: url.cacheKey, toDisk: false, completionHandler: nil)
+        let result = await MatchNotificationService.shared.artworkAttachment(from: url)
+        let attachment = try XCTUnwrap(result)
+        XCTAssertEqual(attachment.0.identifier, "artwork")
+        try? FileManager.default.removeItem(at: attachment.1)
+        try await ImageCache.default.removeImage(forKey: url.cacheKey, fromDisk: false)
     }
 
     func testOldLiveActivityPayloadDecodesWithDefaults() throws {
