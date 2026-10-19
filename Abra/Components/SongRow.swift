@@ -72,7 +72,7 @@ struct SongRow: View {
                 }
             }
         }
-        .frame(height: 96)
+        .frame(minHeight: 96)
         .padding(.horizontal)
         .padding(.vertical, 8)
         .contentShape(Rectangle())
@@ -178,6 +178,10 @@ struct SongRow: View {
 }
 
 struct SongRowMini: View {
+    static let artworkSize: CGFloat = 48
+    static let artworkSpacing: CGFloat = 13
+    private static let artworkCornerRadius: CGFloat = 8
+
     @Environment(SheetProvider.self) var view
     @Environment(MusicProvider.self) private var music
     @Environment(ShazamProvider.self) private var shazam
@@ -193,23 +197,21 @@ struct SongRowMini: View {
     }
 
     var body: some View {
-        HStack {
+        HStack(spacing: Self.artworkSpacing) {
             KFImage(stream.artworkURL)
                 .cancelOnDisappear(true)
                 .resizable()
                 .placeholder { ProgressView() }
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 48, height: 48)
-                .clipShape(.rect(cornerRadius: 8))
-                .padding(.trailing, 5)
+                .frame(width: Self.artworkSize, height: Self.artworkSize)
+                .clipShape(.rect(cornerRadius: Self.artworkCornerRadius))
                 .overlay {
                     if nowPlaying || lastPlayed {
                         Waveform(on: nowPlaying)
                             .foregroundStyle(.white)
-                            .frame(width: 48, height: 48)
+                            .frame(width: Self.artworkSize, height: Self.artworkSize)
                             .background(.black.opacity(0.4))
-                            .clipShape(.rect(cornerRadius: 3))
-                            .padding(.trailing, 5)
+                            .clipShape(.rect(cornerRadius: Self.artworkCornerRadius))
                             .transition(
                                 .opacity.animation(.easeInOut(duration: 0.25))
                             )
@@ -269,7 +271,8 @@ struct SongRowMini: View {
                 .environment(shazam)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 4)
-                .frame(minWidth: 320)
+                .frame(width: 320)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

@@ -278,7 +278,8 @@ struct SpotView: View {
 
                 if stream != spot.streams.last {
                     Divider()
-                        .padding(.leading, 60)
+                        .padding(.leading, SongRowMini.artworkSize + SongRowMini.artworkSpacing)
+                        .padding(.leading)
                 }
             }
         }
