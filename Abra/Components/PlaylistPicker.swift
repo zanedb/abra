@@ -177,7 +177,7 @@ struct PlaylistPicker: View {
             if error != nil {
                 toast.show(message: "Cannot access playlist", type: .error)
             } else {
-                toast.show(message: "Song added", type: .success, symbol: "music.note.list", action: {
+                toast.show(message: "Added to Playlist", type: .success, symbol: "music.note.list", action: {
                     // Again, doesn't work, but does open Apple Music
                     openURL(URL(string: "music://playlist/")!)
                 })

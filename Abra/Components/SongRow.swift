@@ -8,6 +8,7 @@ import SwiftData
 import SwiftUI
 
 struct SongRow: View {
+    @Environment(\.toastProvider) private var toast
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var modelContext
     @Environment(SheetProvider.self) var view
@@ -116,30 +117,15 @@ struct SongRow: View {
                 
                 Button(
                     "Play Next",
-                    systemImage:
-                        "text.line.first.and.arrowtriangle.forward",
-                    action: {
-                        Task {
-                            await music.queue(
-                                ids: [appleMusicID],
-                                position: .afterCurrentEntry
-                            )
-                        }
-                    }
+                    systemImage: "text.line.first.and.arrowtriangle.forward",
+                    action: playNext
                 )
-                
+
                 Button(
                         "Add to Queue",
                         systemImage:
                             "text.line.last.and.arrowtriangle.forward",
-                        action: {
-                            Task {
-                                await music.queue(
-                                    ids: [appleMusicID],
-                                    position: .tail
-                                )
-                            }
-                        }
+                        action: addToQueue
                     )
                 
                 Divider()
@@ -152,9 +138,38 @@ struct SongRow: View {
                 action: { confirmationShown = true }
             )
         }
+        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+            if stream.appleMusicID != nil {
+                Button(
+                    "Add to Queue",
+                    systemImage: "text.line.last.and.arrowtriangle.forward",
+                    action: addToQueue
+                )
+                .labelStyle(.iconOnly)
+                .tint(.orange)
+
+                Button(
+                    "Play Next",
+                    systemImage: "text.line.first.and.arrowtriangle.forward",
+                    action: playNext
+                )
+                .labelStyle(.iconOnly)
+                .tint(.indigo)
+            }
+        }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button("Delete", systemImage: "trash", role: .destructive) {
                 confirmationShown = true
+            }
+            .labelStyle(.iconOnly)
+
+            if let appleMusicURL = stream.appleMusicURL {
+                ShareLink(item: appleMusicURL) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                        .symbolVariant(.none)
+                }
+                .labelStyle(.iconOnly)
+                .tint(.blue)
             }
         }
         .confirmationDialog(
@@ -163,6 +178,24 @@ struct SongRow: View {
             titleVisibility: .visible
         ) {
             Button("Delete Song", role: .destructive, action: deleteStream)
+        }
+    }
+
+    private func playNext() {
+        guard let appleMusicID = stream.appleMusicID else { return }
+        Task {
+            if await music.queue(ids: [appleMusicID], position: .afterCurrentEntry) {
+                toast.show(message: "Playing Next", type: .success, symbol: "text.line.first.and.arrowtriangle.forward")
+            }
+        }
+    }
+
+    private func addToQueue() {
+        guard let appleMusicID = stream.appleMusicID else { return }
+        Task {
+            if await music.queue(ids: [appleMusicID], position: .tail) {
+                toast.show(message: "Added to Queue", type: .success, symbol: "text.line.last.and.arrowtriangle.forward")
+            }
         }
     }
 

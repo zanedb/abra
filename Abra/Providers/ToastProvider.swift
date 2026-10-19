@@ -90,7 +90,7 @@ extension View {
     /// - Parameter provider: The toast provider to use for displaying toasts
     /// - Returns: A view with the toast overlay
     func withToastOverlay(using provider: ToastProvider) -> some View {
-        overlay {
+        overlay(alignment: .bottom) {
             if provider.isVisible {
                 Toast(
                     message: provider.message,
@@ -98,6 +98,8 @@ extension View {
                     sfSymbol: provider.symbolName,
                     action: provider.action
                 )
+                .padding(.horizontal)
+                .padding(.bottom, 28)
             }
         }
     }

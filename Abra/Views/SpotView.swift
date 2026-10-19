@@ -90,6 +90,7 @@ struct SpotView: View {
                     )
             }
         }
+        .withToastOverlay(using: toast)
     }
 
     @ToolbarContentBuilder
@@ -149,31 +150,35 @@ struct SpotView: View {
                 if /*music.subscribed && */
                 spot.streams.count > 0 {
                     Button(
+                        "Add to Queue",
+                        systemImage: "text.line.last.and.arrowtriangle.forward",
+                        action: {
+                            Task {
+                                if await music.queue(
+                                    ids: spot.streams.compactMap(
+                                        \.appleMusicID
+                                    ),
+                                    position: .tail
+                                ) {
+                                    toast.show(message: "Added to Queue", type: .success, symbol: "text.line.last.and.arrowtriangle.forward")
+                                }
+                            }
+                        }
+                    )
+                    Button(
                         "Play Next",
                         systemImage:
                             "text.line.first.and.arrowtriangle.forward",
                         action: {
                             Task {
-                                await music.queue(
+                                if await music.queue(
                                     ids: spot.streams.compactMap(
                                         \.appleMusicID
                                     ),
                                     position: .afterCurrentEntry
-                                )
-                            }
-                        }
-                    )
-                    Button(
-                        "Add to Queue",
-                        systemImage: "text.line.last.and.arrowtriangle.forward",
-                        action: {
-                            Task {
-                                await music.queue(
-                                    ids: spot.streams.compactMap(
-                                        \.appleMusicID
-                                    ),
-                                    position: .tail
-                                )
+                                ) {
+                                    toast.show(message: "Playing Next", type: .success, symbol: "text.line.first.and.arrowtriangle.forward")
+                                }
                             }
                         }
                     )

@@ -62,7 +62,6 @@ struct ContentView: View {
                         }
                     }
                     .withToastProvider(toast)
-                    .withToastOverlay(using: toast)
             }
         }
         .onAppear {

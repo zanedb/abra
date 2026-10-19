@@ -132,10 +132,12 @@ import StoreKit
 
     // MARK: - Queue
 
+    @discardableResult
     func queue(
         ids: [String],
         position: MusicKit.MusicPlayer.Queue.EntryInsertionPosition = .tail
-    ) async {
+    ) async -> Bool {
+        guard !ids.isEmpty else { return false }
         let musicItemIDs = ids.map { MusicItemID($0) }
 
         do {
@@ -144,12 +146,15 @@ import StoreKit
                 memberOf: musicItemIDs
             )
             let response = try await request.response()
+            guard !response.items.isEmpty else { return false }
             try await musicKitPlayer.queue.insert(
                 response.items,
                 position: position
             )
+            return true
         } catch {
             print("Error inserting songs into queue: \(error)")
+            return false
         }
     }
 

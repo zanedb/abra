@@ -99,6 +99,7 @@ struct SheetView: View {
                 prompt: "Shazams, Spots, Places, and More"
             )
         }
+        .withToastOverlay(using: toast)
         .fullScreenCover(isPresented: searchingPresentation) {
             Searching(namespace: animation)
         }

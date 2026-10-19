@@ -9,6 +9,7 @@ import SwiftData
 import SwiftUI
 
 struct SongView: View {
+    @Environment(\.toastProvider) private var toast
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
@@ -68,6 +69,7 @@ struct SongView: View {
                     )
             }
         }
+        .withToastOverlay(using: toast)
         .presentationDetents([.fraction(0.50), .large], selection: $selectedDetent)
         .sheet(item: $spotToPresent) { spot in
             SpotView(spot: spot)
@@ -171,10 +173,12 @@ struct SongView: View {
                             "text.line.last.and.arrowtriangle.forward",
                         action: {
                             Task {
-                                await music.queue(
+                                if await music.queue(
                                     ids: [appleMusicID],
                                     position: .tail
-                                )
+                                ) {
+                                    toast.show(message: "Added to Queue", type: .success, symbol: "text.line.last.and.arrowtriangle.forward")
+                                }
                             }
                         }
                     )
@@ -184,10 +188,12 @@ struct SongView: View {
                             "text.line.first.and.arrowtriangle.forward",
                         action: {
                             Task {
-                                await music.queue(
+                                if await music.queue(
                                     ids: [appleMusicID],
                                     position: .afterCurrentEntry
-                                )
+                                ) {
+                                    toast.show(message: "Playing Next", type: .success, symbol: "text.line.first.and.arrowtriangle.forward")
+                                }
                             }
                         }
                     )
