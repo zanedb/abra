@@ -22,7 +22,16 @@ struct SongView: View {
     @State private var showingPlaylistPicker = false
     @State private var showingLocationPicker = false
     @State private var inLibrary: Bool = false
-    @State private var expansion: CGFloat = 0
+    @State private var sheetHeight: CGFloat = 0
+    @State private var contentHeight: CGFloat = 0
+    @State private var navigationHeight: CGFloat?
+
+    private var expansion: CGFloat {
+        guard let navigationHeight else { return 0 }
+        return ((sheetHeight - navigationHeight - 300) / (UIScreen.main.bounds.height - 520))
+            .clamped(to: 0...1)
+    }
+
     @State private var selectedDetent: PresentationDetent = .fraction(0.50)
     @State private var spotToPresent: Spot? = nil
     @State private var detentBeforeSpot: PresentationDetent? = nil
@@ -41,6 +50,8 @@ struct SongView: View {
             .toolbar {
                 ToolbarItems
             }
+            .toolbar(toast.isVisible && navigationHeight != nil ? .hidden : .automatic, for: .bottomBar)
+            .animation(.easeInOut(duration: 0.25), value: toast.isVisible)
             .popover(isPresented: $showingPlaylistPicker) {
                 PlaylistPicker(stream: stream)
                     .presentationDetents([.large])
@@ -58,16 +69,19 @@ struct SongView: View {
                 )
                 if song != nil { inLibrary = true }
             }
-            .onGeometryChange(for: CGSize.self) { proxy in
-                proxy.size
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.size.height
             } action: {
-                // TODO: test this on iPad / come up with a better system..
-                self.expansion =
-                    (($0.height - 300) / (UIScreen.main.bounds.height - 520))
-                    .clamped(
-                        to: 0...1
-                    )
+                contentHeight = $0
             }
+        }
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.size.height
+        } action: {
+            sheetHeight = $0
+        }
+        .onChange(of: [sheetHeight, contentHeight]) {
+            measureNavigationHeight()
         }
         .withToastOverlay(using: toast)
         .presentationDetents([.fraction(0.50), .large], selection: $selectedDetent)
@@ -91,6 +105,16 @@ struct SongView: View {
             selectedDetent = .fraction(0.50)
         }
         spotToPresent = spot
+    }
+
+    private func measureNavigationHeight() {
+        guard navigationHeight == nil,
+            sheetHeight > 0, contentHeight > 0
+        else { return }
+
+        // The toolbar stays visible until this initial measurement is captured,
+        // even when a toast was already present as the sheet opened.
+        navigationHeight = sheetHeight - contentHeight
     }
 
     @ToolbarContentBuilder
@@ -177,7 +201,7 @@ struct SongView: View {
                                     ids: [appleMusicID],
                                     position: .tail
                                 ) {
-                                    toast.show(message: "Added to Queue", type: .success, symbol: "text.line.last.and.arrowtriangle.forward")
+                                    toast.show(message: "Added to Queue", type: .success, symbol: "text.line.last.and.arrowtriangle.forward", symbolColor: .primary)
                                 }
                             }
                         }
@@ -192,7 +216,7 @@ struct SongView: View {
                                     ids: [appleMusicID],
                                     position: .afterCurrentEntry
                                 ) {
-                                    toast.show(message: "Playing Next", type: .success, symbol: "text.line.first.and.arrowtriangle.forward")
+                                    toast.show(message: "Playing Next", type: .success, symbol: "text.line.first.and.arrowtriangle.forward", symbolColor: .primary)
                                 }
                             }
                         }

@@ -9,6 +9,7 @@ import SwiftUI
     private(set) var message: String = ""
     private(set) var type: ToastType = .info
     private(set) var symbolName: String?
+    private(set) var symbolColor: Color?
     private(set) var action: (() -> Void)?
     private(set) var isVisible: Bool = false
 
@@ -20,9 +21,10 @@ import SwiftUI
     ///   - message: The message to display
     ///   - type: The type of toast (default: .info)
     ///   - symbol: Optional SF Symbol name to override the default for the type
+    ///   - symbolColor: Optional color overriding the toast type's symbol color
     ///   - action: Optional function that runs on tap gesture
     ///   - duration: How long to show the toast (default: 3 seconds)
-    func show(message: String, type: ToastType = .info, symbol: String? = nil, action: (() -> Void)? = nil, duration: Double = 3.0) {
+    func show(message: String, type: ToastType = .info, symbol: String? = nil, symbolColor: Color? = nil, action: (() -> Void)? = nil, duration: Double = 3.0) {
         // Cancel any existing dismiss task
         dismissTask?.cancel()
 
@@ -31,6 +33,7 @@ import SwiftUI
         self.type = type
         self.action = action
         symbolName = symbol
+        self.symbolColor = symbolColor
 
         // Show the toast
         withAnimation(.easeInOut(duration: 0.25)) {
@@ -89,17 +92,22 @@ extension View {
     /// Add toast overlay to the view
     /// - Parameter provider: The toast provider to use for displaying toasts
     /// - Returns: A view with the toast overlay
-    func withToastOverlay(using provider: ToastProvider) -> some View {
+    func withToastOverlay(using provider: ToastProvider, bottomPadding: CGFloat = 28) -> some View {
         overlay(alignment: .bottom) {
             if provider.isVisible {
                 Toast(
                     message: provider.message,
                     type: provider.type,
                     sfSymbol: provider.symbolName,
+                    symbolColor: provider.symbolColor,
                     action: provider.action
                 )
                 .padding(.horizontal)
-                .padding(.bottom, 28)
+                .padding(.bottom, bottomPadding)
+                // Anchor to the sheet edge, independent of hosting-controller
+                // safe-area changes after presenting or dismissing another sheet.
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .ignoresSafeArea(.container, edges: .bottom)
             }
         }
     }

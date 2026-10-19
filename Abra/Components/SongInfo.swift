@@ -178,13 +178,16 @@ struct SongInfo: View {
     }
 
     @Sendable private func loadMetadata() async {
+        guard !Task.isCancelled else { return }
+        loadedMetadata = false
+
         guard let id = stream.appleMusicID else {
-            loadedMetadata = false
             return
         }
 
         do {
             let song = try await music.fetchTrackInfo(id)
+            guard !Task.isCancelled else { return }
 
             if let albumName = song?.albumTitle,
                 let releaseDate = song?.releaseDate?.year,
@@ -198,6 +201,13 @@ struct SongInfo: View {
                 loadedMetadata = true
             }
         } catch {
+            // Moving to another song cancels this view's metadata request.
+            // MusicKit can report that as either task or network cancellation.
+            guard !Task.isCancelled,
+                !(error is CancellationError),
+                (error as? URLError)?.code != .cancelled
+            else { return }
+
             loadedMetadata = false  // Don't show stale information
 
             var message = error.localizedDescription

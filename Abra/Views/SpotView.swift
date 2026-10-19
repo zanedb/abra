@@ -26,7 +26,15 @@ struct SpotView: View {
     @State private var showingConfirmation: Bool = false
     @State private var showingNewPlaylist = false
     @State private var newPlaylist: Playlist?
-    @State private var expansion: CGFloat = 0
+    @State private var sheetHeight: CGFloat = 0
+    @State private var contentHeight: CGFloat = 0
+    @State private var navigationHeight: CGFloat?
+
+    private var expansion: CGFloat {
+        guard let navigationHeight else { return 0 }
+        return ((sheetHeight - navigationHeight - 300) / (UIScreen.main.bounds.height - 520))
+            .clamped(to: 0...1)
+    }
 
     var body: some View {
         NavigationStack {
@@ -41,6 +49,8 @@ struct SpotView: View {
             .toolbar {
                 ToolbarItems
             }
+            .toolbar(toast.isVisible && navigationHeight != nil ? .hidden : .automatic, for: .bottomBar)
+            .animation(.easeInOut(duration: 0.25), value: toast.isVisible)
             .popover(isPresented: $showingIconDesigner) {
                 IconDesigner(
                     symbol: $spot.symbol,
@@ -79,18 +89,31 @@ struct SpotView: View {
                     try? modelContext.save()
                 }
             }
-            .onGeometryChange(for: CGSize.self) { proxy in
-                proxy.size
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.size.height
             } action: {
-                // TODO: test this on iPad / come up with a better system..
-                self.expansion =
-                    (($0.height - 300) / (UIScreen.main.bounds.height - 520))
-                    .clamped(
-                        to: 0...1
-                    )
+                contentHeight = $0
             }
         }
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.size.height
+        } action: {
+            sheetHeight = $0
+        }
+        .onChange(of: [sheetHeight, contentHeight]) {
+            measureNavigationHeight()
+        }
         .withToastOverlay(using: toast)
+    }
+
+    private func measureNavigationHeight() {
+        guard navigationHeight == nil,
+            sheetHeight > 0, contentHeight > 0
+        else { return }
+
+        // The toolbar stays visible until this initial measurement is captured,
+        // even when a toast was already present as the sheet opened.
+        navigationHeight = sheetHeight - contentHeight
     }
 
     @ToolbarContentBuilder
@@ -160,7 +183,7 @@ struct SpotView: View {
                                     ),
                                     position: .tail
                                 ) {
-                                    toast.show(message: "Added to Queue", type: .success, symbol: "text.line.last.and.arrowtriangle.forward")
+                                    toast.show(message: "Added to Queue", type: .success, symbol: "text.line.last.and.arrowtriangle.forward", symbolColor: .primary)
                                 }
                             }
                         }
@@ -177,7 +200,7 @@ struct SpotView: View {
                                     ),
                                     position: .afterCurrentEntry
                                 ) {
-                                    toast.show(message: "Playing Next", type: .success, symbol: "text.line.first.and.arrowtriangle.forward")
+                                    toast.show(message: "Playing Next", type: .success, symbol: "text.line.first.and.arrowtriangle.forward", symbolColor: .primary)
                                 }
                             }
                         }

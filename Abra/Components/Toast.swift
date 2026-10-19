@@ -13,9 +13,12 @@ enum ToastType {
 }
 
 struct Toast: View {
+    @Environment(\.toastProvider) private var toast
+
     var message: String
     var type: ToastType = .info
     var sfSymbol: String?
+    var symbolColor: Color?
     var action: (() -> Void)?
 
     var systemImage: String {
@@ -54,7 +57,7 @@ struct Toast: View {
                 .imageScale(.large)
                 .font(.system(size: 15))
                 .frame(width: 16, height: 12)
-                .foregroundStyle(color)
+                .foregroundStyle(symbolColor ?? color)
 
             Text(message)
                 .font(.system(size: 14, weight: .medium))
@@ -84,10 +87,10 @@ struct Toast: View {
             removal: .opacity.animation(.easeInOut(duration: 0.25))
         ))
         .onTapGesture {
-            if let action = action {
-                action()
-            }
+            toast.dismiss()
+            action?()
         }
+        .accessibilityAddTraits(.isButton)
         .task(id: message) { hapticTrigger.toggle() }
         .sensoryFeedback(trigger: hapticTrigger) { oldValue, newValue in
             switch type {
