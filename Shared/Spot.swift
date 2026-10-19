@@ -181,7 +181,8 @@ extension Spot {
 
         do {
             let streams = try context.fetch(fetchDescriptor)
-            shazamStreams?.append(contentsOf: streams)
+            // Venue creation must not sweep up approximate city/neighborhood fixes.
+            shazamStreams?.append(contentsOf: streams.filter { $0.approximateLocationRadius == nil })
         } catch {
             print(error.localizedDescription)
         }

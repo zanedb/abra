@@ -4,43 +4,64 @@
 //
 
 import CoreLocation
+import CoreMotion
 import Foundation
 import MapKit
+import os
 
 struct SearchCompletions: Identifiable {
     let id = UUID()
-    let title: String
-    let subTitle: String
-}
-
-struct SearchResult: Identifiable, Hashable {
-    let id = UUID()
-    let location: CLLocationCoordinate2D
-
-    static func == (lhs: SearchResult, rhs: SearchResult) -> Bool {
-        lhs.id == rhs.id
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
+    let completion: MKLocalSearchCompletion
+    var title: String { completion.title }
+    var subTitle: String { completion.subtitle }
 }
 
 @Observable final class LocationProvider: NSObject, CLLocationManagerDelegate, MKLocalSearchCompleterDelegate {
     var authorizationStatus: CLAuthorizationStatus = .notDetermined
     var currentLocation: CLLocation?
     var currentPlacemark: CLPlacemark?
+    @ObservationIgnored var onLocationUpdate: (@MainActor (CLLocation?, CLPlacemark?) -> Void)?
+    private var placemarkLocation: CLLocation?
+    private var lastObservedDisplacement: CLLocationDistance = 0
+    private var backgroundTrackingRequested = false
+    private var lastAccuracyAuthorization: CLAccuracyAuthorization
+    private let logger = Logger(subsystem: "app.zane.abra", category: "LocationProvider")
     var completions = [SearchCompletions]()
     
     private let locationManager: CLLocationManager
+    private let refreshLocationManager: CLLocationManager
+    private var refreshRequestedAt: Date?
+    @ObservationIgnored private var preciseRefreshTimeout: Task<Void, Never>?
+    private var seekingPreciseFix = false
+    private var standardUpdatesRunning = false
     private let completer: MKLocalSearchCompleter
+    @ObservationIgnored private var pickerRequests: [UUID: CheckedContinuation<CLLocation, Error>] = [:]
+    @ObservationIgnored private var pickerTimeouts: [UUID: Task<Void, Never>] = [:]
+
+    enum PickerError: LocalizedError {
+        case permissionDenied, locationUnavailable, placeUnavailable
+        var errorDescription: String? {
+            switch self {
+            case .permissionDenied: "Allow location access for Abra in Settings, or search for a place instead."
+            case .locationUnavailable: "Your current location is unavailable. Please try again or search for a place."
+            case .placeUnavailable: "That place could not be found. Please select another search result."
+            }
+        }
+    }
     
-    override init() {
-        locationManager = CLLocationManager()
+    override convenience init() {
+        self.init(locationManager: CLLocationManager(), refreshLocationManager: CLLocationManager())
+    }
+
+    init(locationManager: CLLocationManager, refreshLocationManager: CLLocationManager) {
+        self.locationManager = locationManager
+        self.refreshLocationManager = refreshLocationManager
+        lastAccuracyAuthorization = locationManager.accuracyAuthorization
         completer = MKLocalSearchCompleter()
         super.init()
         
         locationManager.delegate = self
+        refreshLocationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         authorizationStatus = locationManager.authorizationStatus
         
@@ -49,77 +70,389 @@ struct SearchResult: Identifiable, Hashable {
     
     // MARK: - Public Methods
 
+    var hasReducedAccuracy: Bool {
+        locationManager.accuracyAuthorization == .reducedAccuracy
+    }
+
     /// Request location permission
     func requestPermission() {
         locationManager.requestWhenInUseAuthorization()
     }
     
-    /// Request a one-time location update
+    /// A one-shot request on an already-running manager is a documented no-op.
+    /// Use a separate manager while the primary keeps the background When In Use
+    /// session alive; never stop/restart that session just to refresh a stale fix.
     func requestLocation() {
-        locationManager.requestLocation()
+        guard authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways else { return }
+        guard !seekingPreciseFix else { return }
+        guard standardUpdatesRunning else {
+            locationManager.requestLocation()
+            return
+        }
+        if let refreshRequestedAt, Date().timeIntervalSince(refreshRequestedAt) < 15 { return }
+        if refreshRequestedAt != nil { refreshLocationManager.stopUpdatingLocation() }
+        refreshLocationManager.desiredAccuracy = hasReducedAccuracy ? kCLLocationAccuracyReduced : kCLLocationAccuracyBest
+        refreshRequestedAt = .now
+        refreshLocationManager.requestLocation()
+        logger.info("Requested independent location refresh while continuous updates remain active")
+    }
+
+    /// A one-shot request may finish with a coarse result. Give GPS a bounded
+    /// opportunity to refine it, without restarting the background permission
+    /// session or pretending that Approximate Location permission is precise.
+    func requestPreciseLocation() {
+        guard authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways,
+              !hasReducedAccuracy, !seekingPreciseFix else { return }
+        seekingPreciseFix = true
+        refreshRequestedAt = .now
+        refreshLocationManager.desiredAccuracy = kCLLocationAccuracyBest
+        refreshLocationManager.distanceFilter = kCLDistanceFilterNone
+        refreshLocationManager.startUpdatingLocation()
+        preciseRefreshTimeout = Task { @MainActor [weak self] in
+            do { try await Task.sleep(for: .seconds(20)) }
+            catch { return }
+            self?.finishPreciseRefresh()
+        }
+        logger.info("Started bounded precise location acquisition")
+    }
+
+    private func finishPreciseRefresh() {
+        guard seekingPreciseFix else { return }
+        seekingPreciseFix = false
+        preciseRefreshTimeout?.cancel()
+        preciseRefreshTimeout = nil
+        refreshRequestedAt = nil
+        refreshLocationManager.stopUpdatingLocation()
+    }
+
+    /// A picker tap requests a fix when the cache is missing or stale. Geocoding
+    /// is deliberately independent: a valid coordinate doesn't need a placemark.
+    @MainActor
+    func locationForPicker() async throws -> CLLocation {
+        try Task.checkCancellation()
+        guard authorizationStatus != .denied && authorizationStatus != .restricted else {
+            throw PickerError.permissionDenied
+        }
+        let maximumAge: TimeInterval = hasReducedAccuracy ? 300 : 60
+        if let currentLocation,
+           currentLocation.horizontalAccuracy.isFinite,
+           currentLocation.horizontalAccuracy >= 0,
+           abs(currentLocation.timestamp.timeIntervalSinceNow) <= maximumAge {
+            return currentLocation
+        }
+        let id = UUID()
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                guard !Task.isCancelled else {
+                    continuation.resume(throwing: CancellationError())
+                    return
+                }
+                pickerRequests[id] = continuation
+                pickerTimeouts[id] = Task { @MainActor [weak self] in
+                    do { try await Task.sleep(for: .seconds(15)) }
+                    catch { return }
+                    self?.finishPickerRequest(id, result: .failure(PickerError.locationUnavailable))
+                }
+                if authorizationStatus == .notDetermined { requestPermission() }
+                else { requestLocation() }
+            }
+        } onCancel: {
+            Task { @MainActor [weak self] in
+                self?.finishPickerRequest(id, result: .failure(CancellationError()))
+            }
+        }
+    }
+
+    @MainActor
+    private func finishPickerRequest(_ id: UUID, result: Result<CLLocation, Error>) {
+        pickerTimeouts.removeValue(forKey: id)?.cancel()
+        pickerRequests.removeValue(forKey: id)?.resume(with: result)
+    }
+
+    @MainActor
+    private func finishPickerRequests(result: Result<CLLocation, Error>) {
+        for id in Array(pickerRequests.keys) { finishPickerRequest(id, result: result) }
+    }
+
+    /// Keep a location session started in the foreground while Continuous
+    /// listening runs, so When In Use fixes can still arrive after locking.
+    func startBackgroundLocationUpdates() {
+        backgroundTrackingRequested = true
+        guard authorizationStatus == .authorizedWhenInUse
+                || authorizationStatus == .authorizedAlways else { return }
+        // Spot assignment needs accuracy better than 50m. A 100m target can
+        // replace a foreground GPS fix with an unusable venue estimate.
+        locationManager.desiredAccuracy = hasReducedAccuracy
+            ? kCLLocationAccuracyReduced : kCLLocationAccuracyNearestTenMeters
+        locationManager.distanceFilter = 150
+        locationManager.allowsBackgroundLocationUpdates = true
+        refreshLocationManager.allowsBackgroundLocationUpdates = true
+        // A pause can end a When In Use location session after the phone locks.
+        // Continuous listening needs occasional fresh fixes even when stationary.
+        locationManager.pausesLocationUpdatesAutomatically = false
+        locationManager.startUpdatingLocation()
+        standardUpdatesRunning = true
+    }
+
+    func stopBackgroundLocationUpdates() {
+        backgroundTrackingRequested = false
+        standardUpdatesRunning = false
+        finishPreciseRefresh()
+        refreshLocationManager.stopUpdatingLocation()
+        refreshRequestedAt = nil
+        refreshLocationManager.allowsBackgroundLocationUpdates = false
+        locationManager.stopUpdatingLocation()
+        locationManager.allowsBackgroundLocationUpdates = false
+        locationManager.pausesLocationUpdatesAutomatically = true
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.distanceFilter = kCLDistanceFilterNone
     }
         
     /// Start continuous location updates
     func startLocationUpdates() {
+        standardUpdatesRunning = true
         locationManager.startUpdatingLocation()
     }
         
     /// Stop continuous location updates
     func stopLocationUpdates() {
+        guard !backgroundTrackingRequested else { return }
+        standardUpdatesRunning = false
         locationManager.stopUpdatingLocation()
     }
     
     // MARK: - CLLocationManagerDelegate
+
+    /// MapKit may acquire a precise fix after our one-shot request delivered a
+    /// coarse one. Feed that same permitted observation through normal recovery
+    /// and geocoding instead of leaving a recent song at the earlier estimate.
+    func acceptMapLocation(_ location: CLLocation) {
+        guard authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways else { return }
+        locationManager(locationManager, didUpdateLocations: [location])
+    }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         authorizationStatus = manager.authorizationStatus
+        if manager.accuracyAuthorization != lastAccuracyAuthorization
+            || (manager.authorizationStatus != .authorizedWhenInUse
+                && manager.authorizationStatus != .authorizedAlways) {
+            lastAccuracyAuthorization = manager.accuracyAuthorization
+            currentLocation = nil
+            currentPlacemark = nil
+            placemarkLocation = nil
+            finishPreciseRefresh()
+        }
+        if backgroundTrackingRequested { startBackgroundLocationUpdates() }
+        Task { @MainActor [weak self] in
+            guard let self, !pickerRequests.isEmpty else { return }
+            if authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse {
+                requestLocation()
+            } else if authorizationStatus == .denied || authorizationStatus == .restricted {
+                finishPickerRequests(result: .failure(PickerError.permissionDenied))
+            }
+        }
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.first else { return }
+        if manager === refreshLocationManager && !seekingPreciseFix { refreshRequestedAt = nil }
+        guard let location = locations.last,
+              location.horizontalAccuracy.isFinite,
+              location.horizontalAccuracy >= 0 else { return }
+        if let previous = currentLocation {
+            // Independent CLLocationManager and MapKit callbacks can arrive out
+            // of order. A recent, materially better map fix should still replace
+            // a slightly newer coarse observation, without accepting stale GPS.
+            let timelyRefinement = previous.timestamp.timeIntervalSince(location.timestamp) <= 5
+                && abs(location.timestamp.timeIntervalSinceNow) <= 15
+                && location.horizontalAccuracy < previous.horizontalAccuracy
+                && location.distance(from: previous) <= previous.horizontalAccuracy + 50
+            guard location.timestamp >= previous.timestamp || timelyRefinement else { return }
+            lastObservedDisplacement = previous.distance(from: location)
+        }
         currentLocation = location
+        if seekingPreciseFix, location.horizontalAccuracy < 50,
+           abs(location.timestamp.timeIntervalSinceNow) <= 15 {
+            finishPreciseRefresh()
+        }
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let maximumAge: TimeInterval = hasReducedAccuracy ? 300 : 60
+            if abs(location.timestamp.timeIntervalSinceNow) <= maximumAge {
+                finishPickerRequests(result: .success(location))
+            }
+            onLocationUpdate?(nil, nil)
+        }
+        logger.debug("Location fix received; accuracy: \(Int(location.horizontalAccuracy))m")
+        if let placemarkLocation, currentPlacemark != nil {
+            if placemarkLocation.distance(from: location) < 100 {
+                return
+            }
+            self.currentPlacemark = nil
+        }
         fetchPlacemark(for: location)
     }
         
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location error: \(error.localizedDescription)")
+        if manager === refreshLocationManager {
+            // locationUnknown is transient during GPS acquisition; let the
+            // bounded session continue rather than abandoning its first miss.
+            if (error as? CLError)?.code != .locationUnknown { finishPreciseRefresh() }
+            if !seekingPreciseFix { refreshRequestedAt = nil }
+        }
+        logger.error("Location update failed: \(error.localizedDescription)")
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let failure: PickerError = authorizationStatus == .denied || authorizationStatus == .restricted
+                ? .permissionDenied : .locationUnavailable
+            finishPickerRequests(result: .failure(failure))
+        }
+    }
+
+    func locationManagerDidPauseLocationUpdates(_ manager: CLLocationManager) {
+        logger.warning("Core Location paused updates during listening: \(self.backgroundTrackingRequested)")
+    }
+
+    func locationManagerDidResumeLocationUpdates(_ manager: CLLocationManager) {
+        logger.info("Core Location resumed updates")
     }
     
     private func fetchPlacemark(for location: CLLocation) {
         let geocoder = CLGeocoder()
         geocoder.reverseGeocodeLocation(location) { [weak self] placemarks, error in
-            guard let self, error == nil, let placemark = placemarks?.first else { return }
-            self.currentPlacemark = placemark
+            guard error == nil, let placemark = placemarks?.first else { return }
+            Task { @MainActor [weak self] in
+                self?.acceptPlacemark(placemark, for: location)
+            }
         }
+    }
+
+    @MainActor
+    func acceptPlacemark(_ placemark: CLPlacemark, for location: CLLocation) {
+        if currentLocation?.distance(from: location) ?? .infinity < 250 {
+            currentPlacemark = placemark
+            placemarkLocation = location
+        }
+        // The user may have moved while geocoding. Still deliver the original
+        // fix's label to pending songs without relabeling the current position.
+        onLocationUpdate?(location, placemark)
+    }
+
+    /// Save a recent reduced-accuracy fix as an area, never as a precise point.
+    func locationForMatch(at date: Date, activity: CMMotionActivity?) -> CLLocation? {
+        guard let currentLocation else {
+            logger.warning("Match has no observed location fix")
+            return nil
+        }
+        let age = abs(currentLocation.timestamp.timeIntervalSince(date))
+        guard acceptsMatchLocation(currentLocation, at: date, activity: activity,
+                                   reducedAccuracy: hasReducedAccuracy) else {
+            logger.warning("Match location rejected; age: \(Int(age))s, accuracy: \(currentLocation.horizontalAccuracy)m")
+            return nil
+        }
+        return currentLocation
+    }
+
+    func acceptsMatchLocation(
+        _ location: CLLocation,
+        at date: Date,
+        activity: CMMotionActivity?,
+        reducedAccuracy: Bool
+    ) -> Bool {
+        // A neighborhood-level indoor fix is still useful: the saved accuracy
+        // produces an uncertainty area and prevents automatic Spot assignment.
+        let maximumAccuracy: CLLocationAccuracy = reducedAccuracy ? 50_000 : 2_000
+        let maximumAge = reducedAccuracy
+            ? broadLocationAgeLimit(activity) : locationAgeLimit(activity)
+        return location.horizontalAccuracy.isFinite
+            && location.horizontalAccuracy >= 0
+            && location.horizontalAccuracy <= maximumAccuracy
+            && abs(location.timestamp.timeIntervalSince(date)) <= maximumAge
+    }
+
+    func placemark(for location: CLLocation?) -> CLPlacemark? {
+        guard let location, let placemarkLocation,
+              placemarkLocation.distance(from: location) < 100 else { return nil }
+        return currentPlacemark
+    }
+
+    /// The activity may show a broader, recently verified place when a song lacks
+    /// a sufficiently fresh point. It never labels an old fix as current.
+    func activityLocationName(at date: Date, activity: CMMotionActivity?) -> String? {
+        guard let currentLocation,
+              currentLocation.horizontalAccuracy >= 0,
+              currentLocation.horizontalAccuracy <= (hasReducedAccuracy ? 50_000 : 2_000),
+              abs(currentLocation.timestamp.timeIntervalSince(date)) <= broadLocationAgeLimit(activity),
+              let placemark = placemark(for: currentLocation) else { return nil }
+
+        if !hasReducedAccuracy,
+           currentLocation.horizontalAccuracy <= 100,
+           abs(currentLocation.timestamp.timeIntervalSince(date)) <= locationAgeLimit(activity),
+           let venue = placemark.areasOfInterest?.first, !venue.isEmpty {
+            return venue
+        }
+        if currentLocation.horizontalAccuracy <= 2_000,
+           let neighborhood = placemark.subLocality, !neighborhood.isEmpty {
+            return neighborhood
+        }
+        if let city = placemark.locality, !city.isEmpty {
+            return currentLocation.horizontalAccuracy > 2_000 ? "Near \(city)" : city
+        }
+        if let state = placemark.administrativeArea, !state.isEmpty { return state }
+        return placemark.country
+    }
+
+    func refreshInterval(activity: CMMotionActivity?) -> TimeInterval {
+        // Refresh before the accepted fix expires, leaving acquisition headroom.
+        if lastObservedDisplacement > 500 { return 45 }
+        if lastObservedDisplacement > 150 { return 60 }
+        guard let activity, activity.confidence != .low else { return 90 }
+        if activity.automotive || activity.cycling { return 60 }
+        if activity.stationary { return 120 }
+        return 90
+    }
+
+    private func locationAgeLimit(_ activity: CMMotionActivity?) -> TimeInterval {
+        guard let activity, activity.confidence != .low else { return 180 }
+        if activity.automotive || activity.cycling { return 90 }
+        if activity.stationary { return 300 }
+        return 180
+    }
+
+    private func broadLocationAgeLimit(_ activity: CMMotionActivity?) -> TimeInterval {
+        guard let activity, activity.confidence != .low else { return 300 }
+        if activity.automotive || activity.cycling { return 180 }
+        if activity.stationary { return 900 }
+        return 300
     }
     
     // MARK: - MKLocalSearchCompleterDelegate
 
     func update(queryFragment: String) {
+        completer.cancel()
+        completions = []
+        guard !queryFragment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         completer.resultTypes = .pointOfInterest
+        if let currentLocation {
+            completer.region = MKCoordinateRegion(
+                center: currentLocation.coordinate,
+                latitudinalMeters: 50_000, longitudinalMeters: 50_000
+            )
+        }
         completer.queryFragment = queryFragment
     }
 
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        completions = completer.results.map { .init(title: $0.title, subTitle: $0.subtitle) }
+        completions = completer.results.map { .init(completion: $0) }
     }
-    
-    func search(with query: String, coordinate: CLLocationCoordinate2D? = nil) async throws -> [SearchResult] {
-        let mapKitRequest = MKLocalSearch.Request()
-        mapKitRequest.naturalLanguageQuery = query
-        mapKitRequest.resultTypes = .pointOfInterest
-        if let coordinate {
-            mapKitRequest.region = .init(.init(origin: .init(coordinate), size: .init(width: 1, height: 1)))
-        }
-        let search = MKLocalSearch(request: mapKitRequest)
 
+    func search(for selection: SearchCompletions) async throws -> MKMapItem {
+        let request = MKLocalSearch.Request(completion: selection.completion)
+        let search = MKLocalSearch(request: request)
         let response = try await search.start()
-
-        return response.mapItems.compactMap { mapItem in
-            guard let location = mapItem.placemark.location?.coordinate else { return nil }
-            // mapItem.location.coordinate in os26
-
-            return .init(location: location)
-        }
+        try Task.checkCancellation()
+        guard let item = response.mapItems.first(where: {
+            $0.name?.localizedCaseInsensitiveCompare(selection.title) == .orderedSame
+        }) ?? response.mapItems.first else { throw PickerError.placeUnavailable }
+        return item
     }
 }

@@ -10,6 +10,7 @@ import SwiftUI
 struct AbraWidgetBundle: WidgetBundle {
     var body: some Widget {
         Control()
+        ContinuousControl()
         LiveActivity()
     }
 }

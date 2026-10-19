@@ -14,6 +14,10 @@ struct LocationPicker: View {
     var stream: ShazamStream
 
     @State private var searchText = ""
+    @State private var isUpdating = false
+    @State private var updateTask: Task<Void, Never>?
+    @State private var errorMessage = ""
+    @State private var showingError = false
 
     var body: some View {
         NavigationStack {
@@ -45,6 +49,14 @@ struct LocationPicker: View {
                 }
             }
             .listStyle(.inset)
+            .disabled(isUpdating)
+            .overlay {
+                if isUpdating {
+                    ProgressView("Updating location…")
+                        .padding()
+                        .background(.regularMaterial, in: .rect(cornerRadius: 16))
+                }
+            }
             .navigationTitle("Adjust Location")
             .navigationBarTitleDisplayMode(.inline)
             .searchable(
@@ -57,8 +69,15 @@ struct LocationPicker: View {
                     DismissButton()
                 }
             }
+            .onAppear { locationProvider.update(queryFragment: "") }
             .onChange(of: searchText) {
                 locationProvider.update(queryFragment: searchText)
+            }
+            .onDisappear { updateTask?.cancel() }
+            .alert("Couldn't Update Location", isPresented: $showingError) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(errorMessage)
             }
         }
     }
@@ -95,54 +114,49 @@ struct LocationPicker: View {
     }
 
     private func setLocation(_ completion: SearchCompletions) {
-        // Attempt to fetch placemark and location from search
-        Task {
-            if let singleLocation = try? await locationProvider.search(
-                with: "\(completion.title) \(completion.subTitle)"
-            ).first {
-                let clLocation = CLLocation(
-                    latitude: singleLocation.location.latitude,
-                    longitude: singleLocation.location.longitude
-                )
-                let geocoder = CLGeocoder()
-
-                geocoder.reverseGeocodeLocation(clLocation) {
-                    (placemarks, error) in
-                    if error == nil {
-                        if let firstPlacemark = placemarks?.first {
-                            stream.updateLocation(
-                                clLocation,
-                                placemark: firstPlacemark
-                            )
-                        }
-                    } else {
-                        print(
-                            "Couldn't fetch placemark, updating location without"
-                        )
-                        stream.updateLocation(
-                            clLocation
-                        )
-                    }
-                }
+        updateLocation {
+            let mapItem = try await locationProvider.search(for: completion)
+            try Task.checkCancellation()
+            try stream.saveLocationEdit { song, context in
+                song.setLocationFromPicker(mapItem, context: context)
             }
         }
-        dismiss()
     }
 
     private func setCurrentLocation() {
-        // Get user’s current loc + placemark, use it to update
-        Task {
-            if let currentLocation = locationProvider.currentLocation,
-                let currentPlacemark = locationProvider.currentPlacemark
-            {
-                stream.updateLocation(
-                    currentLocation,
-                    placemark: currentPlacemark
-                )
-                dismiss()
+        updateLocation {
+            let location = try await locationProvider.locationForPicker()
+            var placemark = locationProvider.placemark(for: location)
+            if placemark == nil {
+                // Failure to find a place name must not discard usable coordinates.
+                placemark = try? await CLGeocoder().reverseGeocodeLocation(location).first
+            }
+            try Task.checkCancellation()
+            try stream.saveLocationEdit { song, context in
+                song.setLocationFromPicker(location, placemark: placemark,
+                                           context: context, allowSpot: !locationProvider.hasReducedAccuracy)
             }
         }
     }
+
+    private func updateLocation(_ operation: @escaping @MainActor () async throws -> Void) {
+        guard !isUpdating else { return }
+        isUpdating = true
+        updateTask = Task { @MainActor in
+            defer { isUpdating = false }
+            do {
+                try await operation()
+                try Task.checkCancellation()
+                dismiss()
+            } catch is CancellationError {
+                return
+            } catch {
+                errorMessage = error.localizedDescription
+                showingError = true
+            }
+        }
+    }
+
 }
 
 #Preview {

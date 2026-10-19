@@ -12,6 +12,8 @@ struct abraApp: App {
     private let benchmarkContainer: ModelContainer?
 
     init() {
+        _ = ShazamProvider.shared
+        _ = MatchNotificationService.shared
         benchmarkContainer = MapBenchmarkConfiguration.makeContainerIfRequested()
 
         if benchmarkContainer == nil {

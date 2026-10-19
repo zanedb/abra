@@ -4,6 +4,7 @@
 //
 
 import Kingfisher
+import SwiftData
 import SwiftUI
 
 struct SongRow: View {
@@ -151,6 +152,11 @@ struct SongRow: View {
                 action: { confirmationShown = true }
             )
         }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button("Delete", systemImage: "trash", role: .destructive) {
+                confirmationShown = true
+            }
+        }
         .confirmationDialog(
             "This song will be deleted from your Abra and Shazam libraries.",
             isPresented: $confirmationShown,
@@ -199,6 +205,7 @@ struct SongRowMini: View {
                 .overlay {
                     if nowPlaying || lastPlayed {
                         Waveform(on: nowPlaying)
+                            .foregroundStyle(.white)
                             .frame(width: 48, height: 48)
                             .background(.black.opacity(0.4))
                             .clipShape(.rect(cornerRadius: 3))

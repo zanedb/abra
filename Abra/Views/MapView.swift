@@ -29,7 +29,7 @@ struct MapView: View {
 
     var body: some View {
         MapViewControllerRepresentable(
-            shazams: shazams,
+            shazams: shazams.filter { $0.latitude != 0 || $0.longitude != 0 },
             spots: spots,
             modelContext: modelContext,
             toast: toast,

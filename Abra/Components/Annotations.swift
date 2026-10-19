@@ -14,12 +14,14 @@ class ShazamAnnotation: NSObject, MKAnnotation {
     @objc dynamic var coordinate: CLLocationCoordinate2D
     var title: String?
     private(set) var artworkURL: URL
+    private(set) var approximateRadius: CLLocationDistance?
 
     init(shazamStream: ShazamStream) {
         self.shazamStream = shazamStream
         self.coordinate = shazamStream.coordinate
         self.title = shazamStream.title
         self.artworkURL = shazamStream.artworkURL
+        self.approximateRadius = shazamStream.approximateLocationRadius
         super.init()
     }
 
@@ -48,6 +50,11 @@ class ShazamAnnotation: NSObject, MKAnnotation {
             changed = true
         }
 
+        let newApproximateRadius = shazamStream.approximateLocationRadius
+        if approximateRadius != newApproximateRadius {
+            approximateRadius = newApproximateRadius
+            changed = true
+        }
         self.shazamStream = shazamStream
         return (changed, artworkChanged)
     }
@@ -189,6 +196,17 @@ final class ShazamAnnotationView: MKAnnotationView {
         layer.shadowRadius = 6
         layer.shadowOffset = CGSize(width: 0, height: 2)
         layer.masksToBounds = false
+
+        configureLocationStyle()
+    }
+
+    func configureLocationStyle() {
+        guard let songAnnotation = annotation as? ShazamAnnotation else { return }
+        let stream = songAnnotation.shazamStream
+        let approximate = songAnnotation.approximateRadius != nil
+        accessibilityLabel = approximate
+            ? "\(stream.title), approximate location"
+            : stream.title
     }
 
     func loadImage() {

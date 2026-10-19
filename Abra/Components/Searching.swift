@@ -24,6 +24,7 @@ struct Searching: View {
                     .padding(.bottom)
 
                 Waveform(on: true, size: 4)
+                    .foregroundStyle(.white)
                     .padding(.vertical)
 
                 Text("Listening for music")
@@ -62,6 +63,8 @@ struct Searching: View {
             }
         }
         .navigationTransition(.zoom(sourceID: "ShazamButton", in: namespace))
+        .onAppear { motion.startDeviceMotionUpdates() }
+        .onDisappear { motion.stopDeviceMotionUpdates() }
     }
 
     private var logoAnimation: some View {
@@ -136,7 +139,7 @@ struct Searching: View {
             HStack(spacing: 8) {
                 if continuous {
                     Circle()
-                        .fill(.red)
+                        .fill(.white)
                         .frame(width: 7, height: 7)
                         .opacity(recordingBright ? 1 : 0.15)
                         .animation(

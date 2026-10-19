@@ -18,7 +18,7 @@ import SwiftUI
     
     init() {
         updateAuthorizationStatus()
-        startDeviceMotionUpdates()
+        if authorizationStatus == .authorized { startActivityUpdates() }
     }
     
     deinit {
@@ -52,15 +52,34 @@ import SwiftUI
         }
     }
     
+    /// A stationary sample only rules out travel if the activity spans both
+    /// the location observation and recognition, rather than just their endpoint.
+    func confirmsStationary(from observation: Date, through match: Date) -> Bool {
+        guard let activity = currentActivity else { return false }
+        return Self.stationaryCoversInterval(isStationary: activity.stationary,
+            confidence: activity.confidence, since: activity.startDate,
+            observation: observation, match: match)
+    }
+
+    static func stationaryCoversInterval(isStationary: Bool, confidence: CMMotionActivityConfidence,
+                                        since startedAt: Date, observation: Date, match: Date) -> Bool {
+        isStationary && confidence != .low && startedAt <= min(observation, match)
+    }
+
     // MARK: - Device Motion
     
-    private func startDeviceMotionUpdates() {
+    func startDeviceMotionUpdates() {
         guard motionManager.isDeviceMotionAvailable else { return }
+        guard !motionManager.isDeviceMotionActive else { return }
         motionManager.deviceMotionUpdateInterval = 0.2
         motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
             guard let gravity = motion?.gravity else { return }
             self?.isUpsideDown = gravity.y > 0.7
         }
+    }
+
+    func stopDeviceMotionUpdates() {
+        motionManager.stopDeviceMotionUpdates()
     }
     
     // MARK: - Activity Updates

@@ -12,6 +12,8 @@ import SwiftData
 import GeoToolbox
 
 @Model final class ShazamStream {
+    // Identifies one captured listen across stores; Shazam IDs identify songs.
+    var matchID: UUID?
     var timestamp: Date = Date.now
     var note: String = ""
 
@@ -43,6 +45,7 @@ import GeoToolbox
     var isProducedByAccessory: Bool?
     var isSimulatedBySoftware: Bool?
     var horizontalAccuracy: CLLocationAccuracy?
+    var locationObservedAt: Date?
     var verticalAccuracy: CLLocationAccuracy?
     var speed: CLLocationSpeed?
     var speedAccuracy: CLLocationSpeedAccuracy?
@@ -72,6 +75,7 @@ import GeoToolbox
 
     init(mediaItem: SHMediaItem, location: CLLocation?, placemark: CLPlacemark?, motionActivity: String? = nil)
     {
+        self.matchID = UUID()
         self.timestamp = .now
 
         // SHMediaItem
@@ -107,6 +111,7 @@ import GeoToolbox
         self.isSimulatedBySoftware =
             location?.sourceInformation?.isSimulatedBySoftware
         self.horizontalAccuracy = location?.horizontalAccuracy
+        self.locationObservedAt = location?.timestamp
         self.verticalAccuracy = location?.verticalAccuracy
         self.speed = location?.speed
         self.speedAccuracy = location?.speedAccuracy
@@ -198,6 +203,53 @@ extension ShazamStream {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
+    /// A conservative display estimate, not a claim that the song was heard
+    /// at the saved coordinate. Older and manually placed locations without a
+    /// measured accuracy continue to use their existing map appearance.
+    public var approximateLocationRadius: CLLocationDistance? {
+        guard latitude != 0 || longitude != 0,
+              let accuracy = horizontalAccuracy,
+              accuracy.isFinite,
+              accuracy > 0 else { return nil }
+
+        let signedAge = timestamp.timeIntervalSince(locationObservedAt ?? timestamp)
+        // Automatic post-match recovery is bounded to 30 seconds. Older manual
+        // corrections stored the edit time here, sometimes days after the song;
+        // that gap is not evidence of travel and must not create a giant radius.
+        let observedAfterMatch = signedAge < 0 && signedAge >= -30
+        let age = signedAge >= 0 ? signedAge : (observedAfterMatch ? -signedAge : 0)
+        let possibleMetersPerSecond: Double
+        switch motionActivity {
+        case "automotive": possibleMetersPerSecond = 20
+        case "cycling": possibleMetersPerSecond = 6
+        case "stationary": possibleMetersPerSecond = 0
+        default: possibleMetersPerSecond = observedAfterMatch ? 20 : 1.5
+        }
+        // Confirmed stationary motion should not turn a six-metre GPS fix into
+        // a neighbourhood-sized estimate merely because its timestamp aged.
+        // Ignore noisy GPS speed while Core Motion confirms no movement.
+        let movementSpeed = motionActivity == "stationary" ? 0 : max(possibleMetersPerSecond, speed ?? 0)
+        let radius = accuracy + age * movementSpeed
+        // Later observations normally need a movement margin. A short cold-start
+        // grace below allows a precise fix without evidence of travel to attach.
+        if observedAfterMatch && motionActivity != "stationary" {
+            // Cold GPS acquisition often finishes just after a match. Accept a
+            // short, precise observation as the capture's position unless motion
+            // or measured speed indicates travel. Preserve its real timestamp.
+            if Self.acceptsEarlyPreciseFix(accuracy: accuracy, speed: speed,
+                motionActivity: motionActivity, delay: age) { return nil }
+            return max(50, radius)
+        }
+        return radius >= 50 ? radius : nil
+    }
+
+    static func acceptsEarlyPreciseFix(accuracy: Double, speed: Double?,
+                                      motionActivity: String?, delay: TimeInterval) -> Bool {
+        let moving = ["automotive", "cycling", "running", "walking"].contains(motionActivity ?? "")
+        return (0...15).contains(delay) && accuracy >= 0 && accuracy < 50
+            && !moving && (speed ?? -1) <= 1.5
+    }
+
     public var location: CLLocation {
         CLLocation(
             coordinate: coordinate,
@@ -229,8 +281,16 @@ extension ShazamStream {
     public var cityState: String {
         if let city = city, let state = state {
             "\(city), \(state)"
+        } else if let city = city {
+            city
+        } else if let neighborhood = subLocality {
+            neighborhood
+        } else if let state = state {
+            state
+        } else if let country = country {
+            country
         } else {
-            "Unknown"
+            "Location unavailable"
         }
     }
 
@@ -315,13 +375,17 @@ extension ShazamStream {
         isSimulatedBySoftware =
             location.sourceInformation?.isSimulatedBySoftware
         horizontalAccuracy = location.horizontalAccuracy
+        locationObservedAt = location.timestamp
         verticalAccuracy = location.verticalAccuracy
         speed = location.speed
         speedAccuracy = location.speedAccuracy
         course = location.course
         courseAccuracy = location.courseAccuracy
 
-        // CLPlacemark
+        updatePlacemark(placemark)
+    }
+
+    public func updatePlacemark(_ placemark: CLPlacemark?) {
         placemarkName = placemark?.name
         thoroughfare = placemark?.thoroughfare
         subThoroughfare = placemark?.subThoroughfare
@@ -337,9 +401,63 @@ extension ShazamStream {
         timeZoneIdentifier = placemark?.timeZone?.identifier
     }
 
+    enum LocationEditError: LocalizedError {
+        case songUnavailable
+        var errorDescription: String? { "This song is no longer available. Close it and try again." }
+    }
+
+    /// Commit through a separate context before changing the displayed model.
+    /// A failed save must not alter its location/Spot, or roll back unrelated notes.
+    @MainActor
+    func saveLocationEdit(_ changes: (ShazamStream, ModelContext) -> Void) throws {
+        guard let owner = modelContext, !isDeleted else { throw LocationEditError.songUnavailable }
+        let id = persistentModelID
+        let editingContext = ModelContext(owner.container)
+        editingContext.autosaveEnabled = false
+        let descriptor = FetchDescriptor<ShazamStream>(predicate: #Predicate { $0.persistentModelID == id })
+        guard let copy = try editingContext.fetch(descriptor).first else {
+            throw LocationEditError.songUnavailable
+        }
+        changes(copy, editingContext)
+        try editingContext.save()
+        // Keep the existing SwiftUI-bound instance current only after the write
+        // succeeds. Run the same location-only edit in its owning context.
+        changes(self, owner)
+        // Keep the displayed observation provenance identical to the committed edit.
+        locationObservedAt = copy.locationObservedAt
+    }
+
+    /// An explicit correction replaces any previously associated venue.
+    public func setLocationFromPicker(_ location: CLLocation, placemark: CLPlacemark? = nil,
+                                      context: ModelContext? = nil, allowSpot: Bool = true) {
+        spot = nil
+        updateLocation(location, placemark: placemark)
+        // This is the user's explicit assignment for the song, not an automatic
+        // observation of where they were at recognition time. Don't project the
+        // time between an old song and today's correction into its uncertainty.
+        locationObservedAt = nil
+        // An explicitly chosen venue is precise even under reduced GPS permission.
+        // Current Location must additionally honor that permission's accuracy mode.
+        if allowSpot, location.horizontalAccuracy >= 0, location.horizontalAccuracy < 50,
+           approximateLocationRadius == nil, let context {
+            spotIt(context: context)
+        }
+    }
+
+    public func setLocationFromPicker(_ mapItem: MKMapItem, context: ModelContext? = nil) {
+        let coordinate = mapItem.placemark.coordinate
+        setLocationFromPicker(
+            CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude),
+            placemark: mapItem.placemark, context: context
+        )
+        placemarkName = mapItem.name ?? mapItem.placemark.name
+    }
+
     /// Find Spots that are super close by and save to automagically.
     /// Queries for lat/long within three decimal sig figs of precision.
     public func spotIt(context: ModelContext) {
+        // A nearby center alone is not evidence that an uncertain fix was at a venue.
+        guard approximateLocationRadius == nil else { return }
         let precision = 0.001
         let halfPrecision = precision / 2
 
