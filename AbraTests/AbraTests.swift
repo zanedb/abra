@@ -4,6 +4,7 @@
 //
 
 @testable import Abra
+import CoreMotion
 import Kingfisher
 import MapKit
 import SwiftData
@@ -358,8 +359,9 @@ final class AbraTests: XCTestCase {
         var requestCount = 0
         var startCount = 0
         var stopCount = 0
+        var accuracyPermission: CLAccuracyAuthorization = .fullAccuracy
         override var authorizationStatus: CLAuthorizationStatus { .authorizedWhenInUse }
-        override var accuracyAuthorization: CLAccuracyAuthorization { .fullAccuracy }
+        override var accuracyAuthorization: CLAccuracyAuthorization { accuracyPermission }
         override func requestLocation() { requestCount += 1 }
         override func startUpdatingLocation() { startCount += 1 }
         override func stopUpdatingLocation() { stopCount += 1 }
@@ -371,7 +373,10 @@ final class AbraTests: XCTestCase {
         let refresh = LocationManagerSpy()
         let provider = LocationProvider(locationManager: primary, refreshLocationManager: refresh)
         provider.startBackgroundLocationUpdates()
+        XCTAssertEqual(primary.desiredAccuracy, kCLLocationAccuracyNearestTenMeters,
+                       "Continuous listening must request venue-level accuracy, not a 100m fix")
         provider.requestLocation()
+        XCTAssertEqual(refresh.desiredAccuracy, kCLLocationAccuracyBest)
         XCTAssertEqual(primary.startCount, 1)
         XCTAssertEqual(primary.stopCount, 0)
         XCTAssertEqual(primary.requestCount, 0, "One-shot requests on the running manager are ignored by Core Location")
@@ -390,6 +395,124 @@ final class AbraTests: XCTestCase {
         provider.stopBackgroundLocationUpdates()
         XCTAssertEqual(primary.stopCount, 1)
         XCTAssertFalse(refresh.allowsBackgroundLocationUpdates)
+    }
+
+    @MainActor
+    func testPreciseAcquisitionWaitsPastCoarseFixWithoutRestartingBackgroundSession() {
+        let primary = LocationManagerSpy()
+        let refresh = LocationManagerSpy()
+        let location = LocationProvider(locationManager: primary, refreshLocationManager: refresh)
+        location.startBackgroundLocationUpdates()
+        location.requestPreciseLocation()
+        XCTAssertEqual(refresh.startCount, 1)
+        XCTAssertEqual(refresh.desiredAccuracy, kCLLocationAccuracyBest)
+        let coarse = CLLocation(coordinate: .init(latitude: 37.78, longitude: -122.4),
+                                altitude: 0, horizontalAccuracy: 150, verticalAccuracy: -1, timestamp: .now)
+        location.locationManager(refresh, didUpdateLocations: [coarse])
+        location.locationManager(refresh, didFailWithError: NSError(domain: kCLErrorDomain,
+            code: CLError.locationUnknown.rawValue))
+        location.requestPreciseLocation()
+        location.requestLocation()
+        XCTAssertEqual(refresh.startCount, 1, "Coalesce acquisition across multiple matches")
+        XCTAssertEqual(refresh.requestCount, 0)
+        XCTAssertEqual(refresh.stopCount, 0, "The first coarse result must not end precise acquisition")
+        let precise = CLLocation(coordinate: coarse.coordinate, altitude: 0,
+                                 horizontalAccuracy: 8, verticalAccuracy: -1, timestamp: .now)
+        location.locationManager(refresh, didUpdateLocations: [precise])
+        XCTAssertEqual(refresh.stopCount, 1)
+        XCTAssertEqual(location.currentLocation?.horizontalAccuracy, 8)
+        XCTAssertEqual(primary.stopCount, 0)
+        location.stopBackgroundLocationUpdates()
+    }
+
+    @MainActor
+    func testPreciseAcquisitionRespectsApproximatePermissionAndStopsWithSession() {
+        let primary = LocationManagerSpy()
+        let refresh = LocationManagerSpy()
+        primary.accuracyPermission = .reducedAccuracy
+        let location = LocationProvider(locationManager: primary, refreshLocationManager: refresh)
+        location.startBackgroundLocationUpdates()
+        location.requestPreciseLocation()
+        XCTAssertEqual(primary.desiredAccuracy, kCLLocationAccuracyReduced)
+        XCTAssertEqual(refresh.startCount, 0)
+        primary.accuracyPermission = .fullAccuracy
+        location.requestPreciseLocation()
+        XCTAssertEqual(refresh.startCount, 1)
+        location.stopBackgroundLocationUpdates()
+        location.requestLocation()
+        XCTAssertEqual(primary.requestCount, 1, "Ending acquisition must release its in-flight guard")
+    }
+
+    private final class StationaryActivity: CMMotionActivity {
+        let beganAt: Date
+        init(since date: Date) { beganAt = date; super.init() }
+        required init?(coder: NSCoder) { fatalError("Not used by tests") }
+        override var stationary: Bool { true }
+        override var confidence: CMMotionActivityConfidence { .high }
+        override var startDate: Date { beganAt }
+    }
+
+    @MainActor
+    func testLaterPreciseFixRepairsEarlyContinuousSongsOnlyWithStationaryEvidence() throws {
+        let container = try ModelContainer(for: ShazamStream.self, Spot.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = container.mainContext
+        let primary = LocationManagerSpy()
+        let refresh = LocationManagerSpy()
+        let location = LocationProvider(locationManager: primary, refreshLocationManager: refresh)
+        let motion = MotionProvider()
+        let provider = ShazamProvider()
+        provider.configure(modelContext: context, location: location, motion: motion, sheet: SheetProvider())
+        let firstMatch = Date().addingTimeInterval(-240)
+        motion.currentActivity = StationaryActivity(since: firstMatch.addingTimeInterval(-60))
+        let spot = Spot(name: "Stationary venue", latitude: 37.78, longitude: -122.4)
+        context.insert(spot)
+        var songs: [ShazamStream] = []
+        for index in 0..<4 {
+            let matchedAt = firstMatch.addingTimeInterval(Double(index) * 45)
+            let song = ShazamStream(title: "Early match \(index)", latitude: spot.latitude, longitude: spot.longitude)
+            song.timestamp = matchedAt
+            song.horizontalAccuracy = 150
+            song.locationObservedAt = matchedAt.addingTimeInterval(-1)
+            song.city = "San Francisco"
+            context.insert(song)
+            songs.append(song)
+        }
+        try context.save()
+        for song in songs { provider.trackLocationRecovery(for: song, matchedAt: song.timestamp) }
+        XCTAssertEqual(refresh.startCount, 1, "Approximate matches with labels must actively request precision")
+        // A placemark arriving after 30 seconds must not discard recovery for
+        // earlier stationary matches while GPS is still acquiring precision.
+        let coarseFix = CLLocation(coordinate: spot.coordinate, altitude: 0,
+                                   horizontalAccuracy: 150, verticalAccuracy: -1, timestamp: .now)
+        location.currentLocation = coarseFix
+        location.acceptPlacemark(MKPlacemark(coordinate: coarseFix.coordinate,
+            addressDictionary: ["City": "San Francisco"]), for: coarseFix)
+        provider.resolvePendingMatchLocations(at: .now)
+        let precise = CLLocation(coordinate: spot.coordinate, altitude: 0,
+                                 horizontalAccuracy: 8, verticalAccuracy: -1, timestamp: .now)
+        location.currentLocation = precise
+        motion.currentActivity = nil
+        provider.resolvePendingMatchLocations(at: .now)
+        for song in songs {
+            XCTAssertNotNil(song.approximateLocationRadius)
+            XCTAssertNil(song.spot, "A later fix without motion history cannot prove an earlier venue")
+        }
+        motion.currentActivity = StationaryActivity(since: firstMatch.addingTimeInterval(-60))
+        primary.accuracyPermission = .reducedAccuracy
+        provider.resolvePendingMatchLocations(at: .now)
+        for song in songs {
+            XCTAssertNotNil(song.approximateLocationRadius)
+            XCTAssertNil(song.spot, "Stationary evidence must not bypass Approximate Location permission")
+        }
+        primary.accuracyPermission = .fullAccuracy
+        provider.resolvePendingMatchLocations(at: .now)
+        for song in songs {
+            XCTAssertNil(song.approximateLocationRadius)
+            XCTAssertEqual(song.horizontalAccuracy, 8)
+            XCTAssertEqual(song.spot?.persistentModelID, spot.persistentModelID)
+        }
+        location.stopBackgroundLocationUpdates()
     }
 
     @MainActor

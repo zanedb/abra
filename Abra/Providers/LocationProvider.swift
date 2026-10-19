@@ -31,6 +31,8 @@ struct SearchCompletions: Identifiable {
     private let locationManager: CLLocationManager
     private let refreshLocationManager: CLLocationManager
     private var refreshRequestedAt: Date?
+    @ObservationIgnored private var preciseRefreshTimeout: Task<Void, Never>?
+    private var seekingPreciseFix = false
     private var standardUpdatesRunning = false
     private let completer: MKLocalSearchCompleter
     @ObservationIgnored private var pickerRequests: [UUID: CheckedContinuation<CLLocation, Error>] = [:]
@@ -82,17 +84,45 @@ struct SearchCompletions: Identifiable {
     /// session alive; never stop/restart that session just to refresh a stale fix.
     func requestLocation() {
         guard authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways else { return }
+        guard !seekingPreciseFix else { return }
         guard standardUpdatesRunning else {
             locationManager.requestLocation()
             return
         }
         if let refreshRequestedAt, Date().timeIntervalSince(refreshRequestedAt) < 15 { return }
         if refreshRequestedAt != nil { refreshLocationManager.stopUpdatingLocation() }
-        refreshLocationManager.desiredAccuracy = hasReducedAccuracy ? kCLLocationAccuracyReduced
-            : (backgroundTrackingRequested ? kCLLocationAccuracyHundredMeters : kCLLocationAccuracyBest)
+        refreshLocationManager.desiredAccuracy = hasReducedAccuracy ? kCLLocationAccuracyReduced : kCLLocationAccuracyBest
         refreshRequestedAt = .now
         refreshLocationManager.requestLocation()
         logger.info("Requested independent location refresh while continuous updates remain active")
+    }
+
+    /// A one-shot request may finish with a coarse result. Give GPS a bounded
+    /// opportunity to refine it, without restarting the background permission
+    /// session or pretending that Approximate Location permission is precise.
+    func requestPreciseLocation() {
+        guard authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways,
+              !hasReducedAccuracy, !seekingPreciseFix else { return }
+        seekingPreciseFix = true
+        refreshRequestedAt = .now
+        refreshLocationManager.desiredAccuracy = kCLLocationAccuracyBest
+        refreshLocationManager.distanceFilter = kCLDistanceFilterNone
+        refreshLocationManager.startUpdatingLocation()
+        preciseRefreshTimeout = Task { @MainActor [weak self] in
+            do { try await Task.sleep(for: .seconds(20)) }
+            catch { return }
+            self?.finishPreciseRefresh()
+        }
+        logger.info("Started bounded precise location acquisition")
+    }
+
+    private func finishPreciseRefresh() {
+        guard seekingPreciseFix else { return }
+        seekingPreciseFix = false
+        preciseRefreshTimeout?.cancel()
+        preciseRefreshTimeout = nil
+        refreshRequestedAt = nil
+        refreshLocationManager.stopUpdatingLocation()
     }
 
     /// A picker tap requests a fix when the cache is missing or stale. Geocoding
@@ -150,8 +180,10 @@ struct SearchCompletions: Identifiable {
         backgroundTrackingRequested = true
         guard authorizationStatus == .authorizedWhenInUse
                 || authorizationStatus == .authorizedAlways else { return }
+        // Spot assignment needs accuracy better than 50m. A 100m target can
+        // replace a foreground GPS fix with an unusable venue estimate.
         locationManager.desiredAccuracy = hasReducedAccuracy
-            ? kCLLocationAccuracyReduced : kCLLocationAccuracyHundredMeters
+            ? kCLLocationAccuracyReduced : kCLLocationAccuracyNearestTenMeters
         locationManager.distanceFilter = 150
         locationManager.allowsBackgroundLocationUpdates = true
         refreshLocationManager.allowsBackgroundLocationUpdates = true
@@ -165,6 +197,7 @@ struct SearchCompletions: Identifiable {
     func stopBackgroundLocationUpdates() {
         backgroundTrackingRequested = false
         standardUpdatesRunning = false
+        finishPreciseRefresh()
         refreshLocationManager.stopUpdatingLocation()
         refreshRequestedAt = nil
         refreshLocationManager.allowsBackgroundLocationUpdates = false
@@ -207,6 +240,7 @@ struct SearchCompletions: Identifiable {
             currentLocation = nil
             currentPlacemark = nil
             placemarkLocation = nil
+            finishPreciseRefresh()
         }
         if backgroundTrackingRequested { startBackgroundLocationUpdates() }
         Task { @MainActor [weak self] in
@@ -220,7 +254,7 @@ struct SearchCompletions: Identifiable {
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if manager === refreshLocationManager { refreshRequestedAt = nil }
+        if manager === refreshLocationManager && !seekingPreciseFix { refreshRequestedAt = nil }
         guard let location = locations.last,
               location.horizontalAccuracy.isFinite,
               location.horizontalAccuracy >= 0 else { return }
@@ -236,6 +270,10 @@ struct SearchCompletions: Identifiable {
             lastObservedDisplacement = previous.distance(from: location)
         }
         currentLocation = location
+        if seekingPreciseFix, location.horizontalAccuracy < 50,
+           abs(location.timestamp.timeIntervalSinceNow) <= 15 {
+            finishPreciseRefresh()
+        }
         Task { @MainActor [weak self] in
             guard let self else { return }
             let maximumAge: TimeInterval = hasReducedAccuracy ? 300 : 60
@@ -255,7 +293,12 @@ struct SearchCompletions: Identifiable {
     }
         
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        if manager === refreshLocationManager { refreshRequestedAt = nil }
+        if manager === refreshLocationManager {
+            // locationUnknown is transient during GPS acquisition; let the
+            // bounded session continue rather than abandoning its first miss.
+            if (error as? CLError)?.code != .locationUnknown { finishPreciseRefresh() }
+            if !seekingPreciseFix { refreshRequestedAt = nil }
+        }
         logger.error("Location update failed: \(error.localizedDescription)")
         Task { @MainActor [weak self] in
             guard let self else { return }
