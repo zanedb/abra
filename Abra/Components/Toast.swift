@@ -36,19 +36,6 @@ struct Toast: View {
         }
     }
 
-    var color: Color {
-        switch type {
-        case .error:
-            return .red
-        case .success:
-            return .green
-        case .warning:
-            return .yellow
-        case .info:
-            return .blue
-        }
-    }
-
     @State private var hapticTrigger = false
 
     var body: some View {
@@ -57,7 +44,7 @@ struct Toast: View {
                 .imageScale(.large)
                 .font(.system(size: 15))
                 .frame(width: 16, height: 12)
-                .foregroundStyle(symbolColor ?? color)
+                .foregroundStyle(symbolColor ?? .primary)
 
             Text(message)
                 .font(.system(size: 14, weight: .medium))

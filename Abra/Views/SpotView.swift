@@ -183,7 +183,7 @@ struct SpotView: View {
                                     ),
                                     position: .tail
                                 ) {
-                                    toast.show(message: "Added to Queue", type: .success, symbol: "text.line.last.and.arrowtriangle.forward", symbolColor: .primary)
+                                    toast.show(message: "Added to Queue", type: .success, symbol: "text.line.last.and.arrowtriangle.forward")
                                 }
                             }
                         }
@@ -200,7 +200,7 @@ struct SpotView: View {
                                     ),
                                     position: .afterCurrentEntry
                                 ) {
-                                    toast.show(message: "Playing Next", type: .success, symbol: "text.line.first.and.arrowtriangle.forward", symbolColor: .primary)
+                                    toast.show(message: "Playing Next", type: .success, symbol: "text.line.first.and.arrowtriangle.forward")
                                 }
                             }
                         }

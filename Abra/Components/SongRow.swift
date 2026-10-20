@@ -185,7 +185,7 @@ struct SongRow: View {
         guard let appleMusicID = stream.appleMusicID else { return }
         Task {
             if await music.queue(ids: [appleMusicID], position: .afterCurrentEntry) {
-                toast.show(message: "Playing Next", type: .success, symbol: "text.line.first.and.arrowtriangle.forward", symbolColor: .primary)
+                toast.show(message: "Playing Next", type: .success, symbol: "text.line.first.and.arrowtriangle.forward")
             }
         }
     }
@@ -194,7 +194,7 @@ struct SongRow: View {
         guard let appleMusicID = stream.appleMusicID else { return }
         Task {
             if await music.queue(ids: [appleMusicID], position: .tail) {
-                toast.show(message: "Added to Queue", type: .success, symbol: "text.line.last.and.arrowtriangle.forward", symbolColor: .primary)
+                toast.show(message: "Added to Queue", type: .success, symbol: "text.line.last.and.arrowtriangle.forward")
             }
         }
     }

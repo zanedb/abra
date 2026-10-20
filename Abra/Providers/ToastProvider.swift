@@ -21,7 +21,7 @@ import SwiftUI
     ///   - message: The message to display
     ///   - type: The type of toast (default: .info)
     ///   - symbol: Optional SF Symbol name to override the default for the type
-    ///   - symbolColor: Optional color overriding the toast type's symbol color
+    ///   - symbolColor: Optional symbol color (defaults to .primary)
     ///   - action: Optional function that runs on tap gesture
     ///   - duration: How long to show the toast (default: 3 seconds)
     func show(message: String, type: ToastType = .info, symbol: String? = nil, symbolColor: Color? = nil, action: (() -> Void)? = nil, duration: Double = 3.0) {
