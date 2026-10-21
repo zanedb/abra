@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7147313A1D9C4FA99C3D4101 /* MomentAssetBadges.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7147313A1D9C4FA99C3D4102 /* MomentAssetBadges.swift */; };
 		2F00B44A2EAD7452004B4EFD /* SongInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F00B4492EAD7451004B4EFD /* SongInfo.swift */; };
 		2F0A4CD43019306C00365C51 /* VideoControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0A4CD33019306C00365C51 /* VideoControls.swift */; };
 		2F0BF5E22E82113E008582C2 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F0BF5E12E82113E008582C2 /* Kingfisher */; };

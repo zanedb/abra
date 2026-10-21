@@ -11,6 +11,7 @@ import SwiftUI
 
 struct PhotoView: View {
     @Environment(LibraryProvider.self) private var library
+    @Environment(MusicProvider.self) private var music
     @Environment(\.dismiss) private var dismiss
 
     @State private var photos: [PHAsset]
@@ -20,6 +21,8 @@ struct PhotoView: View {
     @State private var uiImageToShare: UIImage?
     @State private var videoToShare: URL?
     @State private var currentPlayer: AVPlayer?
+    @State private var isViewerVisible = true
+    @State private var hasExclusiveVideoAudioSession = false
     @State private var showVideoControls: Bool = true
     @State private var controlsHideTask: Task<Void, Never>?
     @State private var volumeCancellable: AnyCancellable?
@@ -73,13 +76,9 @@ struct PhotoView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                 }
-                .zoomable(onElement: { photo in
-                    photo.mediaType == .video
-                        ? .disabled
-                        : .custom(min: 1, max: 5, doubleTap: .scale(0.5))
-                })
+                .zoomable(min: 1, max: 5)
                 .onDismiss(backgroundOpacity: $opacity) {
-                    dismiss()
+                    dismissViewer()
                 }
                 .onTap {
                     guard currentPhoto?.mediaType == .video else { return }
@@ -98,52 +97,13 @@ struct PhotoView: View {
                 .ignoresSafeArea()
                 .onChange(of: currentIndex) { _, new in
                     onIndexChange?(new)
-                    currentPlayer?.pause()
-                    currentPlayer = nil
-                    controlsHideTask?.cancel()
-                    volumeCancellable?.cancel()
-                    volumeCancellable = nil
-                    showVideoControls = true
-                    imageToShare = nil
-                    uiImageToShare = nil
-                    videoToShare = nil
                 }
-                .task(id: currentIndex) {
-                    imageToShare = nil
-                    uiImageToShare = nil
-                    videoToShare = nil
-                    guard let photo = currentPhoto else { return }
-
-                    if photo.mediaType == .video {
-                        async let playerItemTask = library.fetchPlayerItem(
-                            byLocalIdentifier: photo.localIdentifier
-                        )
-                        async let videoURLTask = library.fetchVideoURL(
-                            byLocalIdentifier: photo.localIdentifier
-                        )
-                        if let item = try? await playerItemTask {
-                            try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
-                            try? AVAudioSession.sharedInstance().setActive(true)
-                            let player = AVPlayer(playerItem: item)
-                            player.isMuted = true
-                            currentPlayer = player
-                            player.play()
-                            scheduleControlsHide()
-                            startVolumeObserver(for: player)
-                        }
-                        if let url = try? await videoURLTask {
-                            videoToShare = url
-                        }
-                    } else {
-                        guard
-                            let uiImage = try? await library.fetchImage(
-                                byLocalIdentifier: photo.localIdentifier,
-                                targetSize: CGSize(width: 2048, height: 2048)
-                            )
-                        else { return }
-                        uiImageToShare = uiImage
-                        imageToShare = Image(uiImage: uiImage)
-                    }
+                .onChange(of: currentPhoto?.localIdentifier) {
+                    stopVideoPlayback()
+                    showVideoControls = true
+                }
+                .task(id: currentPhoto?.localIdentifier) {
+                    await loadCurrentPhoto()
                 }
 
                 // Video control bar — floats above bottom toolbar
@@ -152,15 +112,14 @@ struct PhotoView: View {
                 {
                     VStack {
                         Spacer()
-                        VideoControlBar(player: player)
+                        VideoControlBar(player: player, onMuteChange: setVideoMuted)
+                            .id(ObjectIdentifier(player))
                             .padding(.horizontal, 24)
                             .padding(.bottom, 8)
                             .transition(
                                 .opacity.combined(with: .move(edge: .bottom))
                             )
                     }
-                    .contentShape(Rectangle())
-                    .onTapGesture {}
                 }
             }
             .toolbar {
@@ -185,6 +144,112 @@ struct PhotoView: View {
                 }
             }
         }
+        .onAppear { isViewerVisible = true }
+        .onDisappear {
+            isViewerVisible = false
+            stopVideoPlayback()
+        }
+    }
+
+    private func loadCurrentPhoto() async {
+        guard isViewerVisible, !Task.isCancelled, let photo = currentPhoto else { return }
+        stopVideoPlayback()
+        imageToShare = nil
+        uiImageToShare = nil
+        videoToShare = nil
+        let identifier = photo.localIdentifier
+
+        if photo.mediaType == .video {
+            async let playerItemTask = library.fetchPlayerItem(byLocalIdentifier: identifier)
+            async let videoURLTask = library.fetchVideoURL(byLocalIdentifier: identifier)
+            if let item = try? await playerItemTask {
+                // PhotoKit requests can finish after their SwiftUI task is cancelled.
+                guard canUseLoadedAsset(identifier) else { return }
+                do {
+                    let session = AVAudioSession.sharedInstance()
+                    try session.setCategory(.playback, mode: .moviePlayback, options: .mixWithOthers)
+                    try session.setActive(true)
+                } catch {
+                    // Do not risk interrupting music if mixing could not be configured.
+                    return
+                }
+                let player = AVPlayer(playerItem: item)
+                player.isMuted = true
+                currentPlayer = player
+                player.play()
+                scheduleControlsHide()
+                startVolumeObserver(for: player)
+            }
+            if let url = try? await videoURLTask {
+                guard canUseLoadedAsset(identifier) else { return }
+                videoToShare = url
+            }
+        } else {
+            guard let uiImage = try? await library.fetchImage(
+                byLocalIdentifier: identifier,
+                targetSize: CGSize(width: 2048, height: 2048)
+            ), canUseLoadedAsset(identifier) else { return }
+            uiImageToShare = uiImage
+            imageToShare = Image(uiImage: uiImage)
+        }
+    }
+
+    private func canUseLoadedAsset(_ identifier: String) -> Bool {
+        !Task.isCancelled && isViewerVisible && currentPhoto?.localIdentifier == identifier
+    }
+
+    private func dismissViewer() {
+        isViewerVisible = false
+        stopVideoPlayback()
+        dismiss()
+    }
+
+    private func stopVideoPlayback() {
+        controlsHideTask?.cancel()
+        controlsHideTask = nil
+        volumeCancellable?.cancel()
+        volumeCancellable = nil
+        currentPlayer?.pause()
+        currentPlayer?.isMuted = true
+        currentPlayer?.replaceCurrentItem(with: nil)
+        currentPlayer = nil
+        if hasExclusiveVideoAudioSession {
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+            hasExclusiveVideoAudioSession = false
+        }
+    }
+
+    private func setVideoMuted(_ muted: Bool) {
+        guard isViewerVisible, let player = currentPlayer else { return }
+        if muted {
+            player.isMuted = true
+            // Release exclusive audio before continuing silent playback.
+            let wasPlaying = player.rate != 0
+            player.pause()
+            let session = AVAudioSession.sharedInstance()
+            try? session.setActive(false, options: .notifyOthersOnDeactivation)
+            hasExclusiveVideoAudioSession = false
+            do {
+                try session.setCategory(.playback, mode: .moviePlayback, options: .mixWithOthers)
+                try session.setActive(true)
+                if wasPlaying { player.play() }
+            } catch {
+                return
+            }
+        } else {
+            do {
+                let session = AVAudioSession.sharedInstance()
+                try session.setCategory(.playback, mode: .moviePlayback)
+                hasExclusiveVideoAudioSession = true
+                try session.setActive(true)
+                music.stopPreviewPlayback()
+                music.stopPlayback()
+                player.isMuted = false
+            } catch {
+                // Leave the player muted if exclusive audio could not be acquired.
+                return
+            }
+        }
     }
 
     private func startVolumeObserver(for player: AVPlayer) {
@@ -194,12 +259,13 @@ struct PhotoView: View {
             .dropFirst()
             .receive(on: RunLoop.main)
             .sink { _ in
+                guard isViewerVisible, currentPlayer === player else { return }
                 guard player.isMuted else {
                     volumeCancellable?.cancel()
                     volumeCancellable = nil
                     return
                 }
-                player.isMuted = false
+                setVideoMuted(false)
                 volumeCancellable?.cancel()
                 volumeCancellable = nil
             }
@@ -218,9 +284,10 @@ struct PhotoView: View {
 
     private func removeCurrentPhoto() {
         guard photos.indices.contains(currentIndex) else { return }
+        stopVideoPlayback()
         photos.remove(at: currentIndex)
         if photos.isEmpty {
-            dismiss()
+            dismissViewer()
         } else if currentIndex >= photos.count {
             currentIndex = photos.count - 1
         }
@@ -264,7 +331,7 @@ struct PhotoView: View {
     @ToolbarContentBuilder
     private var ToolbarItems: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
-            Button(action: { dismiss() }) {
+            Button(action: dismissViewer) {
                 Image(systemName: "chevron.left")
                     .font(.body.weight(.semibold))
             }
@@ -420,6 +487,7 @@ struct PhotoView: View {
 #Preview("Photo View") {
     PhotoView(photos: [], initialIndex: 0)
         .environment(LibraryProvider())
+        .environment(MusicProvider())
 }
 
 #Preview("Video Player") {

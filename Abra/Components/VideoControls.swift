@@ -64,6 +64,7 @@ struct AVPlayerView: UIViewRepresentable {
 
 struct VideoControlBar: View {
     let player: AVPlayer
+    let onMuteChange: (Bool) -> Void
     @State private var isPlaying = true
     @State private var isMuted = true
     @State private var progress: Double = 0
@@ -84,6 +85,7 @@ struct VideoControlBar: View {
                         .font(.body.weight(.semibold))
                         .frame(width: 20)
                 }
+                .accessibilityLabel(isPlaying ? "Pause video" : "Play video")
 
                 Slider(value: $progress, in: 0...1) { editing in
                     if editing {
@@ -108,10 +110,11 @@ struct VideoControlBar: View {
                     }
                 }
                 .tint(.white)
+                .accessibilityLabel("Video progress")
 
                 Button {
-                    isMuted.toggle()
-                    player.isMuted = isMuted
+                    onMuteChange(!player.isMuted)
+                    isMuted = player.isMuted
                 } label: {
                     Image(
                         systemName: isMuted
@@ -120,6 +123,7 @@ struct VideoControlBar: View {
                     .font(.body.weight(.semibold))
                     .frame(width: 20)
                 }
+                .accessibilityLabel(isMuted ? "Unmute video" : "Mute video")
             }
             .foregroundStyle(.white)
             .padding(.horizontal, 16)

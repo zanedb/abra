@@ -382,10 +382,16 @@ private struct MomentGroupTile: View {
                         .font(.headline)
                         .foregroundStyle(.white)
                         .padding()
+                        .padding(.bottom, (moment.phAssets.first.map { $0.mediaType == .video || $0.isFavorite } ?? false) ? 20 : 0)
                     Spacer()
                 }
                 .frame(maxWidth: .infinity)
                 .background(.thinMaterial)
+            }
+            .overlay(alignment: .bottom) {
+                if let asset = moment.phAssets.first {
+                    MomentAssetBadges(asset: asset)
+                }
             }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             // .clipShape(.rect(cornerRadius: size.width * 0.14))
@@ -421,6 +427,9 @@ private struct MomentAssetTile: View {
                     targetSize: CGSize(width: 576, height: 576)
                 )
                 .scaledToFill()
+            }
+            .overlay(alignment: .bottom) {
+                MomentAssetBadges(asset: asset)
             }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .matchedTransitionSource(id: "MomentGallery", in: namespace)

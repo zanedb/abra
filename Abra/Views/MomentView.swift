@@ -137,6 +137,10 @@ struct MomentView: View {
                     }
                     .foregroundStyle(.white)
                     .padding()
+                    .padding(.bottom, firstAsset.mediaType == .video || firstAsset.isFavorite ? 24 : 0)
+                }
+                .overlay(alignment: .bottom) {
+                    MomentAssetBadges(asset: firstAsset)
                 }
             }
 
@@ -164,6 +168,9 @@ struct MomentView: View {
                         .scaledToFill()
                         .frame(width: size, height: size)
                         .clipped()
+                        .overlay(alignment: .bottom) {
+                            MomentAssetBadges(asset: asset)
+                        }
                         .matchedTransitionSource(
                             id: asset.localIdentifier,
                             in: details
