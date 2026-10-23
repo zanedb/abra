@@ -8,10 +8,51 @@ import CoreMotion
 import Kingfisher
 import MapKit
 import MusicKit
+import ShazamKit
 import SwiftData
 import XCTest
 
 final class AbraTests: XCTestCase {
+
+    func testShazamDaemonExitRetriesWithBoundedBackoff() {
+        let connection = NSError(domain: NSCocoaErrorDomain, code: 4099)
+        let reported = NSError(domain: SHErrorDomain, code: 202,
+                               userInfo: [NSUnderlyingErrorKey: connection])
+        var recovery = ShazamRecoveryPolicy()
+        XCTAssertEqual(recovery.retryDelay(for: reported), .seconds(1))
+        XCTAssertEqual(recovery.retryDelay(for: reported), .seconds(2))
+        XCTAssertNil(recovery.retryDelay(for: reported), "A persistent failure must reach the normal error UI")
+
+        var nextListen = ShazamRecoveryPolicy()
+        XCTAssertEqual(nextListen.retryDelay(for: reported), .seconds(1))
+    }
+
+    func testShazamRecoveryRecognizesWrappedAndDirectServiceFailures() {
+        for code in [CocoaError.Code.xpcConnectionInvalid, .xpcConnectionInterrupted] {
+            let connection = NSError(domain: NSCocoaErrorDomain, code: code.rawValue)
+            XCTAssertTrue(ShazamRecoveryPolicy.isServiceFailure(connection))
+            let wrapped = NSError(domain: SHErrorDomain, code: SHError.Code.internalError.rawValue,
+                                  userInfo: [NSUnderlyingErrorKey: connection])
+            XCTAssertTrue(ShazamRecoveryPolicy.isServiceFailure(wrapped))
+        }
+        // 202 also covers transient catalog-server failures without a Cocoa error.
+        XCTAssertTrue(ShazamRecoveryPolicy.isServiceFailure(
+            NSError(domain: SHErrorDomain, code: SHError.Code.matchAttemptFailed.rawValue)))
+    }
+
+    func testShazamRecoveryDoesNotRetryUnrelatedErrorsOrSpendTheirBudget() {
+        var recovery = ShazamRecoveryPolicy()
+        for error in [
+            NSError(domain: SHErrorDomain, code: SHError.Code.signatureDurationInvalid.rawValue),
+            NSError(domain: SHErrorDomain, code: SHError.Code.invalidAudioFormat.rawValue),
+            NSError(domain: SHErrorDomain, code: SHError.Code.internalError.rawValue),
+            NSError(domain: NSURLErrorDomain, code: 202),
+            NSError(domain: "unrelated", code: 4099)
+        ] {
+            XCTAssertNil(recovery.retryDelay(for: error))
+        }
+        XCTAssertEqual(recovery.retryDelay(for: NSError(domain: SHErrorDomain, code: 202)), .seconds(1))
+    }
 
     @MainActor
     func testUnavailableSongMetadataIsSilentButUserActionsReportErrors() async throws {

@@ -64,7 +64,8 @@ enum ShazamStatus: Equatable {
     private(set) var matchCount = 0
     var appIsForeground: Bool { UIApplication.shared.applicationState == .active }
 
-    private let session = SHManagedSession()
+    @ObservationIgnored private var session = SHManagedSession()
+    @ObservationIgnored private var prepareTask: Task<Void, Never>?
     private let logger = Logger(subsystem: "app.zane.abra", category: "ShazamProvider")
     @ObservationIgnored private var matchingTask: Task<Void, Never>?
     @ObservationIgnored private var timeoutTask: Task<Void, Never>?
@@ -394,11 +395,13 @@ enum ShazamStatus: Equatable {
 
     /// Opens a mic stream to Shazam if possible; decreases time to match
     func prepare() {
-        guard !hasPrepared else { return }
+        guard !hasPrepared, !isListening else { return }
         guard configureAudioSessionForBackground() else { return }
         hasPrepared = true
-        Task {
-            await session.prepare()
+        let preparingSession = session
+        prepareTask = Task {
+            await preparingSession.prepare()
+            guard !Task.isCancelled else { return }
             logger.info("Shazam session prepared successfully")
         }
     }
@@ -461,78 +464,98 @@ enum ShazamStatus: Equatable {
             startTimeoutTask()
         }
 
+        let listeningSessionID = sessionID
         matchingTask = Task { [weak self] in
-            guard let self = self else { return }
-            var consecutiveInvalidSignatures = 0
+            guard let self else { return }
+            var recovery = ShazamRecoveryPolicy()
 
-            // session.results is an AsyncSequence — ShazamKit drives re-listening automatically
-            for await result in self.session.results {
-                guard !Task.isCancelled else { break }
+            matching: while !Task.isCancelled && self.isListening && self.sessionID == listeningSessionID {
+                let activeSession = self.session
+                var consecutiveInvalidSignatures = 0
 
-                self.timeoutTask?.cancel()
+                // session.results is an AsyncSequence — ShazamKit drives re-listening automatically
+                for await result in activeSession.results {
+                    guard !Task.isCancelled, self.isListening, self.sessionID == listeningSessionID else { return }
 
-                switch result {
-                case .match(let match):
-                    consecutiveInvalidSignatures = 0
-                    if let mediaItem = match.mediaItems.first {
-                        // Snapshot the SDK's moving prediction once so checking and
-                        // saving use the same position and observation time.
-                        let recognizedAt = Date()
-                        let position = mediaItem.predictedCurrentMatchOffset
-                        let rate = 1 + Double(mediaItem.frequencySkew)
-                        self.logger.info("Shazam timing id=\(mediaItem.shazamID ?? "unknown", privacy: .public), queryOffset=\(mediaItem.matchOffset), position=\(position), rate=\(rate)")
-                        if self.shouldRecordMatch(
-                            title: mediaItem.title,
-                            artist: mediaItem.artist,
-                            at: recognizedAt, shazamID: mediaItem.shazamID,
-                            playbackPosition: position, playbackRate: rate
-                        ) {
-                            self.logger.info("Match found: \(mediaItem.title ?? "unknown")")
-                            await self.handleMatch(mediaItem, allItems: match.mediaItems, at: recognizedAt,
-                                                   playbackPosition: position, playbackRate: rate)
-                        } else {
-                            self.logger.info("Recently matched song ignored: \(mediaItem.title ?? "unknown")")
+                    self.timeoutTask?.cancel()
+
+                    switch result {
+                    case .match(let match):
+                        consecutiveInvalidSignatures = 0
+                        if let mediaItem = match.mediaItems.first {
+                            // Snapshot the SDK's moving prediction once so checking and
+                            // saving use the same position and observation time.
+                            let recognizedAt = Date()
+                            let position = mediaItem.predictedCurrentMatchOffset
+                            let rate = 1 + Double(mediaItem.frequencySkew)
+                            self.logger.info("Shazam timing id=\(mediaItem.shazamID ?? "unknown", privacy: .public), queryOffset=\(mediaItem.matchOffset), position=\(position), rate=\(rate)")
+                            if self.shouldRecordMatch(
+                                title: mediaItem.title,
+                                artist: mediaItem.artist,
+                                at: recognizedAt, shazamID: mediaItem.shazamID,
+                                playbackPosition: position, playbackRate: rate
+                            ) {
+                                self.logger.info("Match found: \(mediaItem.title ?? "unknown")")
+                                await self.handleMatch(mediaItem, allItems: match.mediaItems, at: recognizedAt,
+                                                       playbackPosition: position, playbackRate: rate)
+                            } else {
+                                self.logger.info("Recently matched song ignored: \(mediaItem.title ?? "unknown")")
+                            }
                         }
-                    }
 
-                case .noMatch:
-                    consecutiveInvalidSignatures = 0
-                    self.logger.info("No match found")
-                    if !self.continuous {
+                    case .noMatch:
+                        consecutiveInvalidSignatures = 0
+                        self.logger.info("No match found")
+                        if !self.continuous {
+                            self.sheetProvider?.dismissSearching()
+                            self.status = .error(.noMatch)
+                        }
+
+                    case .error(let error, _):
+                        let nsError = error as NSError
+                        self.logger.error("Matching error: \(error.localizedDescription, privacy: .public), domain: \(nsError.domain, privacy: .public), code: \(nsError.code)")
+                        if self.continuous,
+                           nsError.domain == SHErrorDomain,
+                           nsError.code == SHError.Code.signatureDurationInvalid.rawValue {
+                            consecutiveInvalidSignatures += 1
+                            if consecutiveInvalidSignatures < 3 {
+                                self.logger.warning("Skipping invalid Shazam signature; listening continues")
+                                continue
+                            }
+                        }
+                        if let delay = recovery.retryDelay(for: error) {
+                            self.recordLifecycleDiagnostic("Shazam service recovery", details: "\(nsError.domain) code \(nsError.code)")
+                            self.replaceShazamSession()
+                            do { try await Task.sleep(for: delay) }
+                            catch { return }
+                            guard !Task.isCancelled, self.isListening,
+                                  self.sessionID == listeningSessionID else { return }
+                            guard self.configureAudioSessionForBackground() else {
+                                self.status = .error(.audioSessionFailed)
+                                self.stopMatching(reason: "Audio configuration failed during Shazam recovery")
+                                return
+                            }
+                            if !self.continuous { self.startTimeoutTask() }
+                            continue matching
+                        }
                         self.sheetProvider?.dismissSearching()
-                        self.status = .error(.noMatch)
-                    }
-
-                case .error(let error, _):
-                    let nsError = error as NSError
-                    self.logger.error("Matching error: \(error.localizedDescription, privacy: .public), domain: \(nsError.domain, privacy: .public), code: \(nsError.code)")
-                    if self.continuous,
-                       nsError.domain == SHErrorDomain,
-                       nsError.code == SHError.Code.signatureDurationInvalid.rawValue {
-                        consecutiveInvalidSignatures += 1
-                        if consecutiveInvalidSignatures < 3 {
-                            self.logger.warning("Skipping invalid Shazam signature; listening continues")
-                            continue
-                        }
-                    }
-                    self.sheetProvider?.dismissSearching()
-                    self.status = .error(.matchFailed(error))
-                    guard !Task.isCancelled else { return }
-                    await MainActor.run {
+                        self.status = .error(.matchFailed(error))
+                        guard !Task.isCancelled else { return }
                         self.stopMatching(reason: "Shazam error \(nsError.domain) code \(nsError.code)")
+                        // A later manual retry must not reuse a broken connection.
+                        self.replaceShazamSession()
+                        return
                     }
-                    return
+
+                    // In non-continuous mode, stop after the first result
+                    if !self.continuous { break }
                 }
-
-                // In non-continuous mode, stop after the first result
-                if !self.continuous { break }
+                break
             }
 
+            guard !Task.isCancelled, self.sessionID == listeningSessionID else { return }
             self.timeoutTask?.cancel()
-            guard !Task.isCancelled else { return }
-            await MainActor.run {
-                self.stopMatching(reason: self.continuous ? "Continuous Shazam result stream ended" : "Single match completed")
-            }
+            self.stopMatching(reason: self.continuous ? "Continuous Shazam result stream ended" : "Single match completed")
         }
     }
 
@@ -688,11 +711,22 @@ enum ShazamStatus: Equatable {
         }
     }
 
+    private func replaceShazamSession() {
+        prepareTask?.cancel()
+        prepareTask = nil
+        session.cancel()
+        session = SHManagedSession()
+        hasPrepared = false
+    }
+
     /// Stops the current matching session
     func stopMatching(reason: String = "User stopped listening") {
         guard isListening else { return }
         recordLifecycleDiagnostic("listening stopped", details: reason)
         isListening = false
+        prepareTask?.cancel()
+        prepareTask = nil
+        hasPrepared = false
         matchingTask?.cancel()
         matchingTask = nil
         timeoutTask?.cancel()

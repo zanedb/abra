@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AB8A20012F00000100000001 /* ShazamRecoveryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A20002F00000100000001 /* ShazamRecoveryPolicy.swift */; };
 		7147313A1D9C4FA99C3D4101 /* MomentAssetBadges.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7147313A1D9C4FA99C3D4102 /* MomentAssetBadges.swift */; };
 		2F00B44A2EAD7452004B4EFD /* SongInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F00B4492EAD7451004B4EFD /* SongInfo.swift */; };
 		2F0A4CD43019306C00365C51 /* VideoControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0A4CD33019306C00365C51 /* VideoControls.swift */; };
@@ -126,6 +127,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AB8A20002F00000100000001 /* ShazamRecoveryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamRecoveryPolicy.swift; sourceTree = "<group>"; };
 		2F00B4492EAD7451004B4EFD /* SongInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongInfo.swift; sourceTree = "<group>"; };
 		2F0A4CD33019306C00365C51 /* VideoControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoControls.swift; sourceTree = "<group>"; };
 		2F0C0000303A000000000001 /* MapBenchmarkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBenchmarkConfiguration.swift; sourceTree = "<group>"; };
@@ -354,6 +356,7 @@
 				2F4C61F02E4EBBA800B1E0AF /* MotionProvider.swift */,
 				2F63DEDF2E0D2AF600DAA30F /* SheetProvider.swift */,
 				2F736BBA2DBD9E100078F1BB /* ShazamProvider.swift */,
+				AB8A20002F00000100000001 /* ShazamRecoveryPolicy.swift */,
 				AB8A10002F00000100000001 /* MatchNotificationService.swift */,
 				2F736BBC2DC04ED20078F1BB /* LocationProvider.swift */,
 				2F736BBE2DC05A6C0078F1BB /* ToastProvider.swift */,
@@ -638,6 +641,7 @@
 				2FE893782E25D92100244DEF /* Wrapper.swift in Sources */,
 				2FFE243C2E56428B005F4A67 /* DismissButton.swift in Sources */,
 				2F736BBB2DBD9E120078F1BB /* ShazamProvider.swift in Sources */,
+				AB8A20012F00000100000001 /* ShazamRecoveryPolicy.swift in Sources */,
 				AB8A10012F00000100000001 /* MatchNotificationService.swift in Sources */,
 				2FC1E0952A622A7B00EF92D4 /* IconDesigner.swift in Sources */,
 				2F3DAB792DA8C361001004B9 /* Utils.swift in Sources */,
