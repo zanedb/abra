@@ -16,6 +16,169 @@ import XCTest
 
 final class AbraTests: XCTestCase {
 
+    private func versionSong(id: String = "222000", withOptionalMetadata: Bool = true) throws -> Song {
+        var attributes: [String: Any] = [
+            "name": "Song (Remastered)", "artistName": "Updated Artist",
+            "albumName": "New Album", "genreNames": ["Alternative"],
+            "releaseDate": "2024-01-05", "durationInMillis": 180000,
+            "url": "https://music.apple.com/us/song/\(id)",
+            "playParams": ["id": id, "kind": "song"]
+        ]
+        if withOptionalMetadata {
+            attributes["artwork"] = ["url": "https://example.com/new/{w}x{h}.jpg", "width": 1200, "height": 1200]
+            attributes["contentRating"] = "explicit"
+            attributes["isrc"] = "USNEW2400001"
+        }
+        let data = try JSONSerialization.data(withJSONObject: ["id": id, "type": "songs", "attributes": attributes])
+        return try JSONDecoder().decode(Song.self, from: data)
+    }
+
+    @MainActor
+    func testRelinkCommitsAllVersionMetadataAndPublishesItImmediately() async throws {
+        let container = try ModelContainer(for: ShazamStream.self, Spot.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = container.mainContext
+        context.autosaveEnabled = false
+        let stream = ShazamStream(title: "Old Song", artist: "Original Artist", appleMusicID: "111000")
+        stream.subtitle = "Old subtitle"
+        stream.videoURL = URL(string: "https://example.com/old-video")
+        stream.isrc = "OLDISRC"
+        stream.matchID = UUID()
+        stream.shazamID = "original-shazam"
+        stream.shazamLibraryID = UUID()
+        stream.creationDate = Date(timeIntervalSince1970: 1000)
+        stream.webURL = URL(string: "https://www.shazam.com/track/original")
+        stream.note = "Saved note"
+        let spot = Spot(name: "Original venue")
+        context.insert(spot)
+        context.insert(stream)
+        stream.spot = spot
+        try context.save()
+        let originalID = stream.persistentModelID
+        let originalMatchID = stream.matchID
+        let originalShazamLibraryID = stream.shazamLibraryID
+        let originalDate = stream.timestamp
+        let originalCoordinate = stream.coordinate
+        stream.note = "Unrelated unsaved note"
+
+        var lookupCount = 0
+        let music = MusicProvider(catalogLookup: { _ in lookupCount += 1; return [] })
+        music.authorizationStatus = .authorized
+        _ = try await music.fetchTrackInfo("111000")
+        _ = try await music.fetchTrackInfo("222000")
+        XCTAssertTrue(music.isSongUnavailable("222000"))
+        let song = try versionSong()
+
+        try music.relink(stream, to: song)
+
+        XCTAssertEqual(stream.persistentModelID, originalID)
+        XCTAssertEqual(stream.appleMusicID, song.id.rawValue)
+        XCTAssertEqual(stream.appleMusicURL, song.url)
+        XCTAssertEqual(stream.title, song.title)
+        XCTAssertEqual(stream.artist, song.artistName)
+        XCTAssertEqual(stream.artworkURL, song.artwork?.url(width: 600, height: 600))
+        XCTAssertEqual(stream.isExplicit, song.contentRating == .explicit)
+        XCTAssertEqual(stream.isrc, song.isrc)
+        XCTAssertNil(stream.subtitle)
+        XCTAssertNil(stream.videoURL)
+        XCTAssertFalse(music.isSongUnavailable(stream.appleMusicID), "Share and music actions must become available before dismissal")
+        XCTAssertTrue(music.isSongUnavailable("111000"), "Other listens of the removed version remain unavailable")
+        XCTAssertEqual(music.cachedTrackInfo(stream.appleMusicID)?.albumTitle, "New Album")
+        XCTAssertEqual(music.cachedTrackInfo(stream.appleMusicID)?.genreNames, ["Alternative"])
+        XCTAssertEqual(music.cachedTrackInfo(stream.appleMusicID)?.releaseDate, song.releaseDate)
+        let metadata = try await music.fetchTrackInfo("222000")
+        XCTAssertEqual(metadata?.id, song.id)
+        XCTAssertEqual(lookupCount, 2, "The new header must not wait for another network request")
+        XCTAssertEqual(stream.note, "Unrelated unsaved note")
+        XCTAssertEqual(stream.matchID, originalMatchID)
+        XCTAssertEqual(stream.shazamLibraryID, originalShazamLibraryID)
+        XCTAssertEqual(stream.shazamID, "original-shazam")
+        XCTAssertEqual(stream.creationDate, Date(timeIntervalSince1970: 1000))
+        XCTAssertEqual(stream.timestamp, originalDate)
+        XCTAssertEqual(stream.coordinate.latitude, originalCoordinate.latitude)
+        XCTAssertEqual(stream.coordinate.longitude, originalCoordinate.longitude)
+        XCTAssertEqual(stream.spot, spot)
+
+        let reopenedContext = ModelContext(container)
+        let saved = try XCTUnwrap(reopenedContext.fetch(FetchDescriptor<ShazamStream>()).first)
+        XCTAssertEqual(saved.appleMusicID, "222000")
+        XCTAssertEqual(saved.title, song.title)
+        XCTAssertEqual(saved.artist, song.artistName)
+        XCTAssertEqual(saved.artworkURL, stream.artworkURL)
+        XCTAssertEqual(saved.isrc, song.isrc)
+        XCTAssertTrue(saved.isExplicit)
+        XCTAssertNil(saved.subtitle)
+        XCTAssertNil(saved.videoURL)
+        XCTAssertEqual(saved.note, "Saved note", "Relinking must not commit unrelated edits")
+    }
+
+    @MainActor
+    func testRelinkClearsOldOptionalVersionMetadata() throws {
+        let container = try ModelContainer(for: ShazamStream.self, Spot.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = container.mainContext
+        let stream = ShazamStream(title: "Old", isExplicit: true, appleMusicID: "111000")
+        stream.isrc = "OLDISRC"
+        stream.subtitle = "Old subtitle"
+        stream.videoURL = URL(string: "https://example.com/old-video")
+        context.insert(stream)
+        try context.save()
+        let music = MusicProvider()
+        let song = try versionSong(withOptionalMetadata: false)
+
+        try music.relink(stream, to: song)
+
+        XCTAssertNil(stream.isrc)
+        XCTAssertNil(stream.subtitle)
+        XCTAssertNil(stream.videoURL)
+        XCTAssertFalse(stream.isExplicit)
+        XCTAssertEqual(stream.artworkURL.absoluteString, "https://zane.link/abra-unavailable")
+        XCTAssertEqual(music.cachedTrackInfo(stream.appleMusicID)?.id, song.id)
+    }
+
+    @MainActor
+    func testFailedRelinkLeavesModelAndMetadataCacheUntouched() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("readonly.store")
+        let schema = Schema([ShazamStream.self, Spot.self])
+        do {
+            let container = try ModelContainer(for: schema,
+                configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
+            let stream = ShazamStream(title: "Original", artist: "Original Artist", appleMusicID: "111000")
+            container.mainContext.insert(stream)
+            try container.mainContext.save()
+        }
+        let container = try ModelContainer(for: schema,
+            configurations: ModelConfiguration(schema: schema, url: url, allowsSave: false, cloudKitDatabase: .none))
+        container.mainContext.autosaveEnabled = false
+        let stream = try XCTUnwrap(container.mainContext.fetch(FetchDescriptor<ShazamStream>()).first)
+        let originalArtwork = stream.artworkURL
+        stream.note = "Unrelated unsaved note"
+        let music = MusicProvider()
+        let song = try versionSong()
+
+        XCTAssertThrowsError(try music.relink(stream, to: song))
+
+        XCTAssertEqual(stream.appleMusicID, "111000")
+        XCTAssertEqual(stream.title, "Original")
+        XCTAssertEqual(stream.artist, "Original Artist")
+        XCTAssertEqual(stream.artworkURL, originalArtwork)
+        XCTAssertEqual(stream.note, "Unrelated unsaved note")
+        XCTAssertNil(music.cachedTrackInfo(song.id.rawValue))
+    }
+
+    @MainActor
+    func testRelinkRejectsDetachedSong() throws {
+        let stream = ShazamStream(title: "Original", appleMusicID: "111000")
+        let music = MusicProvider()
+        XCTAssertThrowsError(try music.relink(stream, to: versionSong()))
+        XCTAssertEqual(stream.appleMusicID, "111000")
+        XCTAssertEqual(stream.title, "Original")
+        XCTAssertNil(music.cachedTrackInfo("222000"))
+    }
+
     @MainActor
     func testSongPreviewCommitOpensSongAfterMenuDismissalWithoutPlaying() {
         let sheet = SheetProvider()
@@ -165,6 +328,47 @@ final class AbraTests: XCTestCase {
             XCTAssertNil(recovery.retryDelay(for: error))
         }
         XCTAssertEqual(recovery.retryDelay(for: NSError(domain: SHErrorDomain, code: 202)), .seconds(1))
+    }
+
+    func testVersionMatchingIgnoresCaseAccentsAndPunctuation() {
+        XCTAssertTrue(SongVersionMatcher.isMatch(
+            title: "DEJA VU!", artist: "BEYONCE",
+            originalTitle: "Déjà Vu", originalArtist: "Beyoncé"))
+    }
+
+    func testVersionMatchingAllowsAlternateVersions() {
+        XCTAssertEqual(SongVersionMatcher.searchQuery(title: "Song - 2011 Remaster", artist: "Artist"), "Song Artist")
+        for title in ["Song - 2011 Remaster", "Song (Remastered)", "Song [Live Version]"] {
+            XCTAssertTrue(SongVersionMatcher.isMatch(
+                title: title, artist: "Artist", originalTitle: "Song", originalArtist: "Artist"), title)
+            XCTAssertTrue(SongVersionMatcher.isMatch(
+                title: title, artist: "Artist", originalTitle: title, originalArtist: "Artist"), title)
+        }
+    }
+
+    func testVersionMatchingRejectsDifferentSongsAndArtists() {
+        XCTAssertFalse(SongVersionMatcher.isMatch(
+            title: "Song", artist: "Cover Artist", originalTitle: "Song", originalArtist: "Original Artist"))
+        XCTAssertFalse(SongVersionMatcher.isMatch(
+            title: "Other Song", artist: "Artist", originalTitle: "Song", originalArtist: "Artist"))
+        XCTAssertFalse(SongVersionMatcher.isMatch(
+            title: "Song", artist: "Artist", originalTitle: "Song (Forever)", originalArtist: "Artist"))
+    }
+
+    func testVersionMatchingKeepsFeaturedArtistNames() {
+        XCTAssertTrue(SongVersionMatcher.isMatch(
+            title: "Song (feat. Guest) - Remastered", artist: "Artist",
+            originalTitle: "Song (feat. Guest)", originalArtist: "Artist"))
+        XCTAssertFalse(SongVersionMatcher.isMatch(
+            title: "Song (feat. Other) - Remastered", artist: "Artist",
+            originalTitle: "Song (feat. Guest)", originalArtist: "Artist"))
+    }
+
+    func testVersionMatchingRejectsMissingIdentity() {
+        XCTAssertFalse(SongVersionMatcher.isMatch(
+            title: "", artist: "Artist", originalTitle: "", originalArtist: "Artist"))
+        XCTAssertFalse(SongVersionMatcher.isMatch(
+            title: "Song", artist: "", originalTitle: "Song", originalArtist: ""))
     }
 
     @MainActor

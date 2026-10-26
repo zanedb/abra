@@ -89,6 +89,9 @@
 		84784D102D354FF7A982EADC /* ApproximateAreaRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2ED00515B9462CAB73C7EE /* ApproximateAreaRenderer.swift */; };
 		AB8A10012F00000100000001 /* MatchNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A10002F00000100000001 /* MatchNotificationService.swift */; };
 		AB8A10022F00000100000001 /* Waveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4C61F22E4EC48800B1E0AF /* Waveform.swift */; };
+		D5FAF571C19A4CB2A3172243 /* SongVersionPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4CAE706C4A546688225F373 /* SongVersionPicker.swift */; };
+		CA9DA7BC442D4BAF93D140E5 /* SongVersionRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8816DEDB72944D669D15B982 /* SongVersionRow.swift */; };
+		4B5AB8F9804E492784B48703 /* SongVersionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC49E6B632504BF3BBF8BE9C /* SongVersionMatcher.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -208,6 +211,9 @@
 		2FFE24412E570780005F4A67 /* PhotoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoView.swift; sourceTree = "<group>"; };
 		AB8A10002F00000100000001 /* MatchNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchNotificationService.swift; sourceTree = "<group>"; };
 		CC2ED00515B9462CAB73C7EE /* ApproximateAreaRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApproximateAreaRenderer.swift; sourceTree = "<group>"; };
+		B4CAE706C4A546688225F373 /* SongVersionPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongVersionPicker.swift; sourceTree = "<group>"; };
+		8816DEDB72944D669D15B982 /* SongVersionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongVersionRow.swift; sourceTree = "<group>"; };
+		DC49E6B632504BF3BBF8BE9C /* SongVersionMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongVersionMatcher.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -437,6 +443,9 @@
 				2FC1E0942A622A7B00EF92D4 /* IconDesigner.swift */,
 				2F6A2BF32E297DC200032845 /* LocationPicker.swift */,
 				2FD307AB2E3426C3004ED2AD /* PlaylistPicker.swift */,
+				DC49E6B632504BF3BBF8BE9C /* SongVersionMatcher.swift */,
+				8816DEDB72944D669D15B982 /* SongVersionRow.swift */,
+				B4CAE706C4A546688225F373 /* SongVersionPicker.swift */,
 				2FD307AD2E3449FF004ED2AD /* NewPlaylist.swift */,
 				2F8908872C73106D0002850C /* Moments.swift */,
 				2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */,
@@ -695,6 +704,9 @@
 				2F63DEE02E0D2AF800DAA30F /* SheetProvider.swift in Sources */,
 				2F6A2BF42E297DC400032845 /* LocationPicker.swift in Sources */,
 				2FD307AC2E3426C5004ED2AD /* PlaylistPicker.swift in Sources */,
+				4B5AB8F9804E492784B48703 /* SongVersionMatcher.swift in Sources */,
+				CA9DA7BC442D4BAF93D140E5 /* SongVersionRow.swift in Sources */,
+				D5FAF571C19A4CB2A3172243 /* SongVersionPicker.swift in Sources */,
 				2F30A7C72DA77EB500DFE607 /* VariableBlur.swift in Sources */,
 				2FDBA45C2E0DDFBA00552D44 /* ViewModifiers.swift in Sources */,
 				2F3DAB772DA89C69001004B9 /* OnboardingView.swift in Sources */,

@@ -32,27 +32,29 @@ struct SongInfo: View {
         _matchedArtistStreams = Query(filter: predicate, sort: \.timestamp)
     }
 
-    @State private var albumTitle: String = "Apple vs. 7G"
-    @State private var released: String = "2021"
-    @State private var genre: String = "Electronic"
-    @State private var loadedMetadata: Bool = false
+    @State private var replacementSongs: [Song] = []
+    @State private var showingVersionPicker = false
+
+    private var canRelink: Bool {
+        music.isSongUnavailable(stream.appleMusicID) && !replacementSongs.isEmpty
+    }
 
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
             Heading
 
-            if let appleMusicURL = stream.appleMusicURL,
-                let appleMusicID = stream.appleMusicID
-            {
+            if let appleMusicID = stream.appleMusicID {
                 HStack {
                     Button {
-                        music.playPause(id: appleMusicID)
+                        if canRelink {
+                            showingVersionPicker = true
+                        } else {
+                            music.playPause(id: appleMusicID)
+                        }
                     } label: {
                         Label(
-                            music.nowPlaying == appleMusicID
-                                ? "Pause" : "Play",
-                            systemImage: music.nowPlaying == appleMusicID
-                                ? "pause.fill" : "play.fill"
+                            canRelink ? "Re-link song version" : (music.nowPlaying == appleMusicID ? "Pause" : "Play"),
+                            systemImage: canRelink ? "link.badge.plus" : (music.nowPlaying == appleMusicID ? "pause.fill" : "play.fill")
                         )
                         .padding(.vertical, 8)
                         .frame(maxWidth: .infinity)
@@ -61,33 +63,35 @@ struct SongInfo: View {
                     .foregroundStyle(.link)
                     .adaptiveGlass()
 
-                    Button {
-                        openURL(appleMusicURL)
-                    } label: {
-                        Label(
-                            "Open in Music",
-                            systemImage: "arrow.up.right"
-                        )
-                        .padding(.vertical, 8)
-                        .frame(maxWidth: .infinity)
-                    }
-                    .fontWeight(.medium)
-                    .adaptiveGlass(
-                        prominent: true,
-                        tint:
-                            LinearGradient(
+                    if !canRelink, let appleMusicURL = stream.appleMusicURL {
+                        Button {
+                            openURL(appleMusicURL)
+                        } label: {
+                            Label("Open in Music", systemImage: "arrow.up.right")
+                                .padding(.vertical, 8)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .fontWeight(.medium)
+                        .adaptiveGlass(
+                            prominent: true,
+                            tint: LinearGradient(
                                 colors: [.red.opacity(0.8), .red.opacity(0.9)],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
-                    )
+                        )
+                    }
                 }
                 .padding(.bottom, 8)
             }
         }
         .padding(.horizontal)
         .frame(maxWidth: .infinity, alignment: .center)
-        .task(id: stream.persistentModelID, loadMetadata)
+        .task(id: stream.appleMusicID, loadMetadata)
+        .popover(isPresented: $showingVersionPicker) {
+            SongVersionPicker(stream: stream, initialSongs: replacementSongs)
+                .presentationDetents([.large])
+        }
 
     }
 
@@ -154,20 +158,20 @@ struct SongInfo: View {
             .padding(.top, expansion > 0.5 ? 2 : 0)
             .frame(maxWidth: maxWidth)
 
-            if loadedMetadata {
+            if let song = music.cachedTrackInfo(stream.appleMusicID) {
                 HStack(spacing: 4) {
-                    Text(genre)
-                        .foregroundStyle(.secondary)
-                        .font(.subheadline.weight(.medium))
-                        .lineLimit(1)
-                    Text("·")
-                        .foregroundStyle(.secondary)
-                        .font(.subheadline.weight(.medium))
-                    Text(released)
-                        .foregroundStyle(.secondary)
-                        .font(.subheadline.weight(.medium))
-                        .lineLimit(1)
+                    if let genre = song.genreNames.first {
+                        Text(genre)
+                            .lineLimit(1)
+                    }
+                    if let releaseDate = song.releaseDate {
+                        if !song.genreNames.isEmpty { Text("·") }
+                        Text(releaseDate, format: .dateTime.year())
+                            .lineLimit(1)
+                    }
                 }
+                .foregroundStyle(.secondary)
+                .font(.subheadline.weight(.medium))
                 .padding(.top, 4)
                 .padding(.bottom, descPadding)
                 .frame(maxWidth: descMaxWidth)
@@ -179,36 +183,36 @@ struct SongInfo: View {
 
     @Sendable private func loadMetadata() async {
         guard !Task.isCancelled else { return }
-        loadedMetadata = false
+        replacementSongs = []
 
         guard let id = stream.appleMusicID else {
             return
         }
 
         do {
-            let song = try await music.fetchTrackInfo(id)
-            guard !Task.isCancelled else { return }
+            _ = try await music.fetchTrackInfo(id)
+            guard !Task.isCancelled, stream.appleMusicID == id else { return }
 
-            if let albumName = song?.albumTitle,
-                let releaseDate = song?.releaseDate?.year,
-                let genres = song?.genreNames
-            {
-                albumTitle =
-                    albumName.hasSuffix(" - Single") ? "Single" : albumName
-                genre = genres.first ?? ""
-                released = releaseDate
-
-                loadedMetadata = true
+            if music.isSongUnavailable(id) {
+                // This optional discovery is quiet; only user requests report errors.
+                let query = SongVersionMatcher.searchQuery(title: stream.title, artist: stream.artist)
+                let results = try? await music.searchSongs(query: query)
+                guard !Task.isCancelled, stream.appleMusicID == id else { return }
+                replacementSongs = (results ?? []).filter {
+                    SongVersionMatcher.isMatch(title: $0.title, artist: $0.artistName,
+                                               originalTitle: stream.title, originalArtist: stream.artist)
+                }
+                return
             }
+
         } catch {
             // Moving to another song cancels this view's metadata request.
             // MusicKit can report that as either task or network cancellation.
             guard !Task.isCancelled,
                 !(error is CancellationError),
-                (error as? URLError)?.code != .cancelled
+                (error as? URLError)?.code != .cancelled,
+                stream.appleMusicID == id
             else { return }
-
-            loadedMetadata = false  // Don't show stale information
 
             var message = error.localizedDescription
             if let e = error as? MusicDataRequest.Error {

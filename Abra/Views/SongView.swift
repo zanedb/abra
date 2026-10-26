@@ -49,6 +49,7 @@ struct SongView: View {
         NavigationStack {
             ScrollView {
                 SongInfo(stream: stream, expansion: expansion)
+                    .id(stream.appleMusicID)
 
                 Moments(stream: stream)
 
@@ -69,7 +70,7 @@ struct SongView: View {
                 LocationPicker(stream: stream)
                     .presentationDetents([.large])
             }
-            .task(id: stream.persistentModelID) {
+            .task(id: stream.appleMusicID) {
                 inLibrary = false
                 guard let appleMusicID = stream.appleMusicID else { return }
 
@@ -77,7 +78,7 @@ struct SongView: View {
                 let song = try? await MLibrary.song(
                     id: MusicItemID(stringLiteral: appleMusicID)
                 )
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled, stream.appleMusicID == appleMusicID else { return }
                 if song != nil { inLibrary = true }
             }
             .onGeometryChange(for: CGFloat.self) { proxy in
