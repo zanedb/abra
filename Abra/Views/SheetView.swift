@@ -322,7 +322,7 @@ struct SheetView: View {
     }
 
     private func song(_ stream: ShazamStream) -> some View {
-        SongView(stream: stream)
+        SongView(stream: stream, onSongChange: { view.show($0) })
             .presentationInspector()
             .edgesIgnoringSafeArea(.bottom)
             .prefersEdgeAttachedInCompactHeight()

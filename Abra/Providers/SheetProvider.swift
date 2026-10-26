@@ -17,6 +17,7 @@ import SwiftUI
 
     var stream: ShazamStream?
     var spot: Spot?
+    private var spotPresentedOverSong: Spot?
 
     enum ViewState: Equatable {
         case none
@@ -38,6 +39,7 @@ import SwiftUI
             if newValue == .none {
                 stream = nil
                 spot = nil
+                spotPresentedOverSong = nil
                 didChange.send()
             }
         }
@@ -95,7 +97,7 @@ import SwiftUI
     }
 
     var coordinate: CLLocationCoordinate2D? {
-        switch now {
+        switch mapSelection {
         case .spot(let spot):
             return spot.coordinate
         case .stream(let stream):
@@ -105,15 +107,37 @@ import SwiftUI
         }
     }
 
+    /// The map follows the top sheet while preserving the Song sheet beneath it.
+    var mapSelection: ViewState {
+        if let spotPresentedOverSong {
+            return .spot(spotPresentedOverSong)
+        }
+        return now
+    }
+
+    func showSpotOnMap(_ spot: Spot) {
+        guard spotPresentedOverSong != spot else { return }
+        spotPresentedOverSong = spot
+        didChange.send()
+    }
+
+    func dismissSpotOnMap(_ spot: Spot) {
+        guard spotPresentedOverSong == spot else { return }
+        spotPresentedOverSong = nil
+        didChange.send()
+    }
+
     func show(_ spot: Spot) {
-        guard now != .spot(spot) else { return }
+        guard now != .spot(spot) || spotPresentedOverSong != nil else { return }
+        spotPresentedOverSong = nil
         self.spot = spot
         stream = nil
         didChange.send()
     }
 
     func show(_ stream: ShazamStream) {
-        guard now != .stream(stream) else { return }
+        guard now != .stream(stream) || spotPresentedOverSong != nil else { return }
+        spotPresentedOverSong = nil
         self.stream = stream
         spot = nil
         didChange.send()

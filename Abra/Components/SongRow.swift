@@ -215,12 +215,15 @@ struct SongRowMini: View {
     static let artworkSpacing: CGFloat = 13
     private static let artworkCornerRadius: CGFloat = 8
 
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.toastProvider) private var toast
     @Environment(SheetProvider.self) var view
     @Environment(MusicProvider.self) private var music
     @Environment(ShazamProvider.self) private var shazam
 
     var stream: ShazamStream
     var onTapGesture: () -> Void = {}
+    var onViewSong: ((ShazamStream) -> Void)?
 
     private var nowPlaying: Bool {
         music.nowPlaying != nil && music.nowPlaying == stream.appleMusicID
@@ -274,38 +277,35 @@ struct SongRowMini: View {
         }
         .frame(maxHeight: 44)
         .contentShape(Rectangle())
-        .onTapGesture {
-            onTapGesture()
+        .overlay {
+            SongRowContextMenu(
+                appleMusicURL: stream.appleMusicURL,
+                onTap: onTapGesture,
+                onViewSong: showSong,
+                preview: SongRow(stream: stream)
+                    .environment(view)
+                    .environment(music)
+                    .environment(shazam)
+                    .modelContext(modelContext)
+                    .environment(\.toastProvider, toast)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 4)
+                    .frame(width: 320)
+                    .fixedSize(horizontal: false, vertical: true)
+            )
+            .accessibilityHidden(true)
         }
-        .contextMenu {
-            if let appleMusicURL = stream.appleMusicURL {
-                Link(destination: appleMusicURL) {
-                    Label(
-                        "Open in Music",
-                        systemImage: "arrow.up.forward"
-                    )
-                }
-                Divider()
-                ShareLink(item: appleMusicURL) {
-                    Label("Share", systemImage: "square.and.arrow.up")
-                }
-                //                Divider()
-            }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { onTapGesture() }
+        .accessibilityAction(named: "View Song", showSong)
+    }
 
-            //            Button(
-            //                "View",
-            //                systemImage: "arrow.up.right",
-            //                action: { view.show(stream) }
-            //            )
-        } preview: {
-            SongRow(stream: stream)
-                .environment(view)
-                .environment(music)
-                .environment(shazam)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 4)
-                .frame(width: 320)
-                .fixedSize(horizontal: false, vertical: true)
+    private func showSong() {
+        if let onViewSong {
+            onViewSong(stream)
+        } else {
+            view.show(stream)
         }
     }
 }

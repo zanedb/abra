@@ -15,8 +15,17 @@ struct SongView: View {
     @Environment(\.openURL) private var openURL
     @Environment(MusicProvider.self) private var music
     @Environment(ShazamProvider.self) private var shazam
+    @Environment(SheetProvider.self) private var sheetProvider
 
-    var stream: ShazamStream
+    private let initialStream: ShazamStream
+    private let onSongChange: ((ShazamStream) -> Void)?
+    @State private var stream: ShazamStream
+
+    init(stream: ShazamStream, onSongChange: ((ShazamStream) -> Void)? = nil) {
+        initialStream = stream
+        self.onSongChange = onSongChange
+        _stream = State(initialValue: stream)
+    }
 
     @State private var showingConfirmation = false
     @State private var showingPlaylistPicker = false
@@ -61,12 +70,14 @@ struct SongView: View {
                     .presentationDetents([.large])
             }
             .task(id: stream.persistentModelID) {
+                inLibrary = false
                 guard let appleMusicID = stream.appleMusicID else { return }
 
                 // Check if song exists in user's library
                 let song = try? await MLibrary.song(
                     id: MusicItemID(stringLiteral: appleMusicID)
                 )
+                guard !Task.isCancelled else { return }
                 if song != nil { inLibrary = true }
             }
             .onGeometryChange(for: CGFloat.self) { proxy in
@@ -84,14 +95,22 @@ struct SongView: View {
             measureNavigationHeight()
         }
         .withToastOverlay(using: toast)
+        .onChange(of: initialStream) { _, newValue in
+            stream = newValue
+        }
         .presentationDetents([.fraction(0.50), .large], selection: $selectedDetent)
         .sheet(item: $spotToPresent) { spot in
-            SpotView(spot: spot)
+            SpotView(spot: spot, onShowSong: showSongFromSpot)
                 .presentationDetents([.fraction(0.50), .large])
                 .presentationInspector()
                 .prefersEdgeAttachedInCompactHeight()
         }
-        .onChange(of: spotToPresent) { _, newValue in
+        .onChange(of: spotToPresent) { oldValue, newValue in
+            if let newValue {
+                sheetProvider.showSpotOnMap(newValue)
+            } else if let oldValue {
+                sheetProvider.dismissSpotOnMap(oldValue)
+            }
             if newValue == nil, let prior = detentBeforeSpot {
                 selectedDetent = prior
                 detentBeforeSpot = nil
@@ -105,6 +124,13 @@ struct SongView: View {
             selectedDetent = .fraction(0.50)
         }
         spotToPresent = spot
+    }
+
+    private func showSongFromSpot(_ song: ShazamStream) {
+        // Update the existing song sheet before dismissing its spot sheet.
+        onSongChange?(song)
+        stream = song
+        spotToPresent = nil
     }
 
     private func measureNavigationHeight() {

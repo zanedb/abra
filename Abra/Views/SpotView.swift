@@ -21,6 +21,7 @@ struct SpotView: View {
     @Namespace var animation
 
     @Bindable var spot: Spot
+    var onShowSong: ((ShazamStream) -> Void)?
 
     @State private var showingIconDesigner: Bool = false
     @State private var showingConfirmation: Bool = false
@@ -29,6 +30,7 @@ struct SpotView: View {
     @State private var sheetHeight: CGFloat = 0
     @State private var contentHeight: CGFloat = 0
     @State private var navigationHeight: CGFloat?
+    @State private var songTransition = SheetRevealTransition()
 
     private var expansion: CGFloat {
         guard let navigationHeight else { return 0 }
@@ -104,6 +106,11 @@ struct SpotView: View {
             measureNavigationHeight()
         }
         .withToastOverlay(using: toast)
+        .background {
+            SheetRevealTransition.Anchor(transition: songTransition)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        }
     }
 
     private func measureNavigationHeight() {
@@ -298,7 +305,8 @@ struct SpotView: View {
                         if let appleMusicID = stream.appleMusicID {
                             music.playPause(id: appleMusicID)
                         }
-                    }
+                    },
+                    onViewSong: showSong
                 )
                 .padding()
                 .padding(.bottom, stream == spot.streams.last ? 12 : -4)
@@ -309,6 +317,16 @@ struct SpotView: View {
                         .padding(.leading, SongRowMini.artworkSize + SongRowMini.artworkSpacing)
                         .padding(.leading)
                 }
+            }
+        }
+    }
+
+    private func showSong(_ song: ShazamStream) {
+        if let onShowSong {
+            onShowSong(song)
+        } else {
+            songTransition.reveal {
+                view.show(song)
             }
         }
     }

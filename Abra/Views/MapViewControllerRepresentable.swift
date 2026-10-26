@@ -432,7 +432,7 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
             let wasProgrammaticSelection = isProgrammaticSelection
             isProgrammaticSelection = true
             defer { isProgrammaticSelection = wasProgrammaticSelection }
-            let now = sheetProvider.now
+            let now = sheetProvider.mapSelection
 
             if case .stream(let stream) = now {
                 updateApproximateArea(for: stream, in: mapView)
@@ -709,13 +709,13 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
                 // song is now represented by its dedicated selected artwork pin.
                 guard lastSelectedAnnotation == nil || (lastSelectedAnnotation as? ShazamAnnotation) === song else { return }
                 guard !suppressDidDeselect || isTemporary || song.approximateRadius != nil,
-                      sheetProvider.now == .stream(song.shazamStream),
+                      sheetProvider.mapSelection == .stream(song.shazamStream),
                       song.shazamStream.spot == nil || isTemporary else { return }
             case let spot as SpotAnnotation:
                 guard spotAnnotations[spot.spot.persistentModelID] === spot,
                       !isAppAnnotationSelected(spot, in: mapView),
                       !suppressDidDeselect,
-                      sheetProvider.now == .spot(spot.spot) else { return }
+                      sheetProvider.mapSelection == .spot(spot.spot) else { return }
             default:
                 return
             }

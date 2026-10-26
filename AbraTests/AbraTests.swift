@@ -10,9 +10,122 @@ import MapKit
 import MusicKit
 import ShazamKit
 import SwiftData
+import SwiftUI
+import UIKit
 import XCTest
 
 final class AbraTests: XCTestCase {
+
+    @MainActor
+    func testSongPreviewCommitOpensSongAfterMenuDismissalWithoutPlaying() {
+        let sheet = SheetProvider()
+        let stream = ShazamStream.preview
+        sheet.show(Spot.preview)
+        var playbackTriggered = false
+        let contextMenu = SongRowContextMenu(
+            appleMusicURL: nil,
+            onTap: { playbackTriggered = true },
+            onViewSong: { sheet.show(stream) },
+            preview: Text(stream.title)
+        )
+        let coordinator = contextMenu.makeCoordinator()
+        let interaction = UIContextMenuInteraction(delegate: coordinator)
+        let animator = PreviewCommitAnimator()
+
+        coordinator.contextMenuInteraction(
+            interaction,
+            willPerformPreviewActionForMenuWith: UIContextMenuConfiguration(),
+            animator: animator
+        )
+
+        XCTAssertNotNil(sheet.spot, "Keep the spot visible until the menu closes")
+        XCTAssertNil(sheet.stream)
+        XCTAssertEqual(animator.preferredCommitStyle, .dismiss)
+        XCTAssertEqual(animator.completions.count, 1)
+        animator.completions.forEach { $0() }
+        XCTAssertEqual(sheet.stream, stream)
+        XCTAssertNil(sheet.spot)
+        XCTAssertFalse(playbackTriggered)
+    }
+
+    @MainActor
+    func testViewSongMenuActionWorksBeforeDuringAndAfterDismissal() {
+        for actionStage in 0..<3 {
+            var openedSongs = 0
+            let contextMenu = SongRowContextMenu(
+                appleMusicURL: nil,
+                onTap: {},
+                onViewSong: { openedSongs += 1 },
+                preview: Text("Song")
+            )
+            let coordinator = contextMenu.makeCoordinator()
+            let interaction = UIContextMenuInteraction(delegate: coordinator)
+            let animator = PreviewCommitAnimator()
+            if actionStage == 0 { coordinator.showSongAfterMenuDismissal() }
+            coordinator.contextMenuInteraction(
+                interaction, willEndFor: UIContextMenuConfiguration(), animator: animator
+            )
+            if actionStage == 1 { coordinator.showSongAfterMenuDismissal() }
+            XCTAssertEqual(openedSongs, 0, "Wait for menu dismissal before revealing SongView")
+            animator.completions.forEach { $0() }
+            if actionStage == 2 { coordinator.showSongAfterMenuDismissal() }
+            XCTAssertEqual(openedSongs, 1)
+        }
+    }
+
+    @MainActor
+    func testDirectSpotRevealKeepsSongPresentedAndRemovesOutgoingSheetSnapshot() async {
+        let sheet = SheetProvider()
+        sheet.show(Spot.preview)
+        let stream = ShazamStream.preview
+        let transition = SheetRevealTransition()
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let presenter = UIViewController()
+        window.rootViewController = presenter
+        window.makeKeyAndVisible()
+        let detail = UIHostingController(rootView:
+            Text("Spot")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background { SheetRevealTransition.Anchor(transition: transition) }
+        )
+        detail.modalPresentationStyle = .pageSheet
+        let presented = expectation(description: "Spot sheet presented")
+        presenter.present(detail, animated: false) { presented.fulfill() }
+        await fulfillment(of: [presented], timeout: 3)
+        detail.view.layoutIfNeeded()
+        let rendered = expectation(description: "Spot sheet rendered")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { rendered.fulfill() }
+        await fulfillment(of: [rendered], timeout: 3)
+        let originalSubviewCount = window.subviews.count
+
+        transition.reveal { sheet.show(stream) }
+
+        XCTAssertEqual(window.subviews.count, originalSubviewCount + 1,
+                       "The outgoing Spot must cover SongView until its dismissal animation")
+        XCTAssertEqual(sheet.now, .stream(stream))
+        let animationFinished = expectation(description: "Spot reveal finished")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { animationFinished.fulfill() }
+        await fulfillment(of: [animationFinished], timeout: 3)
+        XCTAssertEqual(window.subviews.count, originalSubviewCount)
+        XCTAssertTrue(sheet.isPresented)
+        sheet.isPresentedBinding.wrappedValue = false
+        XCTAssertEqual(sheet.now, .none, "Dismissing Song returns to the main sheet")
+        presenter.dismiss(animated: false)
+        window.isHidden = true
+    }
+
+    @MainActor
+    private final class PreviewCommitAnimator: NSObject, UIContextMenuInteractionCommitAnimating {
+        let previewViewController: UIViewController? = nil
+        var preferredCommitStyle: UIContextMenuInteractionCommitStyle = .pop
+        var completions: [() -> Void] = []
+
+        func addAnimations(_ animations: @escaping () -> Void) {}
+
+        func addCompletion(_ completion: @escaping () -> Void) {
+            completions.append(completion)
+        }
+    }
 
     func testShazamDaemonExitRetriesWithBoundedBackoff() {
         let connection = NSError(domain: NSCocoaErrorDomain, code: 4099)
@@ -277,6 +390,61 @@ final class AbraTests: XCTestCase {
         XCTAssertEqual(sheet.now, .stream(stream))
         sheet.show(stream)
         XCTAssertTrue(mapView.overlays.isEmpty)
+    }
+
+    @MainActor
+    func testNestedSpotRestoresSpotAnnotationAndRemovesPulledOutSong() throws {
+        let first = ShazamStream(title: "First song", latitude: 37.78, longitude: -122.4)
+        let second = ShazamStream(title: "Second song", latitude: 37.79, longitude: -122.41)
+        let spot = Spot(name: "Venue", latitude: 37.785, longitude: -122.405)
+        first.spot = spot
+        second.spot = spot
+        let container = try ModelContainer(for: ShazamStream.self, Spot.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let sheet = SheetProvider()
+        let coordinator = MapViewControllerRepresentable.Coordinator(
+            modelContext: container.mainContext, sheetProvider: sheet
+        )
+        let map = MKMapView()
+        coordinator.mapView = map
+        coordinator.setupSheetProviderObservation()
+        coordinator.syncAnnotations(shazams: [], spots: [spot])
+        sheet.show(spot)
+
+        for song in [first, second] {
+            sheet.show(song)
+            // A previous Spot sheet's dismissal must not override the new song.
+            sheet.dismissSpotOnMap(spot)
+            let pulledOut = try XCTUnwrap(coordinator.lastSelectedAnnotation as? ShazamAnnotation)
+            XCTAssertEqual(pulledOut.shazamStream, song)
+            XCTAssertEqual(map.annotations.compactMap { $0 as? ShazamAnnotation }.count, 1)
+
+            sheet.showSpotOnMap(spot)
+            XCTAssertEqual(sheet.now, .stream(song), "Keep SongView underneath SpotView")
+            XCTAssertEqual(sheet.mapSelection, .spot(spot))
+            XCTAssertEqual(sheet.coordinate?.latitude, spot.latitude)
+            XCTAssertEqual((coordinator.lastSelectedAnnotation as? SpotAnnotation)?.spot, spot)
+            XCTAssertTrue(map.annotations.compactMap { $0 as? ShazamAnnotation }.isEmpty)
+            coordinator.syncAnnotations(shazams: [], spots: [spot])
+            coordinator.mapView(map, didDeselect: pulledOut)
+            XCTAssertEqual(sheet.now, .stream(song), "Ignore the removed song pin's delayed callback")
+            XCTAssertEqual(sheet.mapSelection, .spot(spot))
+            XCTAssertTrue(map.annotations.compactMap { $0 as? ShazamAnnotation }.isEmpty)
+        }
+
+        let spotAnnotation = try XCTUnwrap(coordinator.lastSelectedAnnotation as? SpotAnnotation)
+        sheet.dismissSpotOnMap(spot)
+        coordinator.mapView(map, didDeselect: spotAnnotation)
+        XCTAssertEqual(sheet.now, .stream(second))
+        XCTAssertEqual(sheet.mapSelection, .stream(second))
+        XCTAssertEqual((coordinator.lastSelectedAnnotation as? ShazamAnnotation)?.shazamStream, second)
+        XCTAssertEqual(map.annotations.compactMap { $0 as? ShazamAnnotation }.count, 1)
+
+        sheet.showSpotOnMap(spot)
+        sheet.now = .none
+        XCTAssertEqual(sheet.mapSelection, .none)
+        XCTAssertNil(sheet.coordinate)
+        XCTAssertTrue(map.annotations.compactMap { $0 as? ShazamAnnotation }.isEmpty)
     }
 
     @MainActor
