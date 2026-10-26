@@ -16,6 +16,11 @@ struct MomentView: View {
 
     @State private var selectedPhotoIndex: Int? = nil
     @State private var currentPhotoIndex: Int = 0
+    @State private var updatedAssets: [String: PHAsset] = [:]
+
+    private var photos: [PHAsset] {
+        moment.phAssets.map { updatedAssets[$0.localIdentifier] ?? $0 }
+    }
 
     var body: some View {
         NavigationStack {
@@ -34,14 +39,15 @@ struct MomentView: View {
                 )
             ) {
                 PhotoView(
-                    photos: moment.phAssets,
+                    photos: photos,
                     initialIndex: selectedPhotoIndex!,
                     streams: moment.streams,
-                    onIndexChange: { currentPhotoIndex = $0 }
+                    onIndexChange: { currentPhotoIndex = $0 },
+                    onAssetChange: { updatedAssets[$0.localIdentifier] = $0 }
                 )
                 .navigationTransition(
                     .zoom(
-                        sourceID: moment.phAssets[currentPhotoIndex]
+                        sourceID: photos[currentPhotoIndex]
                             .localIdentifier,
                         in: details
                     )
@@ -92,7 +98,7 @@ struct MomentView: View {
     private var Images: some View {
         VStack(spacing: 2) {
             // First image: full width, 1:1 aspect
-            if let firstAsset = moment.phAssets.first {
+            if let firstAsset = photos.first {
                 Button {
                     currentPhotoIndex = 0
                     selectedPhotoIndex = 0
@@ -131,7 +137,7 @@ struct MomentView: View {
                         Text(moment.place)
                             .font(.largeTitle.weight(.bold))
                         Text(
-                            "\(moment.timestamp.day) · ^[\(moment.phAssets.count) item](inflect: true)"
+                            "\(moment.timestamp.day) · ^[\(photos.count) item](inflect: true)"
                         )
                         .fontWeight(.medium)
                     }
@@ -154,7 +160,7 @@ struct MomentView: View {
                 spacing: 2
             ) {
                 ForEach(
-                    Array(moment.phAssets.dropFirst().enumerated()),
+                    Array(photos.dropFirst().enumerated()),
                     id: \.element
                 ) { index, asset in
                     Button {

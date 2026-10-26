@@ -29,18 +29,23 @@ struct PhotoView: View {
     @State private var opacity: CGFloat = 1
     @State private var showDeleteConfirmation = false
     @State private var showSongInfo = false
+    @State private var isUpdatingFavorite = false
+    @State private var showFavoriteError = false
     var onIndexChange: ((Int) -> Void)? = nil
+    var onAssetChange: ((PHAsset) -> Void)? = nil
 
     init(
         photos: [PHAsset],
         initialIndex: Int,
         streams: [ShazamStream] = [],
-        onIndexChange: ((Int) -> Void)? = nil
+        onIndexChange: ((Int) -> Void)? = nil,
+        onAssetChange: ((PHAsset) -> Void)? = nil
     ) {
         self._photos = State(initialValue: photos)
         self._currentIndex = State(initialValue: initialIndex)
         self.streams = streams
         self.onIndexChange = onIndexChange
+        self.onAssetChange = onAssetChange
     }
 
     private var currentPhoto: PHAsset? {
@@ -142,6 +147,11 @@ struct PhotoView: View {
                 if let stream = currentStream {
                     SongView(stream: stream)
                 }
+            }
+            .alert("Couldn’t Update Favorite", isPresented: $showFavoriteError) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Please try again.")
             }
         }
         .onAppear { isViewerVisible = true }
@@ -301,6 +311,29 @@ struct PhotoView: View {
         UIPasteboard.general.image = uiImage
     }
 
+    private func toggleCurrentPhotoFavorite() {
+        guard let photo = currentPhoto, !isUpdatingFavorite else { return }
+        isUpdatingFavorite = true
+        let identifier = photo.localIdentifier
+        let isFavorite = !photo.isFavorite
+
+        Task {
+            defer { isUpdatingFavorite = false }
+            do {
+                try await PHPhotoLibrary.shared().performChanges {
+                    PHAssetChangeRequest(for: photo).isFavorite = isFavorite
+                }
+                let updatedPhoto = try await library.fetchAsset(byLocalIdentifier: identifier)
+                if let index = photos.firstIndex(where: { $0.localIdentifier == identifier }) {
+                    photos[index] = updatedPhoto
+                }
+                onAssetChange?(updatedPhoto)
+            } catch {
+                showFavoriteError = true
+            }
+        }
+    }
+
     private func hideCurrentPhoto() {
         guard let photo = currentPhoto else { return }
         PHPhotoLibrary.shared().performChanges({
@@ -378,18 +411,20 @@ struct PhotoView: View {
 
         ToolbarItem(placement: .confirmationAction) {
             Menu {
-                if uiImageToShare != nil {
-                    Button {
-                        copyCurrentPhoto()
-                    } label: {
-                        Label("Copy", systemImage: "doc.on.doc")
-                    }
-                }
+                ControlGroup {
+                    Button("Copy", systemImage: "doc.on.doc", action: copyCurrentPhoto)
+                        .disabled(uiImageToShare == nil)
 
-                Button {
-                    hideCurrentPhoto()
-                } label: {
-                    Label("Hide", systemImage: "eye.slash")
+                    if let photo = currentPhoto {
+                        Button(
+                            photo.isFavorite ? "Unfavorite" : "Favorite",
+                            systemImage: photo.isFavorite ? "heart.slash" : "heart",
+                            action: toggleCurrentPhotoFavorite
+                        )
+                        .disabled(isUpdatingFavorite)
+                    }
+
+                    Button("Hide", systemImage: "eye.slash", action: hideCurrentPhoto)
                 }
 
                 Divider()
