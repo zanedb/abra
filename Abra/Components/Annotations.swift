@@ -21,7 +21,7 @@ class ShazamAnnotation: NSObject, MKAnnotation {
         self.coordinate = shazamStream.coordinate
         self.title = shazamStream.title
         self.artworkURL = shazamStream.artworkURL
-        self.approximateRadius = shazamStream.approximateLocationRadius
+        self.approximateRadius = shazamStream.displayedApproximateLocationRadius
         super.init()
     }
 
@@ -50,7 +50,7 @@ class ShazamAnnotation: NSObject, MKAnnotation {
             changed = true
         }
 
-        let newApproximateRadius = shazamStream.approximateLocationRadius
+        let newApproximateRadius = shazamStream.displayedApproximateLocationRadius
         if approximateRadius != newApproximateRadius {
             approximateRadius = newApproximateRadius
             changed = true

@@ -24,6 +24,7 @@ struct SearchCompletions: Identifiable {
     private var placemarkLocation: CLLocation?
     private var lastObservedDisplacement: CLLocationDistance = 0
     private var backgroundTrackingRequested = false
+    private var foregroundAcquisitionRequested = false
     private var lastAccuracyAuthorization: CLAccuracyAuthorization
     private let logger = Logger(subsystem: "app.zane.abra", category: "LocationProvider")
     var completions = [SearchCompletions]()
@@ -74,6 +75,17 @@ struct SearchCompletions: Identifiable {
         locationManager.accuracyAuthorization == .reducedAccuracy
     }
 
+    /// Warm GPS before recognition, including after permission is granted.
+    func beginForegroundAcquisition() {
+        foregroundAcquisitionRequested = true
+        if hasReducedAccuracy { requestLocation() }
+        else { requestPreciseLocation() }
+    }
+
+    func endForegroundAcquisition() {
+        foregroundAcquisitionRequested = false
+    }
+
     /// Request location permission
     func requestPermission() {
         locationManager.requestWhenInUseAuthorization()
@@ -109,7 +121,7 @@ struct SearchCompletions: Identifiable {
         refreshLocationManager.distanceFilter = kCLDistanceFilterNone
         refreshLocationManager.startUpdatingLocation()
         preciseRefreshTimeout = Task { @MainActor [weak self] in
-            do { try await Task.sleep(for: .seconds(20)) }
+            do { try await Task.sleep(for: .seconds(30)) }
             catch { return }
             self?.finishPreciseRefresh()
         }
@@ -123,6 +135,7 @@ struct SearchCompletions: Identifiable {
         preciseRefreshTimeout = nil
         refreshRequestedAt = nil
         refreshLocationManager.stopUpdatingLocation()
+        if !backgroundTrackingRequested { refreshLocationManager.allowsBackgroundLocationUpdates = false }
     }
 
     /// A picker tap requests a fix when the cache is missing or stale. Geocoding
@@ -194,13 +207,15 @@ struct SearchCompletions: Identifiable {
         standardUpdatesRunning = true
     }
 
-    func stopBackgroundLocationUpdates() {
+    func stopBackgroundLocationUpdates(preservePreciseAcquisition: Bool = false) {
         backgroundTrackingRequested = false
         standardUpdatesRunning = false
-        finishPreciseRefresh()
-        refreshLocationManager.stopUpdatingLocation()
-        refreshRequestedAt = nil
-        refreshLocationManager.allowsBackgroundLocationUpdates = false
+        if !preservePreciseAcquisition || !seekingPreciseFix {
+            finishPreciseRefresh()
+            refreshLocationManager.stopUpdatingLocation()
+            refreshRequestedAt = nil
+            refreshLocationManager.allowsBackgroundLocationUpdates = false
+        }
         locationManager.stopUpdatingLocation()
         locationManager.allowsBackgroundLocationUpdates = false
         locationManager.pausesLocationUpdatesAutomatically = true
@@ -243,6 +258,7 @@ struct SearchCompletions: Identifiable {
             finishPreciseRefresh()
         }
         if backgroundTrackingRequested { startBackgroundLocationUpdates() }
+        if foregroundAcquisitionRequested { beginForegroundAcquisition() }
         Task { @MainActor [weak self] in
             guard let self, !pickerRequests.isEmpty else { return }
             if authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse {
@@ -259,6 +275,13 @@ struct SearchCompletions: Identifiable {
               location.horizontalAccuracy.isFinite,
               location.horizontalAccuracy >= 0 else { return }
         if let previous = currentLocation {
+            // Don't let an overlapping manager replace a fresh GPS fix with a
+            // newer but less useful estimate of the same area.
+            if abs(previous.timestamp.timeIntervalSinceNow) <= 15,
+               location.horizontalAccuracy > previous.horizontalAccuracy,
+               location.distance(from: previous) <= location.horizontalAccuracy + 50 {
+                return
+            }
             // Independent CLLocationManager and MapKit callbacks can arrive out
             // of order. A recent, materially better map fix should still replace
             // a slightly newer coarse observation, without accepting stale GPS.

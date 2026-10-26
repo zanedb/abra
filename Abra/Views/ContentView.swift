@@ -69,13 +69,18 @@ struct ContentView: View {
                 toast.show(message: message, type: .error)
             }
             shazam.configure(modelContext: modelContext, location: location, motion: motion, sheet: sheet)
+            if scenePhase == .active { location.beginForegroundAcquisition() }
             schedulePendingNotificationRoute()
         }
         .onChange(of: scenePhase) {
             if scenePhase == .active {
+                location.beginForegroundAcquisition()
                 shazam.retryPendingMatches()
+                shazam.restoreLocationRecovery()
                 shazam.resolvePendingMatchLocations()
                 schedulePendingNotificationRoute()
+            } else if scenePhase == .background {
+                location.endForegroundAcquisition()
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: MatchNotificationService.openMatchNotification)) { _ in

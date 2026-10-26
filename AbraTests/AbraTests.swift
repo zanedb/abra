@@ -206,7 +206,7 @@ final class AbraTests: XCTestCase {
     @MainActor
     func testApproximateSongKeepsArtworkAndShowsAreaOnlyWhileSelected() throws {
         let stream = ShazamStream(title: "Approximate", latitude: 37.7, longitude: -122.4)
-        stream.horizontalAccuracy = 120
+        stream.horizontalAccuracy = 400
         stream.locationObservedAt = stream.timestamp
         let other = ShazamStream(title: "Another approximate song", latitude: 37.8, longitude: -122.5)
         other.horizontalAccuracy = 500
@@ -238,7 +238,7 @@ final class AbraTests: XCTestCase {
         coordinator.mapView(mapView, didDeselect: normalAnnotation)
         XCTAssertEqual(sheet.now, .stream(stream), "The normal pin's delayed callback must not dismiss the selected duplicate")
         XCTAssertEqual(annotation.artworkURL, stream.artworkURL)
-        XCTAssertEqual(mapView.overlays.compactMap { $0 as? MKCircle }.first?.radius, 150)
+        XCTAssertEqual(mapView.overlays.compactMap { $0 as? MKCircle }.first?.radius, 500)
         coordinator.syncAnnotations(shazams: [stream, other], spots: [])
         XCTAssertEqual(mapView.annotations.compactMap { $0 as? ShazamAnnotation }.count, 3)
         XCTAssertTrue(mapView.annotations.contains { $0 === annotation })
@@ -493,7 +493,8 @@ final class AbraTests: XCTestCase {
         var startCount = 0
         var stopCount = 0
         var accuracyPermission: CLAccuracyAuthorization = .fullAccuracy
-        override var authorizationStatus: CLAuthorizationStatus { .authorizedWhenInUse }
+        var permission: CLAuthorizationStatus = .authorizedWhenInUse
+        override var authorizationStatus: CLAuthorizationStatus { permission }
         override var accuracyAuthorization: CLAccuracyAuthorization { accuracyPermission }
         override func requestLocation() { requestCount += 1 }
         override func startUpdatingLocation() { startCount += 1 }
@@ -662,7 +663,7 @@ final class AbraTests: XCTestCase {
         context.insert(song)
         try context.save()
         provider.trackLocationRecovery(for: song, matchedAt: .now)
-        XCTAssertEqual(primary.requestCount, 1)
+        XCTAssertEqual(refresh.startCount, 1)
         let fix = CLLocation(coordinate: .init(latitude: 37.78, longitude: -122.4), altitude: 0,
                              horizontalAccuracy: 500, verticalAccuracy: -1, timestamp: .now)
         location.locationManager(primary, didUpdateLocations: [fix])
@@ -1393,5 +1394,116 @@ final class AbraTests: XCTestCase {
 
         XCTAssertEqual(provider.searchText, "bassvictim")
         XCTAssertEqual(revealCount, 1)
+    }
+
+    @MainActor
+    func testForegroundAcquisitionWaitsForPermissionAndCoalescesLaunchRequests() {
+        let primary = LocationManagerSpy()
+        let refresh = LocationManagerSpy()
+        primary.permission = .notDetermined
+        let location = LocationProvider(locationManager: primary, refreshLocationManager: refresh)
+        location.beginForegroundAcquisition()
+        XCTAssertEqual(refresh.startCount, 0)
+        primary.permission = .authorizedWhenInUse
+        location.locationManagerDidChangeAuthorization(primary)
+        XCTAssertEqual(refresh.startCount, 1)
+        location.beginForegroundAcquisition()
+        location.requestLocation()
+        XCTAssertEqual(refresh.startCount, 1)
+        XCTAssertEqual(primary.requestCount, 0)
+        location.stopBackgroundLocationUpdates()
+    }
+
+    @MainActor
+    func testRecognitionCanEndWithoutCancellingPreciseAcquisition() {
+        let primary = LocationManagerSpy()
+        let refresh = LocationManagerSpy()
+        let location = LocationProvider(locationManager: primary, refreshLocationManager: refresh)
+        location.startBackgroundLocationUpdates()
+        location.requestPreciseLocation()
+        location.stopBackgroundLocationUpdates(preservePreciseAcquisition: true)
+        XCTAssertEqual(primary.stopCount, 1)
+        XCTAssertEqual(refresh.stopCount, 0)
+        XCTAssertTrue(refresh.allowsBackgroundLocationUpdates)
+        let fix = CLLocation(coordinate: .init(latitude: 37.78, longitude: -122.4), altitude: 0,
+                             horizontalAccuracy: 8, verticalAccuracy: -1, timestamp: .now)
+        location.locationManager(refresh, didUpdateLocations: [fix])
+        XCTAssertEqual(refresh.stopCount, 1)
+        XCTAssertFalse(refresh.allowsBackgroundLocationUpdates)
+    }
+
+    @MainActor
+    func testProvisionalPinKeepsUncertaintyWithoutShowingAreaOrAssigningSpot() throws {
+        let container = try ModelContainer(for: ShazamStream.self, Spot.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let song = ShazamStream(title: "Provisional", latitude: 37.78, longitude: -122.4)
+        song.horizontalAccuracy = 120
+        song.locationObservedAt = song.timestamp
+        let spot = Spot(name: "Nearby", latitude: song.latitude, longitude: song.longitude)
+        container.mainContext.insert(song)
+        container.mainContext.insert(spot)
+        song.spotIt(context: container.mainContext)
+        XCTAssertEqual(song.approximateLocationRadius, 120)
+        XCTAssertNil(song.displayedApproximateLocationRadius)
+        XCTAssertNil(ShazamAnnotation(shazamStream: song).approximateRadius)
+        XCTAssertNil(song.spot)
+        song.horizontalAccuracy = 250
+        XCTAssertEqual(song.displayedApproximateLocationRadius, 250)
+        song.horizontalAccuracy = 120
+        song.locationAccuracyReduced = true
+        XCTAssertEqual(song.displayedApproximateLocationRadius, 250)
+    }
+
+    @MainActor
+    func testProvisionalPinImprovesInStagesAndRecoverySurvivesReopening() throws {
+        let container = try ModelContainer(for: ShazamStream.self, Spot.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = container.mainContext
+        let matchedAt = Date()
+        let song = ShazamStream(title: "Refining", latitude: 37.78, longitude: -122.4)
+        song.timestamp = matchedAt
+        song.horizontalAccuracy = 500
+        song.locationObservedAt = matchedAt
+        song.city = "San Francisco"
+        context.insert(song)
+        try context.save()
+        let firstLocation = LocationProvider(locationManager: LocationManagerSpy(), refreshLocationManager: LocationManagerSpy())
+        let firstProvider = ShazamProvider()
+        firstProvider.configure(modelContext: context, location: firstLocation, motion: MotionProvider(), sheet: SheetProvider())
+        firstProvider.trackLocationRecovery(for: song, matchedAt: matchedAt)
+        XCTAssertTrue(song.locationRecoveryPending)
+
+        let reopenedContext = ModelContext(container)
+        let refreshedSong = try XCTUnwrap(reopenedContext.fetch(FetchDescriptor<ShazamStream>()).first)
+        XCTAssertTrue(refreshedSong.locationRecoveryPending, "Recovery must be durably saved")
+        let location = LocationProvider(locationManager: LocationManagerSpy(), refreshLocationManager: LocationManagerSpy())
+        let provider = ShazamProvider()
+        provider.configure(modelContext: reopenedContext, location: location, motion: MotionProvider(), sheet: SheetProvider())
+        location.currentLocation = CLLocation(coordinate: .init(latitude: 37.7801, longitude: -122.4),
+            altitude: 0, horizontalAccuracy: 120, verticalAccuracy: -1, timestamp: matchedAt.addingTimeInterval(2))
+        provider.resolvePendingMatchLocations(at: matchedAt.addingTimeInterval(3))
+        XCTAssertEqual(refreshedSong.horizontalAccuracy, 120)
+        XCTAssertNil(refreshedSong.displayedApproximateLocationRadius)
+        XCTAssertNotNil(refreshedSong.approximateLocationRadius)
+        location.currentLocation = CLLocation(coordinate: .init(latitude: 37.7802, longitude: -122.4),
+            altitude: 0, horizontalAccuracy: 8, verticalAccuracy: -1, timestamp: matchedAt.addingTimeInterval(5))
+        provider.resolvePendingMatchLocations(at: matchedAt.addingTimeInterval(6))
+        XCTAssertEqual(refreshedSong.latitude, 37.7802)
+        XCTAssertNil(refreshedSong.approximateLocationRadius)
+        firstLocation.stopBackgroundLocationUpdates()
+        location.stopBackgroundLocationUpdates()
+    }
+
+    @MainActor
+    func testWorseNewerFixCannotReplaceFreshPreciseCache() {
+        let location = LocationProvider(locationManager: LocationManagerSpy(), refreshLocationManager: LocationManagerSpy())
+        let now = Date()
+        let precise = CLLocation(coordinate: .init(latitude: 37.78, longitude: -122.4), altitude: 0,
+            horizontalAccuracy: 8, verticalAccuracy: -1, timestamp: now.addingTimeInterval(-2))
+        location.currentLocation = precise
+        location.acceptMapLocation(CLLocation(coordinate: precise.coordinate, altitude: 0,
+            horizontalAccuracy: 500, verticalAccuracy: -1, timestamp: now))
+        XCTAssertEqual(location.currentLocation?.horizontalAccuracy, 8)
+        XCTAssertEqual(location.currentLocation?.timestamp, precise.timestamp)
     }
 }

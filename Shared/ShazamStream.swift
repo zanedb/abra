@@ -46,6 +46,8 @@ import GeoToolbox
     var isSimulatedBySoftware: Bool?
     var horizontalAccuracy: CLLocationAccuracy?
     var locationObservedAt: Date?
+    var locationAccuracyReduced: Bool = false
+    var locationRecoveryPending: Bool = false
     var verticalAccuracy: CLLocationAccuracy?
     var speed: CLLocationSpeed?
     var speedAccuracy: CLLocationSpeedAccuracy?
@@ -203,7 +205,14 @@ extension ShazamStream {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
-    /// A conservative display estimate, not a claim that the song was heard
+    /// Modest uncertainty still displays as a pin. Keep the stricter uncertainty
+    /// below for recovery and venue assignment, independently of presentation.
+    public var displayedApproximateLocationRadius: CLLocationDistance? {
+        guard let radius = approximateLocationRadius else { return nil }
+        return locationAccuracyReduced || radius >= 250 ? radius : nil
+    }
+
+    /// A conservative uncertainty estimate, not a claim that the song was heard
     /// at the saved coordinate. Older and manually placed locations without a
     /// measured accuracy continue to use their existing map appearance.
     public var approximateLocationRadius: CLLocationDistance? {
@@ -211,6 +220,8 @@ extension ShazamStream {
               let accuracy = horizontalAccuracy,
               accuracy.isFinite,
               accuracy > 0 else { return nil }
+
+        if locationAccuracyReduced { return max(250, accuracy) }
 
         let signedAge = timestamp.timeIntervalSince(locationObservedAt ?? timestamp)
         // Automatic post-match recovery is bounded to 30 seconds. Older manual
@@ -245,8 +256,14 @@ extension ShazamStream {
 
     static func acceptsEarlyPreciseFix(accuracy: Double, speed: Double?,
                                       motionActivity: String?, delay: TimeInterval) -> Bool {
+        accuracy < 50 && acceptsEarlyLocationFix(accuracy: accuracy, speed: speed,
+                                               motionActivity: motionActivity, delay: delay)
+    }
+
+    static func acceptsEarlyLocationFix(accuracy: Double, speed: Double?,
+                                       motionActivity: String?, delay: TimeInterval) -> Bool {
         let moving = ["automotive", "cycling", "running", "walking"].contains(motionActivity ?? "")
-        return (0...15).contains(delay) && accuracy >= 0 && accuracy < 50
+        return (0...15).contains(delay) && accuracy >= 0 && accuracy <= 2_000
             && !moving && (speed ?? -1) <= 1.5
     }
 
@@ -432,6 +449,8 @@ extension ShazamStream {
                                       context: ModelContext? = nil, allowSpot: Bool = true) {
         spot = nil
         updateLocation(location, placemark: placemark)
+        locationRecoveryPending = false
+        locationAccuracyReduced = !allowSpot
         // This is the user's explicit assignment for the song, not an automatic
         // observation of where they were at recognition time. Don't project the
         // time between an old song and today's correction into its uncertainty.
@@ -457,7 +476,7 @@ extension ShazamStream {
     /// Queries for lat/long within three decimal sig figs of precision.
     public func spotIt(context: ModelContext) {
         // A nearby center alone is not evidence that an uncertain fix was at a venue.
-        guard approximateLocationRadius == nil else { return }
+        guard !locationAccuracyReduced, approximateLocationRadius == nil else { return }
         let precision = 0.001
         let halfPrecision = precision / 2
 

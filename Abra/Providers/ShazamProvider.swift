@@ -54,7 +54,7 @@ enum ShazamStatus: Equatable {
             if continuous { startLocationSampling() }
             else {
                 locationTask?.cancel()
-                locationProvider?.stopBackgroundLocationUpdates()
+                locationProvider?.stopBackgroundLocationUpdates(preservePreciseAcquisition: true)
                 startTimeoutTask()
             }
             updateActivity(takingTooLong: false)
@@ -88,10 +88,14 @@ enum ShazamStatus: Equatable {
         let latitude: Double
         let longitude: Double
         let observedAt: Date?
+        let accuracy: Double?
+        let reducedAccuracy: Bool
         init(_ stream: ShazamStream) {
             latitude = stream.latitude
             longitude = stream.longitude
             observedAt = stream.locationObservedAt
+            accuracy = stream.horizontalAccuracy
+            reducedAccuracy = stream.locationAccuracyReduced
         }
     }
     private struct PendingLocation {
@@ -142,6 +146,7 @@ enum ShazamStatus: Equatable {
             self?.resolvePendingMatchLocations(placemark: placemark, for: fix)
             self?.refreshActivityLocation()
         }
+        restoreLocationRecovery()
         retryPendingMatches()
         if appIsForeground && UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
             prepare()
@@ -170,10 +175,37 @@ enum ShazamStatus: Equatable {
         pendingLocations[stream.persistentModelID] = PendingLocation(
             matchedAt: matchedAt, expectedFix: hasCoordinates ? LocationFix(stream) : nil
         )
+        if !stream.locationRecoveryPending {
+            do {
+                try stream.saveLocationEdit { song, _ in song.locationRecoveryPending = true }
+            } catch {
+                logger.error("Could not persist location recovery: \(error.localizedDescription)")
+            }
+        }
         // A cold launch or stale cache must trigger acquisition now, rather than
         // waiting for the next periodic sample after the recovery window expires.
-        if !hasCoordinates { locationProvider?.requestLocation() }
-        if stream.approximateLocationRadius != nil { locationProvider?.requestPreciseLocation() }
+        if !hasCoordinates || stream.approximateLocationRadius != nil {
+            if locationProvider?.hasReducedAccuracy == true { locationProvider?.requestLocation() }
+            else { locationProvider?.requestPreciseLocation() }
+        }
+    }
+
+    /// Rebuild only recent automatic work. Manual corrections clear the marker;
+    /// reopening must never assign today's position to an old song.
+    func restoreLocationRecovery(at now: Date = .now) {
+        guard let modelContext else { return }
+        let cutoff = now.addingTimeInterval(-300)
+        let descriptor = FetchDescriptor<ShazamStream>(predicate: #Predicate {
+            $0.locationRecoveryPending && $0.timestamp > cutoff
+        })
+        do {
+            for stream in try modelContext.fetch(descriptor)
+                where pendingLocations[stream.persistentModelID] == nil {
+                trackLocationRecovery(for: stream, matchedAt: stream.timestamp)
+            }
+        } catch {
+            logger.error("Could not restore location recovery: \(error.localizedDescription)")
+        }
     }
 
     func resolvePendingMatchLocations(at now: Date = .now,
@@ -229,9 +261,9 @@ enum ShazamStatus: Equatable {
                        let fix = locationProvider.locationForMatch(at: entry.matchedAt, activity: motionProvider?.currentActivity),
                        fix.timestamp >= (stream.locationObservedAt ?? entry.matchedAt),
                        fix.distance(from: stream.location) <= max(50, stream.approximateLocationRadius ?? 0) + 50,
-                       fix.horizontalAccuracy < 50,
+                       fix.horizontalAccuracy < (stream.horizontalAccuracy ?? .infinity),
                        (recoveredMotionActivity(for: stream, location: fix, matchedAt: entry.matchedAt) == "stationary"
-                        || ShazamStream.acceptsEarlyPreciseFix(accuracy: fix.horizontalAccuracy, speed: fix.speed,
+                        || ShazamStream.acceptsEarlyLocationFix(accuracy: fix.horizontalAccuracy, speed: fix.speed,
                            motionActivity: recoveredMotionActivity(for: stream, location: fix, matchedAt: entry.matchedAt),
                            delay: fix.timestamp.timeIntervalSince(entry.matchedAt))) {
                         // A later precise fix can repair a stationary session,
@@ -246,7 +278,10 @@ enum ShazamStatus: Equatable {
                         pendingLocations[id] = entry
                     }
                     if let placemark = placemark(for: stream.location) {
-                        try stream.saveLocationEdit { song, _ in song.updatePlacemark(placemark) }
+                        try stream.saveLocationEdit { song, _ in
+                            song.updatePlacemark(placemark)
+                            if song.approximateLocationRadius == nil { song.locationRecoveryPending = false }
+                        }
                         if stream.approximateLocationRadius == nil {
                             pendingLocations.removeValue(forKey: id)
                         }
@@ -287,6 +322,8 @@ enum ShazamStatus: Equatable {
                                          placemark: CLPlacemark?, matchedAt: Date) {
         stream.motionActivity = recoveredMotionActivity(for: stream, location: location, matchedAt: matchedAt)
         stream.updateLocation(location, placemark: placemark)
+        stream.locationAccuracyReduced = locationProvider?.hasReducedAccuracy == true
+        stream.locationRecoveryPending = stream.approximateLocationRadius != nil || placemark == nil
     }
 
     private func recoveredMotionActivity(for stream: ShazamStream, location: CLLocation, matchedAt: Date) -> String? {
@@ -455,7 +492,8 @@ enum ShazamStatus: Equatable {
             sheetProvider?.isSearching = true
         }
         startActivity()
-        locationProvider?.requestLocation()
+        if locationProvider?.hasReducedAccuracy == true { locationProvider?.requestLocation() }
+        else { locationProvider?.requestPreciseLocation() }
 
         if continuous {
             startLocationSampling()
@@ -733,7 +771,7 @@ enum ShazamStatus: Equatable {
         timeoutTask = nil
         locationTask?.cancel()
         locationTask = nil
-        locationProvider?.stopBackgroundLocationUpdates()
+        locationProvider?.stopBackgroundLocationUpdates(preservePreciseAcquisition: true)
         recentlyMatchedSongs.removeAll()
         possibleReplays.removeAll()
         continuous = false
@@ -776,6 +814,9 @@ enum ShazamStatus: Equatable {
         writeContext.autosaveEnabled = false
         let stream = ShazamStream(mediaItem: mediaItem, location: location,
                                   placemark: placemark, motionActivity: motionName)
+        stream.timestamp = matchedAt
+        stream.locationAccuracyReduced = locationProvider?.hasReducedAccuracy == true
+        stream.locationRecoveryPending = location == nil || stream.approximateLocationRadius != nil || placemark == nil
         logger.info("Match location; accuracy: \(location?.horizontalAccuracy ?? -1)m, age: \(location.map { matchedAt.timeIntervalSince($0.timestamp) } ?? -1)s, motion: \(motionName ?? "unavailable"), approximate: \(stream.approximateLocationRadius != nil)")
         writeContext.insert(stream)
         if let location, locationProvider?.hasReducedAccuracy == false,

@@ -487,7 +487,7 @@ struct MapViewControllerRepresentable: UIViewControllerRepresentable {
 
         private func updateApproximateArea(for stream: ShazamStream?, in mapView: MKMapView) {
             // Add a conservative display margin without changing saved accuracy.
-            let radius = stream?.approximateLocationRadius.map { max(150, $0 * 1.25) }
+            let radius = stream?.displayedApproximateLocationRadius.map { max(150, $0 * 1.25) }
             let id = stream?.persistentModelID
             if let stream, let radius,
                approximateAreaStreamID == id,
