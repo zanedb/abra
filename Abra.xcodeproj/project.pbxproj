@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AB8A50012F00000100000001 /* SpotSongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A50002F00000100000001 /* SpotSongRow.swift */; };
 		AB8A40012F00000100000001 /* SheetRevealTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A40002F00000100000001 /* SheetRevealTransition.swift */; };
 		AB8A30012F00000100000001 /* SongRowContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A30002F00000100000001 /* SongRowContextMenu.swift */; };
 		AB8A20012F00000100000001 /* ShazamRecoveryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A20002F00000100000001 /* ShazamRecoveryPolicy.swift */; };
@@ -129,6 +130,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AB8A50002F00000100000001 /* SpotSongRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotSongRow.swift; sourceTree = "<group>"; };
 		AB8A40002F00000100000001 /* SheetRevealTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetRevealTransition.swift; sourceTree = "<group>"; };
 		AB8A30002F00000100000001 /* SongRowContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongRowContextMenu.swift; sourceTree = "<group>"; };
 		AB8A20002F00000100000001 /* ShazamRecoveryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamRecoveryPolicy.swift; sourceTree = "<group>"; };
@@ -422,6 +424,7 @@
 				2FFE243B2E564288005F4A67 /* DismissButton.swift */,
 				2FF310C92A4A6DE900DA2A80 /* Searching.swift */,
 				2FE766D12A30515E00952513 /* SongRow.swift */,
+				AB8A50002F00000100000001 /* SpotSongRow.swift */,
 				AB8A30002F00000100000001 /* SongRowContextMenu.swift */,
 				AB8A40002F00000100000001 /* SheetRevealTransition.swift */,
 				2F00B4492EAD7451004B4EFD /* SongInfo.swift */,
@@ -663,6 +666,7 @@
 				2F4BE1F82D80B6DB006AFFC2 /* ActivityAttributes.swift in Sources */,
 				2F6093702A2EDFB30092A6DD /* AbraApp.swift in Sources */,
 				2FE766D22A30515E00952513 /* SongRow.swift in Sources */,
+				AB8A50012F00000100000001 /* SpotSongRow.swift in Sources */,
 				AB8A30012F00000100000001 /* SongRowContextMenu.swift in Sources */,
 				AB8A40012F00000100000001 /* SheetRevealTransition.swift in Sources */,
 				2FA7D81C2AC0E9780039AD5C /* ModelContainerPreview.swift in Sources */,

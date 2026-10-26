@@ -7,6 +7,7 @@ struct SongRowContextMenu<Preview: View>: UIViewRepresentable {
     var appleMusicURL: URL?
     var onTap: () -> Void
     var onViewSong: () -> Void
+    var onRemoveFromSpot: (() -> Void)?
     var preview: Preview
 
     func makeCoordinator() -> Coordinator {
@@ -67,15 +68,30 @@ struct SongRowContextMenu<Preview: View>: UIViewRepresentable {
                         }
                     ]))
                 }
+                if let onRemoveFromSpot = parent.onRemoveFromSpot {
+                    items.append(UIMenu(options: .displayInline, children: [
+                        UIAction(
+                            title: "Remove from Spot",
+                            image: UIImage(systemName: "mappin.slash"),
+                            attributes: .destructive
+                        ) { [self] _ in
+                            performAfterMenuDismissal(onRemoveFromSpot)
+                        }
+                    ]))
+                }
                 return UIMenu(children: items)
             }
         }
 
         func showSongAfterMenuDismissal() {
+            performAfterMenuDismissal(parent.onViewSong)
+        }
+
+        private func performAfterMenuDismissal(_ action: @escaping () -> Void) {
             if menuHasEnded {
-                parent.onViewSong()
+                action()
             } else {
-                actionAfterDismissal = parent.onViewSong
+                actionAfterDismissal = action
             }
         }
 

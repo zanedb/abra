@@ -224,6 +224,7 @@ struct SongRowMini: View {
     var stream: ShazamStream
     var onTapGesture: () -> Void = {}
     var onViewSong: ((ShazamStream) -> Void)?
+    var onRemoveFromSpot: (() -> Void)?
 
     private var nowPlaying: Bool {
         music.nowPlaying != nil && music.nowPlaying == stream.appleMusicID
@@ -282,6 +283,7 @@ struct SongRowMini: View {
                 appleMusicURL: stream.appleMusicURL,
                 onTap: onTapGesture,
                 onViewSong: showSong,
+                onRemoveFromSpot: onRemoveFromSpot,
                 preview: SongRow(stream: stream)
                     .environment(view)
                     .environment(music)
@@ -299,6 +301,11 @@ struct SongRowMini: View {
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { onTapGesture() }
         .accessibilityAction(named: "View Song", showSong)
+        .accessibilityActions {
+            if let onRemoveFromSpot {
+                Button("Remove from Spot", systemImage: "mappin.slash", action: onRemoveFromSpot)
+            }
+        }
     }
 
     private func showSong() {

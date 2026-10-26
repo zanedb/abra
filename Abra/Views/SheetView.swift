@@ -378,7 +378,7 @@ struct SheetView: View {
 
 }
 
-private extension View {
+extension View {
     @ViewBuilder
     func abraSwipeActionsContainer() -> some View {
         if #available(iOS 27, *) {

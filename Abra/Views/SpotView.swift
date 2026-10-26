@@ -48,6 +48,7 @@ struct SpotView: View {
 
                 SongsList
             }
+            .abraSwipeActionsContainer()
             .toolbar {
                 ToolbarItems
             }
@@ -299,18 +300,12 @@ struct SpotView: View {
                 .padding(.bottom, 8)
 
             ForEach(spot.streams) { stream in
-                SongRowMini(
+                SpotSongRow(
                     stream: stream,
-                    onTapGesture: {
-                        if let appleMusicID = stream.appleMusicID {
-                            music.playPause(id: appleMusicID)
-                        }
-                    },
+                    spot: spot,
+                    isLast: stream == spot.streams.last,
                     onViewSong: showSong
                 )
-                .padding()
-                .padding(.bottom, stream == spot.streams.last ? 12 : -4)
-                .padding(.top, -4)
 
                 if stream != spot.streams.last {
                     Divider()
