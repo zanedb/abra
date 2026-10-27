@@ -137,6 +137,7 @@
 		AB8A40002F00000100000001 /* SheetRevealTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetRevealTransition.swift; sourceTree = "<group>"; };
 		AB8A30002F00000100000001 /* SongRowContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongRowContextMenu.swift; sourceTree = "<group>"; };
 		AB8A20002F00000100000001 /* ShazamRecoveryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamRecoveryPolicy.swift; sourceTree = "<group>"; };
+		7147313A1D9C4FA99C3D4102 /* MomentAssetBadges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentAssetBadges.swift; sourceTree = "<group>"; };
 		2F00B4492EAD7451004B4EFD /* SongInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongInfo.swift; sourceTree = "<group>"; };
 		2F0A4CD33019306C00365C51 /* VideoControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoControls.swift; sourceTree = "<group>"; };
 		2F0C0000303A000000000001 /* MapBenchmarkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBenchmarkConfiguration.swift; sourceTree = "<group>"; };
@@ -450,6 +451,7 @@
 				2F8908872C73106D0002850C /* Moments.swift */,
 				2FEACDFA2C7320B000F79E2D /* Thumbnail.swift */,
 				2F0A4CD33019306C00365C51 /* VideoControls.swift */,
+				7147313A1D9C4FA99C3D4102 /* MomentAssetBadges.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -653,6 +655,7 @@
 				2F3DAB7F2DA9CEF1001004B9 /* RoundedButton.swift in Sources */,
 				2F3C12D12E3B31930080C310 /* SpotRow.swift in Sources */,
 				2F0A4CD43019306C00365C51 /* VideoControls.swift in Sources */,
+				7147313A1D9C4FA99C3D4101 /* MomentAssetBadges.swift in Sources */,
 				2F6093A22A2EEC960092A6DD /* ContentView.swift in Sources */,
 				2F9090212E614F4C00828E6D /* View+presentationInspector.swift in Sources */,
 				2F736BBF2DC05A6C0078F1BB /* ToastProvider.swift in Sources */,
