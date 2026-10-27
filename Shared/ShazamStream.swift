@@ -212,6 +212,14 @@ extension ShazamStream {
         return locationAccuracyReduced || radius >= 250 ? radius : nil
     }
 
+    /// Offer manual correction when the map also presents the location as uncertain.
+    /// Quietly improving pins keep their stricter internal recovery rules.
+    public var needsLocationCorrection: Bool {
+        (latitude == -1 && longitude == -1)
+            || (latitude == 0 && longitude == 0)
+            || displayedApproximateLocationRadius != nil
+    }
+
     /// A conservative uncertainty estimate, not a claim that the song was heard
     /// at the saved coordinate. Older and manually placed locations without a
     /// measured accuracy continue to use their existing map appearance.

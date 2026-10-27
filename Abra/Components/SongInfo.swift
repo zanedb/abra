@@ -99,7 +99,8 @@ struct SongInfo: View {
         let t = smooth(expansion)
         let gatedT = remapHalfRange(t)
         let opacity = CGFloat(lerp(-0.25, 1, t))
-        let imagePadding = CGFloat(lerp(-144, 16, t))
+        // Grow the gap with the drag so the title also collapses continuously.
+        let imagePadding = CGFloat(lerp(-144, 32, t))
         let imageScale = CGFloat(lerp(0.5, 1, gatedT))
         let titleFontSize = CGFloat(lerp(20, 22, t))  // .title3 -> .title2
         let artistFontSize = CGFloat(lerp(13, 20, t))  // .footnote -> .title3

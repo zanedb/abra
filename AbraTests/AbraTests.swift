@@ -1817,13 +1817,40 @@ final class AbraTests: XCTestCase {
         song.spotIt(context: container.mainContext)
         XCTAssertEqual(song.approximateLocationRadius, 120)
         XCTAssertNil(song.displayedApproximateLocationRadius)
+        XCTAssertFalse(song.needsLocationCorrection)
         XCTAssertNil(ShazamAnnotation(shazamStream: song).approximateRadius)
         XCTAssertNil(song.spot)
         song.horizontalAccuracy = 250
         XCTAssertEqual(song.displayedApproximateLocationRadius, 250)
+        XCTAssertTrue(song.needsLocationCorrection)
         song.horizontalAccuracy = 120
         song.locationAccuracyReduced = true
         XCTAssertEqual(song.displayedApproximateLocationRadius, 250)
+        XCTAssertTrue(song.needsLocationCorrection)
+    }
+
+    @MainActor
+    func testPreciseDrivingFixAfterMatchKeepsSmallUncertaintyWithoutCorrectionAction() {
+        let song = ShazamStream(title: "Driving match", latitude: 37.78, longitude: -122.4)
+        song.horizontalAccuracy = 2.0086828677281354
+        song.locationObservedAt = song.timestamp.addingTimeInterval(0.818117)
+        song.motionActivity = "automotive"
+        song.speed = 7.627748454865984
+        XCTAssertEqual(song.approximateLocationRadius, 50)
+        XCTAssertNil(song.displayedApproximateLocationRadius)
+        XCTAssertFalse(song.needsLocationCorrection)
+    }
+
+    @MainActor
+    func testMissingCoordinatesStillOfferLocationCorrection() {
+        let song = ShazamStream(title: "Missing", latitude: 0, longitude: 0)
+        XCTAssertTrue(song.needsLocationCorrection)
+        song.latitude = -1
+        song.longitude = -1
+        XCTAssertTrue(song.needsLocationCorrection)
+        song.latitude = 37.78
+        song.longitude = -122.4
+        XCTAssertFalse(song.needsLocationCorrection)
     }
 
     @MainActor

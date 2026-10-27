@@ -197,10 +197,7 @@ struct SongView: View {
                     }
                 )
 
-                if (stream.latitude == -1 && stream.longitude == -1)
-                    || (stream.latitude == 0 && stream.longitude == 0)
-                    || stream.approximateLocationRadius != nil
-                {
+                if stream.needsLocationCorrection {
                     Divider()
                     Button(
                         (stream.latitude == -1 && stream.longitude == -1)
