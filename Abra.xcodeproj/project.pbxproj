@@ -7,11 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AB8A50012F00000100000001 /* SpotSongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A50002F00000100000001 /* SpotSongRow.swift */; };
-		AB8A40012F00000100000001 /* SheetRevealTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A40002F00000100000001 /* SheetRevealTransition.swift */; };
-		AB8A30012F00000100000001 /* SongRowContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A30002F00000100000001 /* SongRowContextMenu.swift */; };
-		AB8A20012F00000100000001 /* ShazamRecoveryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A20002F00000100000001 /* ShazamRecoveryPolicy.swift */; };
-		7147313A1D9C4FA99C3D4101 /* MomentAssetBadges.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7147313A1D9C4FA99C3D4102 /* MomentAssetBadges.swift */; };
 		2F00B44A2EAD7452004B4EFD /* SongInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F00B4492EAD7451004B4EFD /* SongInfo.swift */; };
 		2F0A4CD43019306C00365C51 /* VideoControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0A4CD33019306C00365C51 /* VideoControls.swift */; };
 		2F0BF5E22E82113E008582C2 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 2F0BF5E12E82113E008582C2 /* Kingfisher */; };
@@ -86,12 +81,17 @@
 		2FFE243C2E56428B005F4A67 /* DismissButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FFE243B2E564288005F4A67 /* DismissButton.swift */; };
 		2FFE24402E56711F005F4A67 /* MomentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FFE243F2E567119005F4A67 /* MomentView.swift */; };
 		2FFE24422E570786005F4A67 /* PhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FFE24412E570780005F4A67 /* PhotoView.swift */; };
+		4B5AB8F9804E492784B48703 /* SongVersionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC49E6B632504BF3BBF8BE9C /* SongVersionMatcher.swift */; };
+		7147313A1D9C4FA99C3D4101 /* MomentAssetBadges.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7147313A1D9C4FA99C3D4102 /* MomentAssetBadges.swift */; };
 		84784D102D354FF7A982EADC /* ApproximateAreaRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2ED00515B9462CAB73C7EE /* ApproximateAreaRenderer.swift */; };
 		AB8A10012F00000100000001 /* MatchNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A10002F00000100000001 /* MatchNotificationService.swift */; };
 		AB8A10022F00000100000001 /* Waveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4C61F22E4EC48800B1E0AF /* Waveform.swift */; };
-		D5FAF571C19A4CB2A3172243 /* SongVersionPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4CAE706C4A546688225F373 /* SongVersionPicker.swift */; };
+		AB8A20012F00000100000001 /* ShazamRecoveryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A20002F00000100000001 /* ShazamRecoveryPolicy.swift */; };
+		AB8A30012F00000100000001 /* SongRowContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A30002F00000100000001 /* SongRowContextMenu.swift */; };
+		AB8A40012F00000100000001 /* SheetRevealTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A40002F00000100000001 /* SheetRevealTransition.swift */; };
+		AB8A50012F00000100000001 /* SpotSongRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8A50002F00000100000001 /* SpotSongRow.swift */; };
 		CA9DA7BC442D4BAF93D140E5 /* SongVersionRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8816DEDB72944D669D15B982 /* SongVersionRow.swift */; };
-		4B5AB8F9804E492784B48703 /* SongVersionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC49E6B632504BF3BBF8BE9C /* SongVersionMatcher.swift */; };
+		D5FAF571C19A4CB2A3172243 /* SongVersionPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4CAE706C4A546688225F373 /* SongVersionPicker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -133,11 +133,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		AB8A50002F00000100000001 /* SpotSongRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotSongRow.swift; sourceTree = "<group>"; };
-		AB8A40002F00000100000001 /* SheetRevealTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetRevealTransition.swift; sourceTree = "<group>"; };
-		AB8A30002F00000100000001 /* SongRowContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongRowContextMenu.swift; sourceTree = "<group>"; };
-		AB8A20002F00000100000001 /* ShazamRecoveryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamRecoveryPolicy.swift; sourceTree = "<group>"; };
-		7147313A1D9C4FA99C3D4102 /* MomentAssetBadges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentAssetBadges.swift; sourceTree = "<group>"; };
 		2F00B4492EAD7451004B4EFD /* SongInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongInfo.swift; sourceTree = "<group>"; };
 		2F0A4CD33019306C00365C51 /* VideoControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoControls.swift; sourceTree = "<group>"; };
 		2F0C0000303A000000000001 /* MapBenchmarkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBenchmarkConfiguration.swift; sourceTree = "<group>"; };
@@ -210,10 +205,15 @@
 		2FFE243B2E564288005F4A67 /* DismissButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissButton.swift; sourceTree = "<group>"; };
 		2FFE243F2E567119005F4A67 /* MomentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentView.swift; sourceTree = "<group>"; };
 		2FFE24412E570780005F4A67 /* PhotoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoView.swift; sourceTree = "<group>"; };
-		AB8A10002F00000100000001 /* MatchNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchNotificationService.swift; sourceTree = "<group>"; };
-		CC2ED00515B9462CAB73C7EE /* ApproximateAreaRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApproximateAreaRenderer.swift; sourceTree = "<group>"; };
-		B4CAE706C4A546688225F373 /* SongVersionPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongVersionPicker.swift; sourceTree = "<group>"; };
+		7147313A1D9C4FA99C3D4102 /* MomentAssetBadges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentAssetBadges.swift; sourceTree = "<group>"; };
 		8816DEDB72944D669D15B982 /* SongVersionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongVersionRow.swift; sourceTree = "<group>"; };
+		AB8A10002F00000100000001 /* MatchNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchNotificationService.swift; sourceTree = "<group>"; };
+		AB8A20002F00000100000001 /* ShazamRecoveryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShazamRecoveryPolicy.swift; sourceTree = "<group>"; };
+		AB8A30002F00000100000001 /* SongRowContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongRowContextMenu.swift; sourceTree = "<group>"; };
+		AB8A40002F00000100000001 /* SheetRevealTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetRevealTransition.swift; sourceTree = "<group>"; };
+		AB8A50002F00000100000001 /* SpotSongRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotSongRow.swift; sourceTree = "<group>"; };
+		B4CAE706C4A546688225F373 /* SongVersionPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongVersionPicker.swift; sourceTree = "<group>"; };
+		CC2ED00515B9462CAB73C7EE /* ApproximateAreaRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApproximateAreaRenderer.swift; sourceTree = "<group>"; };
 		DC49E6B632504BF3BBF8BE9C /* SongVersionMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongVersionMatcher.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -775,7 +775,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 0.96.0;
+				MARKETING_VERSION = 0.97.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abra.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -805,7 +805,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 0.96.0;
+				MARKETING_VERSION = 0.97.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abra.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -968,7 +968,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.96.0;
+				MARKETING_VERSION = 0.97.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abra;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1007,7 +1007,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.96.0;
+				MARKETING_VERSION = 0.97.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.zane.abra;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
